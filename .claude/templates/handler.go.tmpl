@@ -1,0 +1,166 @@
+// Template: HTTP Handler (Gin)
+// Replace: {{Package}}, {{Name}}, {{name}}
+// Location: saas/pkg/{{package}}/
+
+package {{package}}
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+)
+
+// Handler handles {{name}} HTTP requests.
+type Handler struct {
+	service *Service
+	logger  *zap.Logger
+}
+
+// NewHandler creates a new {{Name}} handler.
+func NewHandler(service *Service, logger *zap.Logger) *Handler {
+	return &Handler{
+		service: service,
+		logger:  logger,
+	}
+}
+
+// RegisterRoutes registers {{name}} routes on the router group.
+func (h *Handler) RegisterRoutes(rg *gin.RouterGroup) {
+	g := rg.Group("/{{name}}s")
+	{
+		g.GET("", h.List)
+		g.GET("/:id", h.Get)
+		g.POST("", h.Create)
+		g.PUT("/:id", h.Update)
+		g.DELETE("/:id", h.Delete)
+	}
+}
+
+// List godoc
+// @Summary List {{name}}s
+// @Tags {{name}}s
+// @Success 200 {array} {{Name}}Response
+// @Router /{{name}}s [get]
+func (h *Handler) List(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	results, err := h.service.List(ctx)
+	if err != nil {
+		h.logger.Error("list {{name}}s failed", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, results)
+}
+
+// Get godoc
+// @Summary Get {{name}} by ID
+// @Tags {{name}}s
+// @Param id path string true "{{Name}} ID"
+// @Success 200 {object} {{Name}}Response
+// @Router /{{name}}s/{id} [get]
+func (h *Handler) Get(c *gin.Context) {
+	ctx := c.Request.Context()
+	id := c.Param("id")
+
+	result, err := h.service.Get(ctx, id)
+	if err != nil {
+		h.logger.Error("get {{name}} failed", zap.Error(err), zap.String("id", id))
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// Create godoc
+// @Summary Create {{name}}
+// @Tags {{name}}s
+// @Param input body Create{{Name}}Request true "{{Name}} data"
+// @Success 201 {object} {{Name}}Response
+// @Router /{{name}}s [post]
+func (h *Handler) Create(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var req Create{{Name}}Request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := h.service.Create(ctx, Create{{Name}}Input{
+		// Map request to input
+	})
+	if err != nil {
+		h.logger.Error("create {{name}} failed", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, result)
+}
+
+// Update godoc
+// @Summary Update {{name}}
+// @Tags {{name}}s
+// @Param id path string true "{{Name}} ID"
+// @Param input body Update{{Name}}Request true "{{Name}} data"
+// @Success 200 {object} {{Name}}Response
+// @Router /{{name}}s/{id} [put]
+func (h *Handler) Update(c *gin.Context) {
+	ctx := c.Request.Context()
+	id := c.Param("id")
+
+	var req Update{{Name}}Request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := h.service.Update(ctx, id, Update{{Name}}Input{
+		// Map request to input
+	})
+	if err != nil {
+		h.logger.Error("update {{name}} failed", zap.Error(err), zap.String("id", id))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// Delete godoc
+// @Summary Delete {{name}}
+// @Tags {{name}}s
+// @Param id path string true "{{Name}} ID"
+// @Success 204
+// @Router /{{name}}s/{id} [delete]
+func (h *Handler) Delete(c *gin.Context) {
+	ctx := c.Request.Context()
+	id := c.Param("id")
+
+	if err := h.service.Delete(ctx, id); err != nil {
+		h.logger.Error("delete {{name}} failed", zap.Error(err), zap.String("id", id))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+// Request/Response types
+
+type Create{{Name}}Request struct {
+	// Define fields with binding tags
+	// Name string `json:"name" binding:"required"`
+}
+
+type Update{{Name}}Request struct {
+	// Define fields
+}
+
+type {{Name}}Response struct {
+	// Define response fields
+}

@@ -1,0 +1,98 @@
+// Template: Ent Database Schema
+// Replace: {{Name}}
+// Location: dbent/schema/{{name}}.go
+// After creating: run `task dbent:entg && task dbent:migrate`
+
+package schema
+
+import (
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
+
+	"dbent/schema/mixin"
+)
+
+// {{Name}} holds the schema definition for the {{Name}} entity.
+type {{Name}} struct {
+	ent.Schema
+}
+
+// Mixin adds common fields (id with prefix, created_at, updated_at).
+func ({{Name}}) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		mixin.BaseMixin{Prefix: "xxx"}, // Change prefix (3 chars)
+	}
+}
+
+// Fields of the {{Name}}.
+func ({{Name}}) Fields() []ent.Field {
+	return []ent.Field{
+		// Required fields
+		field.String("name").NotEmpty(),
+
+		// Optional fields
+		field.String("description").Optional().Nillable(),
+
+		// With default
+		field.Bool("is_active").Default(true),
+
+		// Enum
+		field.Enum("status").
+			Values("draft", "published", "archived").
+			Default("draft"),
+
+		// Unique
+		field.String("slug").Unique(),
+
+		// Sensitive (won't be printed in logs)
+		// field.String("api_key").Sensitive(),
+
+		// JSON field
+		// field.JSON("metadata", map[string]any{}).Optional(),
+
+		// Timestamps (if not using BaseMixin)
+		// field.Time("published_at").Optional().Nillable(),
+	}
+}
+
+// Edges of the {{Name}}.
+func ({{Name}}) Edges() []ent.Edge {
+	return []ent.Edge{
+		// Belongs to (many-to-one)
+		// edge.From("owner", User.Type).
+		// 	Ref("{{name}}s").
+		// 	Unique().
+		// 	Required(),
+
+		// Has many (one-to-many)
+		// edge.To("items", Item.Type),
+
+		// Many-to-many
+		// edge.To("tags", Tag.Type),
+	}
+}
+
+// Indexes of the {{Name}}.
+func ({{Name}}) Indexes() []ent.Index {
+	return []ent.Index{
+		// Single field index
+		index.Fields("status"),
+
+		// Composite index
+		index.Fields("status", "is_active"),
+
+		// Unique composite
+		// index.Fields("owner_id", "slug").Unique(),
+	}
+}
+
+// Annotations for GraphQL, etc.
+// func ({{Name}}) Annotations() []schema.Annotation {
+// 	return []schema.Annotation{
+// 		entgql.QueryField(),
+// 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+// 		entgql.RelayConnection(),
+// 	}
+// }

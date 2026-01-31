@@ -1,0 +1,82 @@
+// Template: Business Logic Service
+// Replace: {{Package}}, {{Name}}, {{name}}
+// Location: saas/pkg/{{package}}/
+
+package {{package}}
+
+import (
+	"context"
+	"fmt"
+
+	"dbent/gen/ent"
+)
+
+// Service handles {{name}} business logic.
+type Service struct {
+	client *ent.Client
+}
+
+// NewService creates a new {{Name}} service.
+func NewService(client *ent.Client) *Service {
+	return &Service{client: client}
+}
+
+// Get retrieves a {{name}} by ID.
+func (s *Service) Get(ctx context.Context, id string) (*ent.{{Name}}, error) {
+	result, err := s.client.{{Name}}.Get(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("get {{name}} %s: %w", id, err)
+	}
+	return result, nil
+}
+
+// List retrieves all {{name}}s with optional filters.
+func (s *Service) List(ctx context.Context) ([]*ent.{{Name}}, error) {
+	results, err := s.client.{{Name}}.Query().All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list {{name}}s: %w", err)
+	}
+	return results, nil
+}
+
+// Create creates a new {{name}}.
+func (s *Service) Create(ctx context.Context, input Create{{Name}}Input) (*ent.{{Name}}, error) {
+	result, err := s.client.{{Name}}.
+		Create().
+		// SetField(input.Field).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("create {{name}}: %w", err)
+	}
+	return result, nil
+}
+
+// Update updates an existing {{name}}.
+func (s *Service) Update(ctx context.Context, id string, input Update{{Name}}Input) (*ent.{{Name}}, error) {
+	result, err := s.client.{{Name}}.
+		UpdateOneID(id).
+		// SetField(input.Field).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("update {{name}} %s: %w", id, err)
+	}
+	return result, nil
+}
+
+// Delete removes a {{name}}.
+func (s *Service) Delete(ctx context.Context, id string) error {
+	if err := s.client.{{Name}}.DeleteOneID(id).Exec(ctx); err != nil {
+		return fmt.Errorf("delete {{name}} %s: %w", id, err)
+	}
+	return nil
+}
+
+// Input types
+
+type Create{{Name}}Input struct {
+	// Define fields
+}
+
+type Update{{Name}}Input struct {
+	// Define fields
+}
