@@ -36,6 +36,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	User() UserResolver
 }
 
 type DirectiveRoot struct {
@@ -44,7 +45,11 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		Ping func(childComplexity int) int
+		CreateUser     func(childComplexity int, input ent.CreateUserInput) int
+		DeleteUser     func(childComplexity int, id string) int
+		Ping           func(childComplexity int) int
+		UpdateUser     func(childComplexity int, id string, input ent.UpdateUserInput) int
+		UpdateUserName func(childComplexity int, id string, name string) int
 	}
 
 	PageInfo struct {
@@ -55,20 +60,26 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Node  func(childComplexity int, id string) int
-		Nodes func(childComplexity int, ids []string) int
-		Ping  func(childComplexity int) int
-		Users func(childComplexity int, after *entgql.Cursor[string], first *int, before *entgql.Cursor[string], last *int, orderBy []*ent.UserOrder, where *ent.UserWhereInput) int
+		GetUser     func(childComplexity int, id string) int
+		Node        func(childComplexity int, id string) int
+		Nodes       func(childComplexity int, ids []string) int
+		Ping        func(childComplexity int) int
+		User        func(childComplexity int, id string) int
+		UserByEmail func(childComplexity int, email string) int
+		Users       func(childComplexity int, after *entgql.Cursor[string], first *int, before *entgql.Cursor[string], last *int, orderBy []*ent.UserOrder, where *ent.UserWhereInput) int
 	}
 
 	User struct {
-		CreatedAt func(childComplexity int) int
-		Email     func(childComplexity int) int
-		FirstName func(childComplexity int) int
-		ID        func(childComplexity int) int
-		IsActive  func(childComplexity int) int
-		LastName  func(childComplexity int) int
-		UpdatedAt func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		DisplayName func(childComplexity int) int
+		Email       func(childComplexity int) int
+		FirstName   func(childComplexity int) int
+		FullName    func(childComplexity int) int
+		ID          func(childComplexity int) int
+		IsActive    func(childComplexity int) int
+		LastName    func(childComplexity int) int
+		Name        func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
 	}
 
 	UserConnection struct {
@@ -102,12 +113,60 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Mutation.createUser":
+		if e.complexity.Mutation.CreateUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createUser_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(ent.CreateUserInput)), true
+
+	case "Mutation.deleteUser":
+		if e.complexity.Mutation.DeleteUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteUser_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteUser(childComplexity, args["id"].(string)), true
+
 	case "Mutation.ping":
 		if e.complexity.Mutation.Ping == nil {
 			break
 		}
 
 		return e.complexity.Mutation.Ping(childComplexity), true
+
+	case "Mutation.updateUser":
+		if e.complexity.Mutation.UpdateUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateUser_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(string), args["input"].(ent.UpdateUserInput)), true
+
+	case "Mutation.updateUserName":
+		if e.complexity.Mutation.UpdateUserName == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateUserName_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateUserName(childComplexity, args["id"].(string), args["name"].(string)), true
 
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
@@ -136,6 +195,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
+
+	case "Query.getUser":
+		if e.complexity.Query.GetUser == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getUser_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetUser(childComplexity, args["id"].(string)), true
 
 	case "Query.node":
 		if e.complexity.Query.Node == nil {
@@ -168,6 +239,30 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.Ping(childComplexity), true
 
+	case "Query.user":
+		if e.complexity.Query.User == nil {
+			break
+		}
+
+		args, err := ec.field_Query_user_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.User(childComplexity, args["id"].(string)), true
+
+	case "Query.userByEmail":
+		if e.complexity.Query.UserByEmail == nil {
+			break
+		}
+
+		args, err := ec.field_Query_userByEmail_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.UserByEmail(childComplexity, args["email"].(string)), true
+
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
 			break
@@ -187,6 +282,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.User.CreatedAt(childComplexity), true
 
+	case "User.displayName":
+		if e.complexity.User.DisplayName == nil {
+			break
+		}
+
+		return e.complexity.User.DisplayName(childComplexity), true
+
 	case "User.email":
 		if e.complexity.User.Email == nil {
 			break
@@ -200,6 +302,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.User.FirstName(childComplexity), true
+
+	case "User.fullName":
+		if e.complexity.User.FullName == nil {
+			break
+		}
+
+		return e.complexity.User.FullName(childComplexity), true
 
 	case "User.id":
 		if e.complexity.User.ID == nil {
@@ -221,6 +330,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.User.LastName(childComplexity), true
+
+	case "User.name":
+		if e.complexity.User.Name == nil {
+			break
+		}
+
+		return e.complexity.User.Name(childComplexity), true
 
 	case "User.updatedAt":
 		if e.complexity.User.UpdatedAt == nil {
@@ -687,6 +803,66 @@ extend type Query {
 
 extend type Mutation {
   ping: String!
+}
+`, BuiltIn: false},
+	{Name: "../schemas/user_extended.graphql", Input: `# User type extensions with deprecation examples
+# This demonstrates GraphQL's native versioning approach via @deprecated
+
+extend type User {
+  """
+  Full name of the user (firstName + lastName).
+  This is the recommended field to use.
+  """
+  fullName: String @goField(forceResolver: true)
+
+  """
+  Legacy name field - concatenated first and last name.
+  """
+  name: String @deprecated(reason: "Use fullName instead. Will be removed in v2.0") @goField(forceResolver: true)
+
+  """
+  User's display name for UI purposes.
+  """
+  displayName: String @goField(forceResolver: true)
+}
+
+extend type Query {
+  """
+  Get a user by ID.
+  """
+  user(id: ID!): User
+
+  """
+  Get a user by email address.
+  """
+  userByEmail(email: String!): User @deprecated(reason: "Use users query with email filter instead")
+
+  """
+  Get user by ID - legacy endpoint.
+  """
+  getUser(id: ID!): User @deprecated(reason: "Use user(id) query instead. Will be removed in v2.0")
+}
+
+extend type Mutation {
+  """
+  Create a new user.
+  """
+  createUser(input: CreateUserInput!): User!
+
+  """
+  Update an existing user.
+  """
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+
+  """
+  Delete a user by ID.
+  """
+  deleteUser(id: ID!): Boolean!
+
+  """
+  Legacy: Update user name only.
+  """
+  updateUserName(id: ID!, name: String!): User @deprecated(reason: "Use updateUser mutation with firstName/lastName instead")
 }
 `, BuiltIn: false},
 }
