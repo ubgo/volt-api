@@ -1,0 +1,35 @@
+@go.Package { name = "config/gen/coreconfig" }
+module Core
+
+import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.12.1#/go.pkl"
+
+typealias Environment = "dev" | "stag" | "prod"
+
+class Setting {
+  /// Application name identifier
+  appName: String
+
+  /// Unique identifier for each microservice (msv)
+  appKey: String
+
+  /// Deployment environment (dev, stag, or prod)
+  environment: Environment
+
+  /// Root directory path for the application
+  rootdir: String
+
+  /// Temporary directory path for temporary files
+  tmpdir: String
+
+  /// Internal key for service-to-service communication
+  internalKey: String
+
+  /// Directory path for uploaded files
+  uploadsdir: String
+
+  /// Secret key for JWT token signing and verification
+  jwtsecret: String
+
+  /// Encryption key for data encryption/decryption operations
+  encryptionKey: String
+}

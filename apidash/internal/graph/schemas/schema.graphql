@@ -1,0 +1,16 @@
+directive @internal on FIELD_DEFINITION
+
+scalar Uint
+scalar Uint64
+scalar Map
+scalar JSON
+scalar JsonSlice
+scalar Password
+
+extend type Query {
+  ping: String!
+}
+
+extend type Mutation {
+  ping: String!
+}

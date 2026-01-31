@@ -1,0 +1,33 @@
+@go.Package { name = "config/gen/loggerconfig" }
+module Logger
+
+import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.12.1#/go.pkl"
+
+class Otel {
+  // add or remove otelgqlgen middleware in graphql and gingonic
+  enable: Boolean
+  isEndpoingUrl: Boolean
+  endpoint: String
+  apiKey: String
+  prefixBasic: Boolean
+  insecure: Boolean
+  enableMetrics: Boolean
+  enableLogs: Boolean
+  enableTraces: Boolean
+  serviceName: String
+  serviceVersion: String
+  enableHttp: Boolean
+  enableStdout: Boolean
+}
+
+class Setting {
+  enableStdout: Boolean
+  enableOtel: Boolean
+  enableFile: Boolean
+  localConfig: LocalConfig
+}
+
+class LocalConfig {
+  enabled: Boolean
+  logFile: String
+}

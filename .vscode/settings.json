@@ -1,0 +1,23 @@
+{
+  "gopls": {
+    "buildFlags": [
+      "-tags=wireinject"
+    ]
+  },
+  "search.exclude": {
+    "**/assets/lib": true,
+    "**/dist": true,
+    "**/vendor": true,
+    "gen": true,
+    "apidash/graph/generated": true,
+    "apidash/graph/model": true
+  },
+  "search.useIgnoreFiles": true,
+  "[gohtml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "files.associations": {
+    "*.tmpl": "gohtml"
+  },
+  "go.diagnostic.vulncheck": "Off"
+}

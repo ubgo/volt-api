@@ -1,0 +1,140 @@
+amends "../../schema/Root.pkl"
+import "../../schema/Core.pkl"
+
+server {
+  hostname = read("env:HOSTNAME")
+  port = read("env:PORT")
+}
+
+core {
+  appName = read("env:APP_NAME")
+  appKey = read("env:APP_KEY")
+  environment = read("env:CONFIG_ENV") as Core.Environment
+  rootdir = "/app"
+  tmpdir = rootdir + "/tmp"
+  uploadsdir = rootdir + "/uploads"
+  internalKey = read("env:INTERNAL_KEY")
+  jwtsecret = read("env:JWT_SECRET")
+  encryptionKey = read("env:ENCRYPTION_KEY")
+}
+
+nats {
+  status = read("env:NATS_STATUS").toBoolean()
+  appKey = read("env:NATS_APP_KEY")
+  url = read("env:NATS_URL")
+  credsFile = read?("env:NATS_CREDS_FILE")
+}
+
+database {
+  host = read("env:DB_HOST")
+  port = read("env:DB_PORT").toInt()
+  username = read("env:DB_USERNAME")
+  password = read("env:DB_PASSWORD")
+  dbName = read("env:DB_NAME")
+  sslmode = read("env:DB_SSLMODE")
+}
+
+graphql {
+  key = read("env:GRAPHQL_KEY")
+}
+
+otel {
+  enable = read("env:OTEL_ENABLE").toBoolean()
+  endpoint = read("env:OTEL_ENDPOINT")
+  apiKey = read("env:OTEL_API_KEY")
+  isEndpoingUrl = read("env:OTEL_IS_ENDPOINT_URL").toBoolean()
+  prefixBasic = read("env:OTEL_PREFIX_BASIC").toBoolean()
+  insecure = read("env:OTEL_INSECURE").toBoolean()
+  enableMetrics = read("env:OTEL_ENABLE_METRICS").toBoolean()
+  enableLogs = read("env:OTEL_ENABLE_LOGS").toBoolean()
+  enableTraces = read("env:OTEL_ENABLE_TRACES").toBoolean()
+  serviceName = read("env:OTEL_SERVICE_NAME")
+  serviceVersion = read("env:OTEL_SERVICE_VERSION")
+  enableHttp = read("env:OTEL_ENABLE_HTTP").toBoolean()
+  enableStdout = read("env:OTEL_ENABLE_STDOUT").toBoolean()
+}
+
+logger {
+  enableStdout = read("env:LOGGER_ENABLE_STDOUT").toBoolean()
+  enableOtel = read("env:LOGGER_ENABLE_OTEL").toBoolean()
+  enableFile = read("env:LOGGER_ENABLE_FILE").toBoolean()
+  localConfig {
+    enabled = read("env:LOGGER_LOCAL_ENABLED").toBoolean()
+    logFile = core.tmpdir + "/logs/app.log"
+  }
+}
+
+redis {
+  status = read("env:REDIS_STATUS").toBoolean()
+  url = read("env:REDIS_URL")
+  db = read("env:REDIS_DB").toInt()
+}
+
+app {
+  reactAppHost = read("env:REACT_APP_HOST")
+  stripe {
+    secretKey = read("env:STRIPE_SECRET_KEY")
+    webhookSecret = read("env:STRIPE_WEBHOOK_SECRET")
+    publishableKey = read("env:STRIPE_PUBLISHABLE_KEY")
+  }
+  apiKeys {
+    openai = read("env:OPENAI_API_KEY")
+  }
+  file {
+    s3 {
+      // https://dash.cloudflare.com/b17bef22db913de1a629bd5c46ffc39c/r2/api-tokens/success
+      bucketName = "thewildai"
+      region = "auto"
+      accessKeyId = read("env:S3_ACCESS_KEY_ID") // r2
+      secretAccessKey = read("env:S3_SECRET_ACCESS_KEY") // r2 
+      endpoint = read("env:S3_ENDPOINT") // r2 
+      forcePathStyle = false
+    }
+    upload {
+      maxFileSize = 52428800 // 50MB
+      blacklistedExtensions = new {
+        // Windows executables
+        "exe"
+        "bat"
+        "cmd"
+        "com"
+        "pif"
+        "scr"
+        "msi"
+        "dll"
+
+        // Unix/Linux executables
+        "bin"
+        "run"
+        "app"
+        "deb"
+        "rpm"
+        "pkg"
+        "dmg"
+      }
+      blacklistedMimeTypes = new {
+        "application/x-executable"
+        "application/x-msdownload"
+        "application/x-msdos-program"
+        "application/x-sharedlib"
+        "application/x-dosexec"
+      }
+      contentValidation {
+        checkExecutableHeaders = true
+        checkFileSize = true
+        checkEmptyFiles = true
+        checkSuspiciousContent = false
+        checkTextContent = false
+        validateMimeTypeMatch = false
+      }
+    }
+    download {
+      defaultExpirySeconds = 3600 // 1 hour
+      maxExpirySeconds = 86400 // 24 hours
+    }
+    rateLimit {
+      uploadPerMinute = 10
+      downloadPerMinute = 100
+    }
+  }
+}

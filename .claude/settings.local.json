@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm lint:*)",
+      "Bash(go run:*)",
+      "Bash(pkl --version:*)",
+      "Bash(pkl-gen-go:*)",
+      "Bash(/Volumes/D/khanakia/go/bin/pkl-gen-go:*)",
+      "Bash(go install:*)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)",
+      "Bash(sudo mv:*)",
+      "Bash(/Volumes/D/khanakia/go/bin/pkl:*)",
+      "Bash(PKL_EXEC=/Volumes/D/khanakia/go/bin/pkl /Volumes/D/khanakia/go/bin/pkl-gen-go:*)",
+      "Bash(go mod tidy:*)",
+      "Bash(go mod vendor:*)",
+      "Bash(timeout 10 go run:*)",
+      "Bash(go build:*)",
+      "Bash(task --list:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(go get:*)",
+      "Bash(go work vendor:*)",
+      "Bash(go test:*)"
+    ]
+  }
+}

@@ -1,0 +1,117 @@
+# https://taskfile.dev
+
+version: "3"
+
+dotenv: [".env"]
+
+includes:
+  docker:
+    taskfile: .docker/Taskfile.yml
+    dir: ./.docker
+  lace:
+    taskfile: ./lace/Taskfile.yml
+    dir: ./lace
+  config:
+    taskfile: ./config/Taskfile.yml
+    dir: ./config
+  scripts:
+    taskfile: ./scripts/Taskfile.yml
+    dir: ./scripts
+  dbent:
+    taskfile: ./dbent/Taskfile.yml
+    dir: ./dbent
+  saas:
+    taskfile: ./saas/Taskfile.yml
+    dir: ./saas
+  apidash:
+    taskfile: ./apidash/Taskfile.yml
+    dir: ./apidash
+
+  # CUSTOM
+
+  # END CUSTOM
+
+tasks:
+  workvendor:
+    desc: fix work vendor mismatch on server
+    cmds:
+      # loop each module in go.work and remove go.sum
+      - |
+        set -ex
+        for d in $(sed -n '/^use *(/,/^)/p' go.work | tail -n +2 | sed '$d' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'); do
+          echo ">> Removing go.sum for '$d'"
+          (cd "$d" && rm -f go.sum)
+        done
+      - go work vendor
+
+  gitgen:
+    desc: auto commit the git gen files
+    cmds:
+      - |
+        set -ex
+        # Find and add directories named 'gen' or 'generated'
+        find . -type d \( -name "gen" -o -name "generated" \) -not -path "*/vendor/*" -not -path "*/node_modules/*" | while read dir; do
+          git add "$dir"
+        done
+        # Find and add files ending with '_gen.go'
+        find . -type f -name "*_gen.go" -not -path "*/vendor/*" -not -path "*/node_modules/*" | while read file; do
+          git add "$file"
+        done
+      - 'git commit -m "gen: - ent, gqlgen, config"'
+
+  upgrade:
+    desc: update all go modules in go.work
+    cmds:
+      - |
+        set -ex
+        for d in $(sed -n '/^use *(/,/^)/p' go.work | tail -n +2 | sed '$d' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'); do
+          echo ">> Updating '$d'"
+          ls -ld "$d"
+          (cd "$d" && go get -u ./... && go mod tidy)
+        done
+      - task workvendor
+      - task config:gen
+      - task dbent:migrate
+
+  lint:
+    desc: gofmt + go vet on all modules
+    cmds:
+      - gofmt -w $(find . -name '*.go' -not -path './vendor/*' -not -path '*/gen/*' -not -path './.git/*')
+      - go vet ./..
+
+  gql:
+    desc: generate gqlgen code from schema files
+    cmds:
+      - task apidash:gql
+
+  gh:secrets:list:
+    desc: List all secrets in GitHub repository
+    # dir: ..
+    cmds:
+      - gh secret list
+
+  gh:secrets:set:
+    desc: "Set a single secret (usage: task gh:secrets:set KEY=MY_KEY VALUE=myvalue)"
+    # dir: ..
+    cmds:
+      - echo "{{.VALUE}}" | gh secret set "{{.KEY}}
+
+  gh:webhook:
+    desc: forward GitHub webhooks to local server via smee.io
+    vars:
+      SMEE_URL: '{{.SMEE_URL | default "https://smee.io/YOUR_CHANNEL_ID"}}'
+      PORT: '{{.PORT | default "2315"}}'
+    cmds:
+      - |
+        if [ "{{.SMEE_URL}}" = "https://smee.io/YOUR_CHANNEL_ID" ]; then
+          echo "ERROR: Set SMEE_URL in .env or pass it as: task github:webhook SMEE_URL=https://smee.io/xxx"
+          echo ""
+          echo "To get a smee URL:"
+          echo "  1. Go to https://smee.io/new"
+          echo "  2. Copy the webhook proxy URL"
+          echo "  3. Add SMEE_URL=https://smee.io/xxx to your .env file"
+          echo "  4. Set this URL in your GitHub App webhook settings"
+          exit 1
+        fi
+        echo "Forwarding webhooks from {{.SMEE_URL}} to http://127.0.0.1:{{.PORT}}/api/sa/webhooks/github"
+        smee --url "{{.SMEE_URL}}" --path /api/sa/webhooks/github --port {{.PORT}}

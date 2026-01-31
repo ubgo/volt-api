@@ -1,0 +1,24 @@
+# https://taskfile.dev
+
+version: "3"
+
+# dotenv: ['.env']
+
+tasks:
+  default:
+    cmds:
+      - task --list-all
+    silent: true
+
+  update:
+    desc: upgrade all the go modules
+    cmds:
+      - go get -u ./...
+      - go mod tidy
+
+  build:
+    desc: create build files saas, api, cli
+    cmds:
+      - go build -o ../tmp/bin/api ./cmd/api
+      - go build -o ../tmp/bin/cli ./cmd/cli
+      - go build -o ../tmp/bin/cron ./cmd/cron

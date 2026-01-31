@@ -1,0 +1,27 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list-all
+    silent: true
+
+  update:
+    desc: upgrade all the go modules
+    cmds:
+      - go get -u ./...
+      - go mod tidy
+      - rm go.sum
+
+  gen:
+    desc: generate pkl config
+    cmds:
+      - rm -rf ./gen/*
+      - pkl-gen-go ./pkl/schema/Root.pkl --base-path config
+
+  validate:
+    desc: validate the config
+    cmds:
+      - go run ./cmd/validate/main.go

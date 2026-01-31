@@ -1,0 +1,27 @@
+name: ${APP_NAMESPACE}
+
+services:
+  ## TODO: docker does not allows to make it dynamic from .env. Find solution to make it dynamic.
+  ## meta_type:hardcode
+  chatapi-dev:
+    container_name: ${APP_NAMESPACE}-${CONTAINER_NAME}-dev
+    env_file:
+      - ../.env
+    build:
+      context: .. # build from the root of the project one directory up
+      dockerfile: .docker/Dockerfile
+      # args:
+      #   - GITHUB_TOKEN=${GITHUB_TOKEN}
+    image: ${APP_NAMESPACE}/${CONTAINER_NAME}-dev
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: sh -c "source /root/.bashrc && mkdir -p tmp && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"
+    ports:
+      - ${PORT}:${PORT}
+    volumes:
+      - ..:/app
+    # 24h timeout allows cron jobs to complete during shutdown. Max job runtime: 12h.
+    # See docs/incidents/2025-01-18-cron-graceful-shutdown.md
+    stop_grace_period: 24h
+
+    # working_dir: /app/saas

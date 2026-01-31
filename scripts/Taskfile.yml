@@ -1,0 +1,37 @@
+# https://taskfile.dev
+
+version: "3"
+
+# dotenv: ['.env']
+
+tasks:
+  default:
+    cmds:
+      - task --list-all
+    silent: true
+
+  update:
+    desc: upgrade all the go modules
+    cmds:
+      - go get -u ./...
+      - go mod tidy
+
+  gh:secrets:update:
+    desc: update the secrets in the .github/.secrets file
+    cmds:
+      - go run . gh:secrets:update
+
+  gh:secrets:push:
+    desc: push the secrets to GitHub
+    cmds:
+      - go run . gh:secrets:push
+
+  gh:secrets:read:
+    desc: read the secrets from the .github/.secrets file
+    cmds:
+      - go run . gh:secrets:read
+
+  gh:secrets:clean:
+    desc: clean the orphan secrets from GitHub
+    cmds:
+      - go run . gh:secrets:clean

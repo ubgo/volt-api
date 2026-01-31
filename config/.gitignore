@@ -1,0 +1,8 @@
+pkl/env/*
+!pkl/env/.gitkeep
+!pkl/env/sample
+!pkl/env/prod
+
+# ignore binaries 
+# it considers as direcotry so vscord search not working
+# config

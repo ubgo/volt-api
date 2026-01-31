@@ -1,0 +1,11 @@
+@go.Package { name = "config/gen/natsconfig" }
+module Nats
+
+import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.12.1#/go.pkl"
+
+class Setting {
+  status: Boolean
+  appKey: String
+  url: String
+  credsFile: String?
+}

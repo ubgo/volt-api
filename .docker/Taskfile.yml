@@ -1,0 +1,213 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list-all
+    silent: true
+
+  down:
+    desc: Stop and remove the docker containers
+    cmds:
+      - docker compose down
+
+  up:
+    desc: Start docker containers (rebuild if needed)
+    cmds:
+      - docker compose up -d --build
+
+  up:force:
+    desc: Force rebuild and restart all containers
+    cmds:
+      - docker compose down
+      - docker compose up -d --build
+
+  rebuild:
+    desc: Rebuild all containers without cache
+    cmds:
+      - docker compose build --no-cache
+
+  start:
+    desc: Start containers after rebuild
+    cmds:
+      - docker compose up -d
+
+  stop:
+    desc: Stop containers without removing
+    cmds:
+      - docker compose stop
+
+  logs:
+    desc: Show logs from all containers
+    cmds:
+      - docker compose logs -f
+
+  ps:
+    desc: Show container status
+    cmds:
+      - docker compose ps
+
+  # ===========================================
+  # Production Build Tasks
+  # ===========================================
+
+  prod:build:
+    desc: Build production Docker image with version info
+    vars:
+      IMAGE_NAME: '{{.IMAGE_NAME | default "mygolangapp"}}'
+      IMAGE_TAG: '{{.IMAGE_TAG | default "latest"}}'
+      VERSION: '{{.VERSION | default "dev"}}'
+      COMMIT:
+        sh: git rev-parse --short HEAD 2>/dev/null || echo "unknown"
+      BRANCH:
+        sh: git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown"
+      BUILD_TIME:
+        sh: date -u +%Y-%m-%dT%H:%M:%SZ
+    cmds:
+      - |
+        docker build \
+          --build-arg VERSION={{.VERSION}} \
+          --build-arg COMMIT={{.COMMIT}} \
+          --build-arg BRANCH={{.BRANCH}} \
+          --build-arg BUILD_TIME={{.BUILD_TIME}} \
+          -t {{.IMAGE_NAME}}:{{.IMAGE_TAG}} \
+          -f Dockerfile.prod ..
+
+  prod:build:nocache:
+    desc: Build production Docker image without cache
+    vars:
+      IMAGE_NAME: '{{.IMAGE_NAME | default "mygolangapp"}}'
+      IMAGE_TAG: '{{.IMAGE_TAG | default "latest"}}'
+      VERSION: '{{.VERSION | default "dev"}}'
+      COMMIT:
+        sh: git rev-parse --short HEAD 2>/dev/null || echo "unknown"
+      BRANCH:
+        sh: git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown"
+      BUILD_TIME:
+        sh: date -u +%Y-%m-%dT%H:%M:%SZ
+    cmds:
+      - |
+        docker build --no-cache \
+          --build-arg VERSION={{.VERSION}} \
+          --build-arg COMMIT={{.COMMIT}} \
+          --build-arg BRANCH={{.BRANCH}} \
+          --build-arg BUILD_TIME={{.BUILD_TIME}} \
+          -t {{.IMAGE_NAME}}:{{.IMAGE_TAG}} \
+          -f Dockerfile.prod ..
+
+  prod:run:
+    # task prod:run KEYS_DIR=/path/to/keys LOGS_DIR=/path/to/logs
+    desc: Run production container (reads PORT from .env.prod, auto-removes old container)
+    vars:
+      IMAGE_NAME: '{{.IMAGE_NAME | default "mygolangapp"}}'
+      IMAGE_TAG: '{{.IMAGE_TAG | default "latest"}}'
+      PORT:
+        sh: grep -E '^PORT=' ../.env.prod | cut -d '=' -f2 | tr -d ' '
+      # Host directories for volume mounts (create if needed)
+      KEYS_DIR: '{{.KEYS_DIR | default "../_keys"}}'
+      LOGS_DIR: '{{.LOGS_DIR | default "/tmp/mygolangapp/logs"}}'
+    cmds:
+      # Stop and remove existing container if any
+      - docker stop {{.IMAGE_NAME}} 2>/dev/null || true
+      - docker rm {{.IMAGE_NAME}} 2>/dev/null || true
+      - mkdir -p {{.KEYS_DIR}} {{.LOGS_DIR}}
+      - |
+        docker run -d --name {{.IMAGE_NAME}} \
+          -p {{.PORT}}:{{.PORT}} \
+          --env-file ../.env.prod \
+          -v $(cd {{.KEYS_DIR}} && pwd):/app/_keys:ro \
+          -v $(cd {{.LOGS_DIR}} && pwd):/app/tmp/logs \
+          {{.IMAGE_NAME}}:{{.IMAGE_TAG}}
+
+  prod:stop:
+    desc: Stop and remove production container
+    vars:
+      IMAGE_NAME: '{{.IMAGE_NAME | default "mygolangapp"}}'
+    cmds:
+      - docker stop {{.IMAGE_NAME}} || true
+      - docker rm {{.IMAGE_NAME}} || true
+
+  prod:logs:
+    desc: Show logs from production container
+    vars:
+      IMAGE_NAME: '{{.IMAGE_NAME | default "mygolangapp"}}'
+    cmds:
+      - docker logs -f {{.IMAGE_NAME}}
+
+  prod:shell:
+    desc: Open shell in production container
+    vars:
+      IMAGE_NAME: '{{.IMAGE_NAME | default "mygolangapp"}}'
+    cmds:
+      - docker exec -it {{.IMAGE_NAME}} /bin/sh
+
+  prod:cli:
+    # Example: task prod:cli -- ping
+    desc: Run CLI command in production container
+    vars:
+      IMAGE_NAME: '{{.IMAGE_NAME | default "mygolangapp"}}'
+    cmds:
+      - docker exec {{.IMAGE_NAME}} /app/cli {{.CLI_ARGS}}
+
+  prod:status:
+    desc: Show supervisor status (api + cron processes)
+    vars:
+      IMAGE_NAME: '{{.IMAGE_NAME | default "mygolangapp"}}'
+    cmds:
+      - docker exec {{.IMAGE_NAME}} supervisorctl -c /etc/supervisor/conf.d/supervisord.conf status
+
+  prod:logs:api:
+    desc: Show API logs from supervisor
+    vars:
+      IMAGE_NAME: '{{.IMAGE_NAME | default "mygolangapp"}}'
+    cmds:
+      - docker exec {{.IMAGE_NAME}} tail -f /app/tmp/logs/api.out.log
+
+  prod:logs:cron:
+    desc: Show Cron logs from supervisor
+    vars:
+      IMAGE_NAME: '{{.IMAGE_NAME | default "mygolangapp"}}'
+    cmds:
+      - docker exec {{.IMAGE_NAME}} tail -f /app/tmp/logs/cron.out.log
+
+  # ===========================================
+  # GitHub Actions Local Testing (act)
+  # ===========================================
+
+  act:build-push:
+    desc: Test build-and-push job locally with act
+    dir: ..
+    cmds:
+      - act -j build-and-push --secret-file .github/.secrets --bind -a {{.ACTOR}}
+    vars:
+      ACTOR: '{{.ACTOR | default "mygolangappactor"}}'
+
+  act:deploy:
+    desc: Test deploy job locally with act (skips build)
+    dir: ..
+    cmds:
+      - act -j deploy --secret-file .github/.secrets --bind -a {{.ACTOR}}
+    vars:
+      ACTOR: '{{.ACTOR | default "mygolangappactor"}}'
+
+  act:full:
+    desc: Test full workflow (build + deploy) with act
+    dir: ..
+    cmds:
+      - act push --secret-file .github/.secrets --bind -a {{.ACTOR}}
+    vars:
+      ACTOR: '{{.ACTOR | default "mygolangappactor"}}'
+
+  act:dry:
+    desc: Dry run - show what act would do
+    dir: ..
+    cmds:
+      - act -n --secret-file .github/.secrets
+
+  act:list:
+    desc: List all available jobs in workflows
+    dir: ..
+    cmds:
+      - act -l

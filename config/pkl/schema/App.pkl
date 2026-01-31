@@ -1,0 +1,13 @@
+@go.Package { name = "config/gen/appconfig" }
+module AppConfig
+
+import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.12.1#/go.pkl"
+
+class ApiKeys {
+  openai: String
+}
+
+class Setting {
+  reactAppHost: String
+  apiKeys: ApiKeys
+}
