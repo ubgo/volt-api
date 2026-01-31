@@ -1,0 +1,59 @@
+# User type extensions with deprecation examples
+# This demonstrates GraphQL's native versioning approach via @deprecated
+
+extend type User {
+  """
+  Full name of the user (firstName + lastName).
+  This is the recommended field to use.
+  """
+  fullName: String @goField(forceResolver: true)
+
+  """
+  Legacy name field - concatenated first and last name.
+  """
+  name: String @deprecated(reason: "Use fullName instead. Will be removed in v2.0") @goField(forceResolver: true)
+
+  """
+  User's display name for UI purposes.
+  """
+  displayName: String @goField(forceResolver: true)
+}
+
+extend type Query {
+  """
+  Get a user by ID.
+  """
+  user(id: ID!): User
+
+  """
+  Get a user by email address.
+  """
+  userByEmail(email: String!): User @deprecated(reason: "Use users query with email filter instead")
+
+  """
+  Get user by ID - legacy endpoint.
+  """
+  getUser(id: ID!): User @deprecated(reason: "Use user(id) query instead. Will be removed in v2.0")
+}
+
+extend type Mutation {
+  """
+  Create a new user.
+  """
+  createUser(input: CreateUserInput!): User!
+
+  """
+  Update an existing user.
+  """
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+
+  """
+  Delete a user by ID.
+  """
+  deleteUser(id: ID!): Boolean!
+
+  """
+  Legacy: Update user name only.
+  """
+  updateUserName(id: ID!, name: String!): User @deprecated(reason: "Use updateUser mutation with firstName/lastName instead")
+}
