@@ -20,7 +20,7 @@ import (
 )
 
 func Boot(routerGroup *gin.RouterGroup, gqlResolver *apidashtypes.Resolver) {
-	prefix := "/sa"
+	prefix := "/dash"
 	rg := routerGroup.Group(prefix)
 
 	c := generated.Config{Resolvers: (*resolver.Resolver)(gqlResolver)}
@@ -39,15 +39,15 @@ func Boot(routerGroup *gin.RouterGroup, gqlResolver *apidashtypes.Resolver) {
 	gserver.AddTransport(transport.GET{})
 	gserver.AddTransport(transport.POST{})
 
-	gqlgin.New(gqlgin.Config{
-		RouterGroup:      rg,
-		GqlServer:        gserver,
-		PlaygroundKey:    gqlResolver.RootConfig.Graphql.Key,
-		RouteGroupPrefix: prefix,
-		Middleware: []gin.HandlerFunc{
+	gqlgin.New(
+		gqlgin.WithRouterGroup(rg),
+		gqlgin.WithGqlServer(gserver),
+		gqlgin.WithPlaygroundKey(gqlResolver.RootConfig.Graphql.Key),
+		gqlgin.WithRouteGroupPrefix(rg.BasePath()),
+		gqlgin.WithMiddleware(
 			gqlgenfn.GinContextToContextMiddleware(),
-		},
-	})
+		),
+	)
 
 	handlers.New(handlers.Config{
 		RouterGroup: rg,

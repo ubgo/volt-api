@@ -74,12 +74,7 @@ autobind:
   - lace/enttypes
   - lace/jsonslice
   - dbent/gen/ent
-  - saas/pkg/tools
-  - saas/pkg/tools/toolstypes
-  - saas/pkg/tools/crawlextract/crawlextracttypes
   - saas/pkg/constants
-  # - saas/pkg/handler/handlertypes
-  # - saas/pkg/auth/authfn.RegisterInput
 
 # This section declares type mapping between the GraphQL and go type systems
 #

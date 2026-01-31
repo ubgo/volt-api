@@ -12,44 +12,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Gql handles GraphQL endpoint registration and configuration.
 type Gql struct {
-	Config
+	config *Config
 }
 
-const PlaygroundKey = "pkey"
-
-type Config struct {
-	RouterGroup      *gin.RouterGroup
-	GqlServer        *handler.Server
-	Middleware       []gin.HandlerFunc
-	RouteGroupPrefix string
-	PlaygroundKey    string
-
-	// DisablePlayground controls whether the GraphQL playground routes are registered.
-	// When set to true, the /gql (playground UI) and /query_playground (introspection endpoint) routes
-	// will not be registered. This is useful for external API distributions (e.g., partner APIs)
-	// where you want to hide the playground from end users who only have API keys and shouldn't
-	// know about the playground key mechanism. Defaults to false (playground enabled).
-	DisablePlayground bool
-
-	// EnableDefaultIntrospection controls whether introspection is enabled by default on the /query route.
-	// When set to true, introspection will be automatically enabled on the /query endpoint, allowing
-	// external API consumers (e.g., partners with API keys) to introspect the schema without needing
-	// to use the /query_playground endpoint or know about the playground key. The introspection will
-	// be protected by whatever middleware is configured in the Middleware chain (e.g., API key middleware).
-	// This is particularly useful for external API distributions where you want introspection available
-	// but protected by standard authentication mechanisms rather than the playground key.
-	// Defaults to false (introspection disabled on /query, only available via /query_playground with pkey).
-	EnableDefaultIntrospection bool
-}
-
-// Defining the Graphql handler
 // instrospectionMiddleware enables introspection when the playground key is valid.
-// This is used for the /query_playground route which requires the pkey query parameter.
-func (cls *Gql) instrospectionMiddleware(gserver *handler.Server) gin.HandlerFunc {
+// This is used for the query_playground route which requires the pkey query parameter.
+func (g *Gql) instrospectionMiddleware(gserver *handler.Server) gin.HandlerFunc {
 	// https://github.com/99designs/gqlgen/blob/master/docs/content/reference/introspection.md
 	gserver.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
-		// isAllowedPlayground := gqlgenfn.IsPlaygroundAllowedOperation(cls.PlaygroundKey, ctx)
 		isAllowedPlayground := gqlgenfn.IsPlaygroundGqlCtx(ctx)
 		if isAllowedPlayground {
 			graphql.GetOperationContext(ctx).DisableIntrospection = false
@@ -63,10 +35,10 @@ func (cls *Gql) instrospectionMiddleware(gserver *handler.Server) gin.HandlerFun
 	}
 }
 
-// defaultIntrospectionMiddleware enables introspection by default on the /query route.
+// defaultIntrospectionMiddleware enables introspection by default on the query route.
 // This is used when EnableDefaultIntrospection is true, allowing introspection to be
 // protected by standard middleware (e.g., API key middleware) rather than the playground key.
-func (cls *Gql) defaultIntrospectionMiddleware(gserver *handler.Server) gin.HandlerFunc {
+func (g *Gql) defaultIntrospectionMiddleware(gserver *handler.Server) gin.HandlerFunc {
 	// https://github.com/99designs/gqlgen/blob/master/docs/content/reference/introspection.md
 	gserver.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 		// Enable introspection by default when this middleware is applied
@@ -79,76 +51,85 @@ func (cls *Gql) defaultIntrospectionMiddleware(gserver *handler.Server) gin.Hand
 	}
 }
 
-func (cls *Gql) serverHttpHandler(gserver *handler.Server) gin.HandlerFunc {
+func (g *Gql) serverHttpHandler(gserver *handler.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		gserver.ServeHTTP(c.Writer, c.Request)
 	}
 }
 
-// Defining the Playground handler
-func playgroundHandler(routeGroupPrefix string) gin.HandlerFunc {
-	h := playground.Handler("GraphQL", fmt.Sprintf("%s/query_playground", routeGroupPrefix))
+// playgroundHandler returns a handler for the GraphQL playground UI.
+func playgroundHandler(routeGroupPrefix, queryPlaygroundRoute string) gin.HandlerFunc {
+	h := playground.Handler("GraphQL", fmt.Sprintf("%s%s", routeGroupPrefix, queryPlaygroundRoute))
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
 	}
 }
 
-func New(config Config) Gql {
-	gqlgin := Gql{
-		Config: config,
+// New creates a new Gql instance with the provided options.
+func New(opts ...Option) *Gql {
+	cfg := &Config{
+		queryRoute:           DefaultQueryRoute,
+		queryPlaygroundRoute: DefaultQueryPlaygroundRoute,
+		playgroundRoute:      DefaultPlaygroundRoute,
+		playgroundKey:        DefaultPlaygroundKey,
 	}
 
-	routeGroupPrefix := ""
-	if len(config.RouteGroupPrefix) > 0 {
-		routeGroupPrefix = config.RouteGroupPrefix
+	for _, opt := range opts {
+		opt(cfg)
 	}
 
-	rg := config.RouterGroup
+	g := &Gql{
+		config: cfg,
+	}
+
+	routeGroupPrefix := cfg.routeGroupPrefix
+
+	rg := cfg.routerGroup
 
 	// disable the introspection by default
 	// This will be overridden by introspection middlewares if they are enabled
-	config.GqlServer.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
+	cfg.gqlServer.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 		graphql.GetOperationContext(ctx).DisableIntrospection = true
 		return next(ctx)
 	})
 
 	// middleware orders is very important so do not change it
 	// for making actual request and can have userAuth and other Middleware in between
-	config.Middleware = append(config.Middleware, gqlgin.serverHttpHandler(config.GqlServer))
+	middleware := append(cfg.middleware, g.serverHttpHandler(cfg.gqlServer))
 
-	// Build handlers for the /query route
+	// Build handlers for the query route
 	queryHandlers := []gin.HandlerFunc{
 		gqlgenfn.GinContextToContextMiddleware(),
 	}
 
 	// If EnableDefaultIntrospection is true, add the introspection middleware
-	// This allows introspection on /query, protected by the configured middleware chain
-	if config.EnableDefaultIntrospection {
-		queryHandlers = append(queryHandlers, gqlgin.defaultIntrospectionMiddleware(config.GqlServer))
+	// This allows introspection on query route, protected by the configured middleware chain
+	if cfg.enableDefaultIntrospection {
+		queryHandlers = append(queryHandlers, g.defaultIntrospectionMiddleware(cfg.gqlServer))
 	}
 
 	// Append user-defined middleware (e.g., API key auth, user auth, etc.)
-	queryHandlers = append(queryHandlers, config.Middleware...)
+	queryHandlers = append(queryHandlers, middleware...)
 
-	rg.POST("/query", queryHandlers...)
+	rg.POST(cfg.queryRoute, queryHandlers...)
 
 	// Register playground routes only if DisablePlayground is false
-	if !config.DisablePlayground {
+	if !cfg.disablePlayground {
 		// only used for introspection, playground and protected by the ?pkey=xxx
-		// also we do not use the /query for playground otherwise it unecessary runs the  PlaygroundAccessMiddleware
-		// so we want to hyper optimize the speed and for /query we should not run this below middlewares to speed up
+		// also we do not use the query route for playground otherwise it unnecessarily runs the PlaygroundAccessMiddleware
+		// so we want to hyper optimize the speed and for query route we should not run this below middlewares to speed up
 		introspectionHandlers := []gin.HandlerFunc{
 			gqlgenfn.GinContextToContextMiddleware(),
-			gqlgenfn.PlaygroundAccessMiddleware(config.PlaygroundKey),
-			gqlgin.instrospectionMiddleware(config.GqlServer),
+			gqlgenfn.PlaygroundAccessMiddleware(cfg.playgroundKey),
+			g.instrospectionMiddleware(cfg.gqlServer),
 		}
-		introspectionHandlers = append(introspectionHandlers, config.Middleware...)
+		introspectionHandlers = append(introspectionHandlers, middleware...)
 
-		rg.POST("/query_playground", introspectionHandlers...)
+		rg.POST(cfg.queryPlaygroundRoute, introspectionHandlers...)
 
-		rg.GET("/gql", gqlgenfn.PlaygroundAccessMiddleware(config.PlaygroundKey), playgroundHandler(routeGroupPrefix))
+		rg.GET(cfg.playgroundRoute, gqlgenfn.PlaygroundAccessMiddleware(cfg.playgroundKey), playgroundHandler(routeGroupPrefix, cfg.queryPlaygroundRoute))
 	}
 
-	return gqlgin
+	return g
 }
