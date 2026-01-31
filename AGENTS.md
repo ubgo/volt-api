@@ -34,11 +34,11 @@ Project-specific documentation maintained by Claude Code sessions.
 Practical "How-to" guides for humans and agents executing specific tasks.
 
 * **[Project Structure (STRUCTURE.md)](docs/STRUCTURE.md)**: Detailed breakdown of folders and modules.
-* **[Dev Workflow (WORKFLOW_GUIDE.md)](docs/WORKFLOW_GUIDE.md)**: How to develop features, branch strategies, and PRs.
-* **[API Guide (API_GQL_GUIDE.md)](docs/API_GQL_GUIDE.md)**: Working with GraphQL, Resolvers, and Authentication.
-* **[Deployment (DEPLOY_GUIDE.md)](docs/DEPLOY_GUIDE.md)**: Deploying to production.
-* **[Docker & Infra (DOCKER_GUIDE.md)](docs/DOCKER_GUIDE.md)**: Managing local infrastructure (Postgres, NATS).
-* **[General Dev Guide (DEV_GUIDE.md)](docs/DEV_GUIDE.md)**: Setup, troubleshooting, and tips.
+* **[Dev Workflow (WORKFLOW\_GUIDE.md)](docs/WORKFLOW_GUIDE.md)**: How to develop features, branch strategies, and PRs.
+* **[API Guide (API\_GQL\_GUIDE.md)](docs/API_GQL_GUIDE.md)**: Working with GraphQL, Resolvers, and Authentication.
+* **[Deployment (DEPLOY\_GUIDE.md)](docs/DEPLOY_GUIDE.md)**: Deploying to production.
+* **[Docker & Infra (DOCKER\_GUIDE.md)](docs/DOCKER_GUIDE.md)**: Managing local infrastructure (Postgres, NATS).
+* **[General Dev Guide (DEV\_GUIDE.md)](docs/DEV_GUIDE.md)**: Setup, troubleshooting, and tips.
 
 ***
 
@@ -62,22 +62,12 @@ When instructing the user, prefer these `task` commands over raw `go` commands:
 * `task workvendor` -> Sync workspace dependencies.
 * `task config` -> Regenerate Pkl config bindings.
 * `task dbent:entg` -> Regenerate Ent ORM code.
-* `task migrate` -> Run database migrations after schema changes.
+* `task dbent:migrate` -> Run database migrations after schema changes.
 * `task gql` -> Regenerate GraphQL resolvers.
 * `task gitgen` -> Stage all generated files for commit.
 * `task dev` -> Start local Docker infrastructure.
 * `task lint` -> Run linters.
 * `task test` -> Run tests.
-
-## CLI Commands (Quick Copy)
-
-```bash
-# Test CLI is working
-go run ./saas/cmd/cli ping
-
-# Run migrations
-go run ./saas/cmd/cli migrate
-```
 
 See [CLI Reference](.claude/docs/cli/) for full documentation.
 
