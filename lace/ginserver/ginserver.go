@@ -99,6 +99,11 @@ func New(opts ...Option) Server {
 
 func MiddlewareInternalApiGuard(internalKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if len(internalKey) == 0 {
+			c.AbortWithStatusJSON(401, gin.H{"error": "unauthorized key"})
+			return
+		}
+
 		internalKeyFromRequest, err := gqlgenfn.KeyFromRequest(c, "x-internal-key")
 		if err != nil {
 			c.AbortWithStatusJSON(401, gin.H{"error": "unauthorized, no internal key provided"})

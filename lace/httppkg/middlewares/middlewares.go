@@ -6,7 +6,7 @@ import (
 	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
-func OtelMiddleware(enable bool, serviceName string) gin.HandlerFunc {
+func OtelMiddleware(enable bool, serviceName string, fns func(ctx *gin.Context) []oteltrace.SpanStartOption) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !enable {
 			c.Next()
@@ -14,6 +14,10 @@ func OtelMiddleware(enable bool, serviceName string) gin.HandlerFunc {
 		}
 
 		var spanStartOptions []oteltrace.SpanStartOption
+
+		if fns != nil {
+			spanStartOptions = append(spanStartOptions, fns(c)...)
+		}
 
 		// @doc: inject custom attributes to the span
 		// workspaceID, _ := GetWorkspaceID(c.Request.Context())

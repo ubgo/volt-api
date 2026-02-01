@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"core/pkg/plugin"
 	"fmt"
 	"time"
 
@@ -22,7 +23,7 @@ import (
 const tracerName = "cron"
 
 func main() {
-	plugin := app.New(app.WithDisableNats(true))
+	customApp := app.New(app.WithCoreOptions(plugin.WithDisableNats(true)))
 
 	scheduler, err := gocron.NewScheduler(
 		gocron.WithLogger(gocronlogger.New(gozap.GetLogger())),
@@ -36,7 +37,7 @@ func main() {
 	}
 
 	// Register all jobs
-	registerExampleJob(scheduler, plugin)
+	registerExampleJob(scheduler, customApp)
 
 	// Start the scheduler
 	scheduler.Start()
@@ -66,7 +67,7 @@ func main() {
 	).Listen()
 }
 
-func registerExampleJob(scheduler gocron.Scheduler, plugin *app.Plugin) {
+func registerExampleJob(scheduler gocron.Scheduler, customApp *app.CustomApp) {
 	_, err := scheduler.NewJob(
 		gocron.DurationJob(5*time.Minute),
 		gocron.NewTask(func() {
@@ -81,7 +82,7 @@ func registerExampleJob(scheduler gocron.Scheduler, plugin *app.Plugin) {
 			span.AddEvent("job_started")
 
 			// Add your cron job logic here
-			_ = plugin.EntDB.Client()
+			_ = customApp.EntDB.Client()
 
 			span.SetStatus(codes.Ok, "success")
 			span.AddEvent("job_completed")

@@ -7,16 +7,12 @@ import (
 	"apidash/internal/handlers"
 	"apidash/pkg/apidashtypes"
 	"config/gen/rootconfig"
-	"fmt"
 	"lace/gqlgenfn"
 	"lace/gqlgin"
-	"reflect"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/gin-gonic/gin"
-	"github.com/vektah/gqlparser/v2/ast"
 )
 
 func Boot(routerGroup *gin.RouterGroup, gqlResolver *apidashtypes.Resolver) {
@@ -27,9 +23,9 @@ func Boot(routerGroup *gin.RouterGroup, gqlResolver *apidashtypes.Resolver) {
 	setDirectives(&c, gqlResolver.RootConfig)
 
 	schm := generated.NewExecutableSchema(c)
-	// extendSchema(&schm)
 	gserver := handler.New(schm)
 
+	// @tags('dnd')
 	// Add the otelgqlgen middleware to add OpenTelemetry tracing this will track graphql queries and mutations
 	// if resolver.RootConfig.Otel.Enable {
 	// 	gserver.Use(otelgqlgen.Middleware())
@@ -54,51 +50,8 @@ func Boot(routerGroup *gin.RouterGroup, gqlResolver *apidashtypes.Resolver) {
 		EntClient:   gqlResolver.Plugin.EntDB.Client(),
 		RootConfig:  gqlResolver.Plugin.RootConfig,
 	})
-
-	fmt.Println("boot apidash")
 }
 
 func setDirectives(c *generated.Config, appcofnig *rootconfig.RootConfig) {
 	c.Directives.Internal = directives.InternalApiDirective(appcofnig.Core.InternalKey)
-}
-
-// Custom schema extension
-func extendSchema(schema *graphql.ExecutableSchema) {
-	// fields, err := fetchDynamicFields()
-	// if err != nil {
-	// 	log.Fatalf("failed to fetch dynamic fields: %v", err)
-	// }
-
-	aa := *schema
-	// fmt.Println(aa.Schema().Query.Fields)
-	for _, field := range aa.Schema().Types {
-		if field.Name == "Student" {
-
-			fmt.Println(field.Name, reflect.TypeOf(field))
-
-			field.Fields = append(field.Fields, &ast.FieldDefinition{
-				Name: "class",
-				Type: ast.NamedType("String", nil),
-			})
-
-		}
-
-	}
-	// // Add dynamic fields to the ExampleType
-	// for _, field := range fields {
-	// 	fieldName := field.FieldName
-	// 	fieldType := field.FieldType
-
-	// 	// Add field to introspection
-	// 	schema.Query().Fields()["example"].Type.(*graphql.Object).AddFieldConfig(fieldName, &graphql.Field{
-	// 		Type: graphql.String, // Adjust the type based on fieldType
-	// 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-	// 			example := p.Source.(*ExampleType)
-	// 			if value, ok := example.DynamicFields[fieldName]; ok {
-	// 				return value, nil
-	// 			}
-	// 			return nil, fmt.Errorf("field %s not found", fieldName)
-	// 		},
-	// 	})
-	// }
 }

@@ -91,13 +91,20 @@ import (
 )
 ```
 
+## Tags
+
+We use some tag system in comments like `@tag('dnd', 'skip')` so each tag has special meaning
+
+* `dnd` - means never remove the commented out code block
+
 ## Critical Rules
 
-- **Never** modify generated files directly
-- **Never** create helpers in `resolver/` directories (gqlgen will overwrite)
-- **Never** use `graphql.Upload` for file uploads (use base64 instead)
-- **Always** run migrations after schema changes
-- **Always** pass `context.Context` as first param to I/O functions
+* **Never** modify generated files directly
+* **Never** create helpers in `resolver/` directories (gqlgen will overwrite)
+* **Never** use `graphql.Upload` for file uploads (use base64 instead)
+* **Always** run migrations after schema changes
+* **Always** pass `context.Context` as first param to I/O functions
+* **Never** modify any file or create any file in these go modules directories `core`, `lace`, `scripts`
 
 ## Detailed Documentation
 
@@ -107,3 +114,9 @@ import (
 | Backend packages | `.claude/docs/backend/` |
 | CLI reference | `.claude/docs/cli/` |
 | Templates | `.claude/templates/` |
+
+## Ignore Files and Folders
+
+Never include these files and folders in your agentic flow or decisions or grep anything at all.
+
+* docs/framework

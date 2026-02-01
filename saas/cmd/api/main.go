@@ -6,14 +6,16 @@ import (
 	"config"
 	"config/gen/coreconfig/environment"
 	"context"
+	"core/pkg/coreapi"
+	"core/pkg/plugin"
 	"lace/ginserver"
 	"lace/gozap"
+	"lace/httppkg/middlewares"
 	"lace/shutdown"
 	"lace/util"
 	"saas/cmd/api/natshandlers"
 	"saas/pkg/app"
 	"saas/pkg/apphandlers"
-	"saas/pkg/httppkg/middlewares"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -22,15 +24,15 @@ import (
 func main() {
 	appcfg := config.Get()
 
-	plugins := app.New(app.WithAfterNatsInitiated(func(plugins *app.Plugin) {
+	plugins := app.New(app.WithCoreOptions(plugin.WithAfterNatsInitiated(func(plugins *plugin.Plugin) {
 		natshandlers.New(natshandlers.Config{
 			Natso: *plugins.Natso,
 		})
-	}))
+	})))
 
 	handlerFuncs := []gin.HandlerFunc{
 		util.CORSMiddleware(),
-		middlewares.OtelMiddleware(appcfg.Otel.Enable, appcfg.Core.AppKey),
+		middlewares.OtelMiddleware(appcfg.Otel.Enable, appcfg.Core.AppKey, nil),
 	}
 
 	serverServer := ginserver.New(
@@ -43,8 +45,15 @@ func main() {
 	apiGroup := serverServer.Router.Group("api")
 
 	apidash.Boot(apiGroup, &apidashtypes.Resolver{
-		Plugin:     app.GetPlugins(),
+		Plugin:     plugins,
 		RootConfig: appcfg,
+	})
+
+	coreapi.New(coreapi.Config{
+		HttpEngine:     serverServer.Router,
+		ApiRouterGroup: apiGroup,
+		EntClient:      plugins.EntDB.Client(),
+		CoreConfig:     &appcfg.Core,
 	})
 
 	apphandlers.New(apphandlers.Config{
@@ -59,7 +68,7 @@ func main() {
 		shutdown.WithMsgShutdownCompleted("API stopped."),
 		shutdown.WithMsgShutdownFailed("Error shutting down API"),
 		shutdown.WithLogger(gozap.GetLogger()),
-		shutdown.WithShutdownHandler(app.ShutdownHandler, func(ctx context.Context) error {
+		shutdown.WithShutdownHandler(plugin.ShutdownHandler, func(ctx context.Context) error {
 			// Step 1: Stop receiving HTTP traffic
 			if err := serverServer.Shutdown(ctx); err != nil {
 				gozap.FromCtx(ctx).Error("HTTP server shutdown failed", zap.Error(err))

@@ -20,6 +20,9 @@ includes:
   dbent:
     taskfile: ./dbent/Taskfile.yml
     dir: ./dbent
+  core:
+    taskfile: ./core/Taskfile.yml
+    dir: ./core
   saas:
     taskfile: ./saas/Taskfile.yml
     dir: ./saas

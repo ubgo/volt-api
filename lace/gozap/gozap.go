@@ -2,7 +2,6 @@ package gozap
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"go.opentelemetry.io/otel/sdk/log"
@@ -35,8 +34,8 @@ func FromCtx(ctx context.Context) *zap.Logger {
 		return GetLogger()
 	}
 
-	fmt.Println("trace_id", spanContext.TraceID().String())
-	fmt.Println("span_id", spanContext.SpanID().String())
+	// fmt.Println("trace_id", spanContext.TraceID().String())
+	// fmt.Println("span_id", spanContext.SpanID().String())
 
 	fields := []zap.Field{
 		zap.String("trace_id", spanContext.TraceID().String()),

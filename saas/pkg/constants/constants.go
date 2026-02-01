@@ -1,5 +1,5 @@
 package constants
 
 const (
-	EventNatsInitiated = "nats_initiated"
+	DummyKey = "dummy"
 )

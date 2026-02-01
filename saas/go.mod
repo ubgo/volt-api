@@ -6,6 +6,7 @@ replace (
 	apidash => ../apidash
 	config => ../config
 	lace => ../lace
+	core => ../core
 )
 
 require (
@@ -29,6 +30,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.39.0
 	go.uber.org/zap v1.27.1
 	lace v0.0.0-00010101000000-000000000000
+	core v0.0.0-00010101000000-000000000000
 )
 
 require (

@@ -6,6 +6,6 @@ import (
 )
 
 type Resolver struct {
-	Plugin     *app.Plugin
+	Plugin     *app.CustomApp
 	RootConfig *rootconfig.RootConfig
 }

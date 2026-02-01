@@ -1,28 +1,24 @@
 package app
 
-type apppkgconfig struct {
-	// for cron jobs we dont need to connect to nats
-	DisableNats bool
+import "core/pkg/plugin"
 
-	AfterNatsInitiated func(plugins *Plugin)
+type config struct {
+	// for cron jobs we dont need to connect to nats
+	coreOptions []plugin.AppPkgOption
+
+	// AfterNatsInitiated func(plugins *plugin.Plugin)
 }
 
-func (c *apppkgconfig) options(opts ...AppPkgOption) {
+func (c *config) options(opts ...Option) {
 	for _, opt := range opts {
 		opt(c)
 	}
 }
 
-type AppPkgOption func(*apppkgconfig)
+type Option func(*config)
 
-func WithDisableNats(disableNats bool) AppPkgOption {
-	return func(c *apppkgconfig) {
-		c.DisableNats = disableNats
-	}
-}
-
-func WithAfterNatsInitiated(callback func(plugins *Plugin)) AppPkgOption {
-	return func(c *apppkgconfig) {
-		c.AfterNatsInitiated = callback
+func WithCoreOptions(options ...plugin.AppPkgOption) Option {
+	return func(c *config) {
+		c.coreOptions = append(c.coreOptions, options...)
 	}
 }
