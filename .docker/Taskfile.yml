@@ -174,40 +174,63 @@ tasks:
 
   # ===========================================
   # GitHub Actions Local Testing (act)
+  # Usage: task act:build-push ENV=prod
   # ===========================================
 
   act:build-push:
-    desc: Test build-and-push job locally with act
+    desc: "Test build-and-push job locally with act (ENV=prod|stag|dev)"
     dir: ..
     cmds:
-      - act -j build-and-push --secret-file .github/.secrets --bind -a {{.ACTOR}}
+      - act -j build-and-push -W .github/workflows/deploy.{{.ENV}}.yml --secret-file .github/.secrets.{{.ENV}} --bind -a {{.ACTOR}}
     vars:
-      ACTOR: '{{.ACTOR | default "mygolangappactor"}}'
+      ENV: '{{.ENV | default "prod"}}'
+      ACTOR: '{{.ACTOR | default "khanakia"}}'
 
   act:deploy:
-    desc: Test deploy job locally with act (skips build)
+    desc: "Test deploy job locally with act (ENV=prod|stag|dev)"
     dir: ..
     cmds:
-      - act -j deploy --secret-file .github/.secrets --bind -a {{.ACTOR}}
+      - act -j deploy -W .github/workflows/deploy.{{.ENV}}.yml --secret-file .github/.secrets.{{.ENV}} --bind -a {{.ACTOR}}
     vars:
-      ACTOR: '{{.ACTOR | default "mygolangappactor"}}'
+      ENV: '{{.ENV | default "prod"}}'
+      ACTOR: '{{.ACTOR | default "khanakia"}}'
 
   act:full:
-    desc: Test full workflow (build + deploy) with act
+    desc: "Test full workflow (build + deploy) with act (ENV=prod|stag|dev)"
     dir: ..
     cmds:
-      - act push --secret-file .github/.secrets --bind -a {{.ACTOR}}
+      - act push -W .github/workflows/deploy.{{.ENV}}.yml --secret-file .github/.secrets.{{.ENV}} --bind -a {{.ACTOR}}
     vars:
-      ACTOR: '{{.ACTOR | default "mygolangappactor"}}'
+      ENV: '{{.ENV | default "prod"}}'
+      ACTOR: '{{.ACTOR | default "khanakia"}}'
 
   act:dry:
-    desc: Dry run - show what act would do
+    desc: "Dry run - show what act would do (ENV=prod|stag|dev)"
     dir: ..
     cmds:
-      - act -n --secret-file .github/.secrets
+      - act -n -W .github/workflows/deploy.{{.ENV}}.yml --secret-file .github/.secrets.{{.ENV}}
+    vars:
+      ENV: '{{.ENV | default "prod"}}'
 
   act:list:
-    desc: List all available jobs in workflows
+    desc: List all available jobs in all workflows
     dir: ..
     cmds:
       - act -l
+
+  act:list:env:
+    desc: "List jobs in specific workflow (ENV=prod|stag|dev)"
+    dir: ..
+    cmds:
+      - act -l -W .github/workflows/deploy.{{.ENV}}.yml
+    vars:
+      ENV: '{{.ENV | default "prod"}}'
+
+  act:deploy:only:
+    desc: "Test deploy job ONLY - skips build dependency (ENV=prod|stag|dev)"
+    dir: ..
+    cmds:
+      - act -j deploy -W .github/workflows/deploy.{{.ENV}}.yml --secret-file .github/.secrets.{{.ENV}} --bind -a {{.ACTOR}} --no-skip-checkout
+    vars:
+      ENV: '{{.ENV | default "prod"}}'
+      ACTOR: '{{.ACTOR | default "khanakia"}}'

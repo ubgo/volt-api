@@ -37,10 +37,12 @@ ignore.md
 saas/cmd/test
 
 .github/.secrets
-.github/.secrets.prod
+.github/.secrets.**
 
 ## ignore symlink directories for claude ai
 thewildai_chat_node
 thewildai_chat_rr
 
 shell
+
+.github/.secrets.*
