@@ -89,7 +89,7 @@ jobs:
         id: ssh_key
         run: |
           # Decode base64 SSH key and set as output
-          echo "${{ secrets.VPS_DEPLOY_KEY_B64 }}" | base64 -d > /tmp/ssh_key
+          echo "${{ secrets.[[ .SSHKeySecret ]] }}" | base64 -d > /tmp/ssh_key
           # Also set as env var for ssh-action
           {
             echo 'SSH_KEY<<EOF'
@@ -109,12 +109,15 @@ jobs:
           REPO_OWNER: ${{ github.repository_owner }}
           ENV_B64: ${{ secrets.ENV_B64 }}
           ENVIRONMENT: [[ .Name ]]
+[[- range .KeyFiles ]]
+          [[ .SecretName ]]: ${{ secrets.[[ .SecretName ]] }}
+[[- end ]]
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ steps.ssh_key.outputs.SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          envs: DEPLOY_PATH,IMAGE,CONTAINER,GHCR_PAT,REGISTRY,REPO_OWNER,ENV_B64,ENVIRONMENT
+          envs: DEPLOY_PATH,IMAGE,CONTAINER,GHCR_PAT,REGISTRY,REPO_OWNER,ENV_B64,ENVIRONMENT[[ range .KeyFiles ]],[[ .SecretName ]][[ end ]]
           script: |
             set -e
 
@@ -125,6 +128,14 @@ jobs:
 
             echo "==> Fixing permissions for logs directory (container runs as UID 1000)..."
             chown -R 1000:1000 ${DEPLOY_PATH}/logs
+[[- if .KeyFiles ]]
+
+            echo "==> Writing key files..."
+[[- range .KeyFiles ]]
+            echo "${[[ .SecretName ]]}" | base64 -d > ${DEPLOY_PATH}/_keys/[[ .Filename ]]
+[[- end ]]
+            chmod 600 ${DEPLOY_PATH}/_keys/*
+[[- end ]]
 
             echo "==> Writing .env.${ENVIRONMENT}..."
             echo "${ENV_B64}" | base64 -d > ${DEPLOY_PATH}/.env.${ENVIRONMENT}

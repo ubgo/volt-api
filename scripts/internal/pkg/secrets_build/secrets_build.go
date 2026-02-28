@@ -28,8 +28,9 @@ const (
 
 // Prefix for GitHub secrets in .env files
 const (
-	GitHubSecretPrefix   = "GITHUB_SECRET_"
-	GitHubSecretKeyFiles = "GITHUB_SECRET_KEY_FILES"
+	GitHubSecretPrefix          = "GITHUB_SECRET_"
+	GitHubSecretKeyFiles        = "GITHUB_SECRET_KEY_FILES"
+	GitHubSecretVPSDeployKeyFile = "GITHUB_SECRET_VPS_DEPLOY_KEY_FILE"
 )
 
 // projectRoot caches the discovered project root
@@ -188,6 +189,71 @@ func ListAvailableEnvironments() []Environment {
 	return available
 }
 
+// KeyFileInfo holds the mapping between a key file and its GitHub secret name
+type KeyFileInfo struct {
+	SecretName string // GitHub secret name, e.g., VPS_DEPLOY_KEY_B64
+	Filename   string // Original filename, e.g., vps_deploy.key
+}
+
+// KeyFileSecretName generates the GitHub secret name from a key filename
+// e.g., "vps_deploy.key" -> "VPS_DEPLOY_KEY_B64"
+func KeyFileSecretName(filename string) string {
+	baseName := strings.TrimSuffix(filename, filepath.Ext(filename))
+	secretName := strings.ToUpper(baseName)
+	secretName = strings.ReplaceAll(secretName, "-", "_")
+	secretName = strings.ReplaceAll(secretName, ".", "_")
+	secretName += "_KEY_B64"
+	return secretName
+}
+
+// GetKeyFileInfos returns key file info (secret name + filename) for an environment
+func GetKeyFileInfos(env Environment) ([]KeyFileInfo, error) {
+	envFile := GetEnvFilePath(env)
+	envVars, err := godotenv.Read(envFile)
+	if err != nil {
+		return nil, err
+	}
+	keyFilesValue := strings.TrimSpace(envVars[GitHubSecretKeyFiles])
+	if keyFilesValue == "" || keyFilesValue == "[]" {
+		return nil, nil
+	}
+
+	var files []string
+	if err := json.Unmarshal([]byte(keyFilesValue), &files); err != nil {
+		return nil, fmt.Errorf("invalid KEY_FILES format: %w", err)
+	}
+
+	var infos []KeyFileInfo
+	for _, f := range files {
+		f = strings.TrimSpace(f)
+		if f == "" {
+			continue
+		}
+		infos = append(infos, KeyFileInfo{
+			SecretName: KeyFileSecretName(f),
+			Filename:   f,
+		})
+	}
+	return infos, nil
+}
+
+// GetSSHKeySecret returns the GitHub secret name for the VPS deploy SSH key.
+// Reads GITHUB_SECRET_VPS_DEPLOY_KEY_FILE from .env.{env} and resolves it
+// to the corresponding secret name via KeyFileSecretName.
+// Falls back to "VPS_DEPLOY_KEY_B64" if not set.
+func GetSSHKeySecret(env Environment) (string, error) {
+	envFile := GetEnvFilePath(env)
+	envVars, err := godotenv.Read(envFile)
+	if err != nil {
+		return "", err
+	}
+	keyFile := strings.TrimSpace(envVars[GitHubSecretVPSDeployKeyFile])
+	if keyFile == "" {
+		return "VPS_DEPLOY_KEY_B64", nil
+	}
+	return KeyFileSecretName(keyFile), nil
+}
+
 // Secret represents a key-value secret pair
 type Secret struct {
 	Key   string `json:"key"`
@@ -336,11 +402,7 @@ func processKeyFiles(keyFilesValue string) ([]Secret, error) {
 
 		// Generate secret name from filename
 		// e.g., "githubapp_thewildai_2025.pem" -> "GITHUBAPP_THEWILDAI_2025_KEY_B64"
-		baseName := strings.TrimSuffix(file, filepath.Ext(file))
-		secretName := strings.ToUpper(baseName)
-		secretName = strings.ReplaceAll(secretName, "-", "_")
-		secretName = strings.ReplaceAll(secretName, ".", "_")
-		secretName += "_KEY_B64"
+		secretName := KeyFileSecretName(file)
 
 		secrets = append(secrets, Secret{
 			Key:   secretName,
@@ -388,10 +450,12 @@ func ReadSecretsFile(path string) []Secret {
 
 // EnvData holds template data for a single environment
 type EnvData struct {
-	Name       string
-	NameUpper  string
-	Branch     string
-	EnvVarName string
+	Name         string
+	NameUpper    string
+	Branch       string
+	EnvVarName   string
+	KeyFiles     []KeyFileInfo
+	SSHKeySecret string // GitHub secret name for the VPS deploy SSH key
 }
 
 // CreateGithubDeployYaml generates separate deploy.{env}.yml files for each environment
@@ -407,11 +471,23 @@ func CreateGithubDeployYaml(envs []Environment) error {
 	}
 
 	for _, env := range envs {
+		keyFiles, err := GetKeyFileInfos(env)
+		if err != nil {
+			return fmt.Errorf("getting key file infos for %s: %w", env, err)
+		}
+
+		sshKeySecret, err := GetSSHKeySecret(env)
+		if err != nil {
+			return fmt.Errorf("getting SSH key secret for %s: %w", env, err)
+		}
+
 		data := EnvData{
-			Name:       string(env),
-			NameUpper:  strings.ToUpper(string(env)),
-			Branch:     GetBranchName(env),
-			EnvVarName: "ENV_B64",
+			Name:         string(env),
+			NameUpper:    strings.ToUpper(string(env)),
+			Branch:       GetBranchName(env),
+			EnvVarName:   "ENV_B64",
+			KeyFiles:     keyFiles,
+			SSHKeySecret: sshKeySecret,
 		}
 
 		var buf bytes.Buffer

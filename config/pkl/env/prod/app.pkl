@@ -72,69 +72,7 @@ redis {
 
 app {
   reactAppHost = read("env:REACT_APP_HOST")
-  stripe {
-    secretKey = read("env:STRIPE_SECRET_KEY")
-    webhookSecret = read("env:STRIPE_WEBHOOK_SECRET")
-    publishableKey = read("env:STRIPE_PUBLISHABLE_KEY")
-  }
   apiKeys {
     openai = read("env:OPENAI_API_KEY")
-  }
-  file {
-    s3 {
-      // https://dash.cloudflare.com/b17bef22db913de1a629bd5c46ffc39c/r2/api-tokens/success
-      bucketName = "thewildai"
-      region = "auto"
-      accessKeyId = read("env:S3_ACCESS_KEY_ID") // r2
-      secretAccessKey = read("env:S3_SECRET_ACCESS_KEY") // r2 
-      endpoint = read("env:S3_ENDPOINT") // r2 
-      forcePathStyle = false
-    }
-    upload {
-      maxFileSize = 52428800 // 50MB
-      blacklistedExtensions = new {
-        // Windows executables
-        "exe"
-        "bat"
-        "cmd"
-        "com"
-        "pif"
-        "scr"
-        "msi"
-        "dll"
-
-        // Unix/Linux executables
-        "bin"
-        "run"
-        "app"
-        "deb"
-        "rpm"
-        "pkg"
-        "dmg"
-      }
-      blacklistedMimeTypes = new {
-        "application/x-executable"
-        "application/x-msdownload"
-        "application/x-msdos-program"
-        "application/x-sharedlib"
-        "application/x-dosexec"
-      }
-      contentValidation {
-        checkExecutableHeaders = true
-        checkFileSize = true
-        checkEmptyFiles = true
-        checkSuspiciousContent = false
-        checkTextContent = false
-        validateMimeTypeMatch = false
-      }
-    }
-    download {
-      defaultExpirySeconds = 3600 // 1 hour
-      maxExpirySeconds = 86400 // 24 hours
-    }
-    rateLimit {
-      uploadPerMinute = 10
-      downloadPerMinute = 100
-    }
   }
 }
