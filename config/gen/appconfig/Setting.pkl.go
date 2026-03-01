@@ -5,4 +5,6 @@ type Setting struct {
 	ReactAppHost string `pkl:"reactAppHost"`
 
 	ApiKeys ApiKeys `pkl:"apiKeys"`
+
+	CronUI CronUI `pkl:"cronUI"`
 }

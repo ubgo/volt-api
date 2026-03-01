@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
-	"core/pkg/plugin"
 	"fmt"
+	"net/http"
 	"time"
 
+	"core/pkg/plugin"
 	"lace/gocron/gocronlogger"
 	"lace/gocron/gocronmonitor"
+	"lace/gocron/gocronui"
 	"lace/gozap"
 	"lace/shutdown"
 
@@ -18,6 +20,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
 
 const tracerName = "cron"
@@ -42,6 +45,20 @@ func main() {
 	// Start the scheduler
 	scheduler.Start()
 
+	// Start gocron-ui dashboard server
+	cronUICfg := customApp.RootConfig.App.CronUI
+	var httpSrv *http.Server
+	if cronUICfg.Enable {
+		httpSrv = gocronui.NewServer(scheduler, gocronui.Config{
+			Port:        cronUICfg.Port,
+			Title:       customApp.RootConfig.Core.AppName + " Cron",
+			InternalKey: customApp.RootConfig.Core.InternalKey,
+		})
+		gocronui.ListenAndLog(httpSrv, cronUICfg.Port, func(err error) {
+			gozap.GetLogger().Error("gocron-ui server failed", zap.Error(err))
+		})
+	}
+
 	fmt.Println("Cron scheduler started. Press Ctrl+C to exit.")
 
 	shutdown.New(
@@ -52,6 +69,12 @@ func main() {
 		shutdown.WithGracefulShutdownTimeout(0),
 		shutdown.WithShutdownHandler(
 			func(ctx context.Context) error {
+				// Shutdown the gocron-ui HTTP server
+				if httpSrv != nil {
+					if err := httpSrv.Shutdown(ctx); err != nil {
+						gozap.GetLogger().Error("Error shutting down gocron-ui server", zap.Error(err))
+					}
+				}
 				if err := scheduler.StopJobs(); err != nil {
 					gozap.GetLogger().Error("Error stopping scheduler jobs")
 					return err

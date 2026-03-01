@@ -7,4 +7,5 @@ func init() {
 	pkl.RegisterStrictMapping("AppConfig#Setting", Setting{})
 	pkl.RegisterStrictMapping("AppConfig#ApiKeys", ApiKeys{})
 	pkl.RegisterStrictMapping("AppConfig", AppConfig{})
+	pkl.RegisterStrictMapping("AppConfig#CronUI", CronUI{})
 }

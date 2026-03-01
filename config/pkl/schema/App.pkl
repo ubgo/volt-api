@@ -7,7 +7,13 @@ class ApiKeys {
   openai: String
 }
 
+class CronUI {
+  enable: Boolean
+  port: String
+}
+
 class Setting {
   reactAppHost: String
   apiKeys: ApiKeys
+  cronUI: CronUI
 }
