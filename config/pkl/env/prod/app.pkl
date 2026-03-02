@@ -75,11 +75,9 @@ app {
   apiKeys {
     openai = read("env:OPENAI_API_KEY")
   }
-  cronUI {
-    enable = read("env:CRON_UI_ENABLE").toBoolean()
-    port = read("env:CRON_UI_PORT")
-  }
   gocron {
+    uiEnable = read("env:CRON_UI_ENABLE").toBoolean()
+    uiPort = read("env:CRON_UI_PORT")
     enabledJobs {}
   }
 }

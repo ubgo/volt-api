@@ -73,15 +73,14 @@ func main() {
 	scheduler.Start()
 
 	// Start gocron-ui dashboard server
-	cronUICfg := customApp.RootConfig.App.CronUI
 	var httpSrv *http.Server
-	if cronUICfg.Enable {
+	if gocronCfg.UiEnable {
 		httpSrv = gocronui.NewServer(scheduler, gocronui.Config{
-			Port:        cronUICfg.Port,
+			Port:        gocronCfg.UiPort,
 			Title:       customApp.RootConfig.Core.AppName + " Cron",
 			InternalKey: customApp.RootConfig.Core.InternalKey,
 		})
-		gocronui.ListenAndLog(httpSrv, cronUICfg.Port, func(err error) {
+		gocronui.ListenAndLog(httpSrv, gocronCfg.UiPort, func(err error) {
 			gozap.GetLogger().Error("gocron-ui server failed", zap.Error(err))
 		})
 	}
