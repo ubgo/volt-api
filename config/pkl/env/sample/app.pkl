@@ -77,11 +77,9 @@ app {
   apiKeys {
     openai = "xxxx"
   }
-  cronUI {
-    enable = false
-    port = "2316"
-  }
   gocron {
+    uiEnable = false
+    uiPort = "2316"
     enabledJobs {}
   }
 }

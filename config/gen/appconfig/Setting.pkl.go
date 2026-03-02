@@ -6,7 +6,5 @@ type Setting struct {
 
 	ApiKeys ApiKeys `pkl:"apiKeys"`
 
-	CronUI CronUI `pkl:"cronUI"`
-
 	Gocron Gocron `pkl:"gocron"`
 }
