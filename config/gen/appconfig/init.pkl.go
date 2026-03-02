@@ -8,4 +8,5 @@ func init() {
 	pkl.RegisterStrictMapping("AppConfig#ApiKeys", ApiKeys{})
 	pkl.RegisterStrictMapping("AppConfig", AppConfig{})
 	pkl.RegisterStrictMapping("AppConfig#CronUI", CronUI{})
+	pkl.RegisterStrictMapping("AppConfig#Gocron", Gocron{})
 }

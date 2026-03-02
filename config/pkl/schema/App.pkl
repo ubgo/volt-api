@@ -12,8 +12,14 @@ class CronUI {
   port: String
 }
 
+class Gocron {
+  /// List of job names to register. If empty, all jobs are registered.
+  enabledJobs: Listing<String>
+}
+
 class Setting {
   reactAppHost: String
   apiKeys: ApiKeys
   cronUI: CronUI
+  gocron: Gocron
 }
