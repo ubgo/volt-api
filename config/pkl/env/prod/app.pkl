@@ -79,4 +79,7 @@ app {
     enable = read("env:CRON_UI_ENABLE").toBoolean()
     port = read("env:CRON_UI_PORT")
   }
+  gocron {
+    enabledJobs {}
+  }
 }

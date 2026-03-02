@@ -71,3 +71,17 @@ logger {
     logFile = core.rootdir + "/logs/app.log"
   }
 }
+
+app {
+  reactAppHost = "http://localhost:3000"
+  apiKeys {
+    openai = "xxxx"
+  }
+  cronUI {
+    enable = false
+    port = "2316"
+  }
+  gocron {
+    enabledJobs {}
+  }
+}

@@ -25,6 +25,14 @@ import (
 
 const tracerName = "cron"
 
+type registerFunc func(scheduler gocron.Scheduler, p *app.CustomApp)
+
+// allJobs defines all available cron jobs.
+// The map key is the job name used in pkl config's enabledJobs list.
+var allJobs = map[string]registerFunc{
+	"exampleJob": registerExampleJob,
+}
+
 func main() {
 	customApp := app.New(app.WithCoreOptions(plugin.WithDisableNats(true)))
 
@@ -39,8 +47,27 @@ func main() {
 		return
 	}
 
-	// Register all jobs
-	registerExampleJob(scheduler, customApp)
+	// Register jobs based on config.
+	// If enabledJobs is empty, all jobs are registered.
+	gocronCfg := customApp.RootConfig.App.Gocron
+	enabledJobs := gocronCfg.EnabledJobs
+
+	if len(enabledJobs) == 0 {
+		for name, register := range allJobs {
+			register(scheduler, customApp)
+			fmt.Printf("Registered job: %s\n", name)
+		}
+	} else {
+		for _, name := range enabledJobs {
+			register, ok := allJobs[name]
+			if !ok {
+				fmt.Printf("WARNING: unknown job name in enabledJobs: %q\n", name)
+				continue
+			}
+			register(scheduler, customApp)
+			fmt.Printf("Registered job: %s\n", name)
+		}
+	}
 
 	// Start the scheduler
 	scheduler.Start()
