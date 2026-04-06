@@ -126,7 +126,7 @@ jobs:
             mkdir -p ${DEPLOY_PATH}/_keys
             mkdir -p ${DEPLOY_PATH}/logs
 
-            echo "==> Fixing permissions for logs directory (container runs as UID 1000)..."
+            echo "==> Fixing permissions (container runs as UID 1000)..."
             chown -R 1000:1000 ${DEPLOY_PATH}/logs
 [[- if .KeyFiles ]]
 
@@ -141,6 +141,21 @@ jobs:
             echo "${ENV_B64}" | base64 -d > ${DEPLOY_PATH}/.env.${ENVIRONMENT}
             chmod 600 ${DEPLOY_PATH}/.env.${ENVIRONMENT}
 
+            echo "==> Reading config from .env.${ENVIRONMENT}..."
+            PORT=$(grep -E '^PORT=' ${DEPLOY_PATH}/.env.${ENVIRONMENT} | cut -d '=' -f2 | tr -d ' ' || echo "2315")
+            UPLOADS_PATH=$(grep -E '^UPLOADS_PATH=' ${DEPLOY_PATH}/.env.${ENVIRONMENT} | cut -d '=' -f2 | tr -d ' ' || echo "")
+
+            echo "==> Setting up uploads directory..."
+            UPLOADS_VOLUME=""
+            if [ -n "${UPLOADS_PATH}" ]; then
+              mkdir -p "${UPLOADS_PATH}"
+              chown -R 1000:1000 "${UPLOADS_PATH}"
+              UPLOADS_VOLUME="-v ${UPLOADS_PATH}:/app/uploads"
+              echo "    Uploads path: ${UPLOADS_PATH}"
+            else
+              echo "    WARNING: UPLOADS_PATH not set in .env, uploads will be ephemeral inside container!"
+            fi
+
             echo "==> Logging in to registry..."
             echo "${GHCR_PAT}" | docker login ${REGISTRY} -u ${REPO_OWNER} --password-stdin
 
@@ -151,20 +166,23 @@ jobs:
             docker stop ${CONTAINER} 2>/dev/null || true
             docker rm ${CONTAINER} 2>/dev/null || true
 
-            echo "==> Reading PORT from .env.${ENVIRONMENT}..."
-            PORT=$(grep -E '^PORT=' ${DEPLOY_PATH}/.env.${ENVIRONMENT} | cut -d '=' -f2 | tr -d ' ' || echo "2315")
-
             # --stop-timeout 86400 (24h) allows cron jobs to complete during deployments.
             echo "==> Starting new container on port ${PORT}..."
-            docker run -d \
+            DOCKER_CMD="docker run -d \
               --name ${CONTAINER} \
               --restart unless-stopped \
               --stop-timeout 86400 \
               --network host \
               --env-file ${DEPLOY_PATH}/.env.${ENVIRONMENT} \
               -v ${DEPLOY_PATH}/_keys:/app/_keys:ro \
-              -v ${DEPLOY_PATH}/logs:/app/tmp/logs \
-              ${IMAGE}
+              -v ${DEPLOY_PATH}/logs:/app/tmp/logs"
+
+            if [ -n "${UPLOADS_PATH}" ]; then
+              DOCKER_CMD="${DOCKER_CMD} -v ${UPLOADS_PATH}:/app/uploads"
+            fi
+
+            DOCKER_CMD="${DOCKER_CMD} ${IMAGE}"
+            eval ${DOCKER_CMD}
 
             echo "==> Waiting for container to be ready..."
             sleep 5

@@ -39,6 +39,7 @@ COPY scripts/go.mod ./scripts/
 COPY dbent/go.mod ./dbent/
 COPY apidash/go.mod ./apidash/
 COPY saas/go.mod ./saas/
+COPY core/go.mod ./core/
 
 ## CUSTOM
 ## AI: can be modified to include other custom modules
@@ -52,6 +53,7 @@ COPY scripts ./scripts
 COPY dbent ./dbent
 COPY apidash ./apidash
 COPY saas ./saas
+COPY core ./core
 
 ## CUSTOM
 ## AI: can be modified to include other custom modules
