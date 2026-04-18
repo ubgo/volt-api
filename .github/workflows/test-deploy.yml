@@ -1,0 +1,68 @@
+name: Test Deploy Connectivity
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Connect to NetBird
+        uses: Alemiz112/netbird-connect@v1
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          hostname: 'gh-test-${{ github.run_id }}'
+
+      - name: NetBird status
+        run: |
+          sudo netbird status
+          echo "---"
+          sudo netbird status --detail
+
+      - name: Test connectivity
+        run: |
+          echo "==> Ping test..."
+          ping -c 3 ${{ secrets.VPS_HOST }} || echo "ICMP blocked"
+
+          echo "==> TCP test on SSH port..."
+          timeout 10 bash -c "echo >/dev/tcp/${{ secrets.VPS_HOST }}/${{ secrets.VPS_PORT }}" 2>&1 && echo "SSH port OPEN" || echo "SSH port CLOSED/UNREACHABLE"
+
+      - name: Decode SSH Key
+        id: ssh_key
+        run: |
+          echo "${{ secrets.VPS_DEPLOY_KEY_B64 }}" | base64 -d > /tmp/ssh_key
+          {
+            echo 'SSH_KEY<<EOF'
+            cat /tmp/ssh_key
+            echo ''
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Test SSH
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ steps.ssh_key.outputs.SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            echo "SSH OK - $(hostname)"
+            echo "Docker: $(docker --version)"
+            echo "Uptime: $(uptime)"
+
+      - name: Test GHCR login
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          REGISTRY: ghcr.io
+          REPO_OWNER: ${{ github.repository_owner }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ steps.ssh_key.outputs.SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          envs: GHCR_PAT,REGISTRY,REPO_OWNER
+          script: |
+            echo "${GHCR_PAT}" | docker login ${REGISTRY} -u ${REPO_OWNER} --password-stdin
+            echo "GHCR login OK"

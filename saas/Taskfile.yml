@@ -22,3 +22,6 @@ tasks:
       - go build -o ../tmp/bin/api ./cmd/api
       - go build -o ../tmp/bin/cli ./cmd/cli
       - go build -o ../tmp/bin/cron ./cmd/cron
+  dev:
+    cmds:
+      - air 2>&1 | tee ../tmp/air.log
