@@ -13,7 +13,6 @@ import (
 	"lace/httppkg/middlewares"
 	"lace/shutdown"
 	"lace/util"
-	"saas/cmd/api/natshandlers"
 	"saas/pkg/app"
 	"saas/pkg/apphandlers"
 
@@ -24,11 +23,7 @@ import (
 func main() {
 	appcfg := config.Get()
 
-	plugins := app.New(app.WithCoreOptions(plugin.WithAfterNatsInitiated(func(plugins *plugin.Plugin) {
-		natshandlers.New(natshandlers.Config{
-			Natso: *plugins.Natso,
-		})
-	})))
+	plugins := app.New()
 
 	handlerFuncs := []gin.HandlerFunc{
 		util.CORSMiddleware(),

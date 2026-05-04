@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"core/pkg/plugin"
 	"lace/gocron/gocronlogger"
 	"lace/gocron/gocronmonitor"
 	"lace/gocron/gocronui"
@@ -34,7 +33,7 @@ var allJobs = map[string]registerFunc{
 }
 
 func main() {
-	customApp := app.New(app.WithCoreOptions(plugin.WithDisableNats(true)))
+	customApp := app.New()
 
 	scheduler, err := gocron.NewScheduler(
 		gocron.WithLogger(gocronlogger.New(gozap.GetLogger())),

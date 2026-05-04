@@ -3,10 +3,7 @@ package app
 import "core/pkg/plugin"
 
 type config struct {
-	// for cron jobs we dont need to connect to nats
 	coreOptions []plugin.AppPkgOption
-
-	// AfterNatsInitiated func(plugins *plugin.Plugin)
 }
 
 func (c *config) options(opts ...Option) {

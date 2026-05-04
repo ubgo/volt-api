@@ -4,7 +4,6 @@ import (
 	"config"
 	"config/gen/databaseconfig"
 	"config/gen/loggerconfig"
-	"config/gen/natsconfig"
 	"config/gen/redisconfig"
 	"config/gen/rootconfig"
 	"context"
@@ -20,7 +19,6 @@ import (
 
 	"lace/cache"
 	"lace/db"
-	"lace/natso"
 
 	"lace/cli"
 
@@ -36,15 +34,12 @@ type Plugin struct {
 	Cache       cache.Store
 	RootConfig  *rootconfig.RootConfig
 	RedisClient *redis.Client
-	Natso       *natso.Natso
 }
 
 var plugins *Plugin
 
 func New(options ...AppPkgOption) *Plugin {
-	cfg := apppkgconfig{
-		DisableNats: false,
-	}
+	cfg := apppkgconfig{}
 
 	cfg.options(options...)
 
@@ -79,11 +74,6 @@ func New(options ...AppPkgOption) *Plugin {
 
 	// pubsublisten.SetupSubscribers(entClient)
 
-	err = initNats(cfg.DisableNats, configroot.Nats, plugins, cfg.AfterNatsInitiated)
-	if err != nil {
-		panic("Error initializing NATS: " + err.Error())
-	}
-
 	err = initGlobalLogger(configroot.Otel, configroot.Logger)
 	if err != nil {
 		panic("Error initializing global logger: " + err.Error())
@@ -93,15 +83,6 @@ func New(options ...AppPkgOption) *Plugin {
 }
 
 func ShutdownHandler(ctx context.Context) error {
-	// Nats gracefully close
-	// TODO: it closes the connection but wont wait for the existing messages to be processed so we still need to find a way to wait for the existing messages to be processed
-	if plugins.Natso != nil {
-		err := plugins.Natso.GetConn().Drain()
-		if err != nil {
-			log.Printf("Nats drain failed: %v", err)
-		}
-	}
-
 	// Step 1: Stop receiving HTTP traffic
 	// if err := serverServer.Shutdown(shutdownCtx); err != nil {
 	// 	log.Printf("HTTP server shutdown failed: %v", err)
@@ -239,59 +220,6 @@ func initDB(databaseconfig databaseconfig.Setting, plugins *Plugin) error {
 
 	plugins.DB = db
 	plugins.EntDB = entClient
-
-	return nil
-}
-
-/*
-for dev i do not want to wait for the nats connection to be established and then start the server
-so i will start the nats connection in a go routine to speed up the development
-*/
-func initNats(disableNats bool, natsconfig natsconfig.Setting, plugins *Plugin, afterNatsInitiated func(plugins *Plugin)) error {
-	if disableNats || !natsconfig.Status {
-		return nil
-	}
-
-	// if appcfg.Environment == constants.EnvironmentProd {
-	// 	natsnats, err := natso.New(natso.WithAppKey(appcfg.Nats.AppKey), natso.WithURL(appcfg.Nats.Url), natso.WithEnabled(true), natso.WithCredsFile(appcfg.Nats.CredsFile))
-	// 	if err != nil {
-	// 		gozap.GetLogger().Sugar().Errorf("FATAL NATS CONNECTION - %s", err)
-	// 		return err
-	// 	}
-	// 	plugins.Natso = natsnats
-
-	// 	if afterNatsInitiated != nil {
-	// 		afterNatsInitiated(plugins)
-	// 	}
-
-	// 	return nil
-	// }
-
-	go func(plugins *Plugin) {
-		natsnats, err := natso.New(natso.WithAppKey(natsconfig.AppKey), natso.WithURL(natsconfig.Url), natso.WithEnabled(true), natso.WithCredsFile(natsconfig.CredsFile))
-		if err != nil {
-			gozap.GetLogger().Sugar().Errorf("FATAL NATS CONNECTION - %s", err)
-			bootinfo.GetBootInfo().SetServiceStatus("nats", bootinfo.ServiceStatus{
-				Status:  "error",
-				Error:   err.Error(),
-				Message: "NATS connection failed",
-			})
-			return
-		}
-
-		bootinfo.GetBootInfo().SetServiceStatus("nats", bootinfo.ServiceStatus{
-			Status:  "ok",
-			Error:   "",
-			Message: "NATS connection successful",
-		})
-
-		plugins.Natso = natsnats
-
-		if afterNatsInitiated != nil {
-			afterNatsInitiated(plugins)
-		}
-
-	}(plugins)
 
 	return nil
 }
