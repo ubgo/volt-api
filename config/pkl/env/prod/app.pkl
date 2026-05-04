@@ -18,13 +18,6 @@ core {
   encryptionKey = read("env:ENCRYPTION_KEY")
 }
 
-nats {
-  status = read("env:NATS_STATUS").toBoolean()
-  appKey = read("env:NATS_APP_KEY")
-  url = read("env:NATS_URL")
-  credsFile = read?("env:NATS_CREDS_FILE")
-}
-
 database {
   host = read("env:DB_HOST")
   port = read("env:DB_PORT").toInt()

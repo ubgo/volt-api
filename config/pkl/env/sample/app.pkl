@@ -17,14 +17,6 @@ core {
   encryptionKey = "xxxx"
 }
 
-nats {
-  status = true
-  appKey = "demo-local"
-  // url = "nats://localhost:4222"
-  url = "tls://connect.ngs.global"
-  credsFile = "/Volumes/D/_keys/nsg-default-cli-30Vc7OilhLCxYqCddsbV4oENtkS.creds"
-}
-
 database {
   host = "localhost"
   port = 5432

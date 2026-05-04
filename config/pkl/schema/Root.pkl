@@ -8,14 +8,12 @@ import "Core.pkl"
 import "Database.pkl"
 import "Graphql.pkl"
 import "Logger.pkl"
-import "Nats.pkl"
 import "Redis.pkl"
 import "Server.pkl"
 
 server: Server.Setting
 core: Core.Setting
 database: Database.Setting
-nats: Nats.Setting
 graphql: Graphql.Setting
 otel: Logger.Otel
 logger: Logger.Setting

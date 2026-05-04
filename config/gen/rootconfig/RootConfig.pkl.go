@@ -9,7 +9,6 @@ import (
 	"config/gen/databaseconfig"
 	"config/gen/graphqlconfig"
 	"config/gen/loggerconfig"
-	"config/gen/natsconfig"
 	"config/gen/redisconfig"
 	"config/gen/serverconfig"
 	"github.com/apple/pkl-go/pkl"
@@ -21,8 +20,6 @@ type RootConfig struct {
 	Core coreconfig.Setting `pkl:"core"`
 
 	Database databaseconfig.Setting `pkl:"database"`
-
-	Nats natsconfig.Setting `pkl:"nats"`
 
 	Graphql graphqlconfig.Setting `pkl:"graphql"`
 
