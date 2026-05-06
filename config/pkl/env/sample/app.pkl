@@ -2,7 +2,8 @@ amends "../../schema/Root.pkl"
 
 server {
   hostname = "localhost"
-  port = "2315"
+  // $PORT (when set by portless or shell) wins; falls back to 2315 for plain `task dev`
+  port = read?("env:PORT") ?? "2315"
 }
 
 core {
