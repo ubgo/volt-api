@@ -1,0 +1,134 @@
+# gitleaks configuration for sync_go.
+#
+# Picked up automatically by `gitleaks protect --staged` when this file is at
+# the repo root. Extends the default ruleset (built-in: 200+ Shopify / AWS /
+# Stripe / GitHub / OpenAI / Slack / etc. detectors).
+#
+# Mirror any [allowlist] additions to .githooks/pre-commit ALLOW_RE so the
+# regex-fallback layer stays in sync.
+
+[extend]
+useDefault = true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Project-specific extra rules — patterns the upstream default doesn't have.
+# ─────────────────────────────────────────────────────────────────────────────
+
+[[rules]]
+id = "shopify-customer-token"
+description = "Shopify customer access token"
+regex = '''shpca_[a-f0-9]{32}'''
+keywords = ["shpca_"]
+
+[[rules]]
+id = "shopify-storefront-token"
+description = "Shopify storefront access token"
+regex = '''shpss_[a-f0-9]{32}'''
+keywords = ["shpss_"]
+
+[[rules]]
+id = "anthropic-prefixed-key"
+description = "Anthropic API key with explicit prefix"
+regex = '''sk-ant-api03-[A-Za-z0-9_-]{20,}'''
+keywords = ["sk-ant-"]
+
+[[rules]]
+id = "gcp-oauth-client-secret"
+description = "Google OAuth client secret (GOCSPX-…)"
+regex = '''GOCSPX-[A-Za-z0-9_-]{28}'''
+keywords = ["GOCSPX-"]
+
+[[rules]]
+id = "gcp-service-account-email"
+description = "GCP service account email (often paired with the key)"
+regex = '''[a-z0-9.-]+@[a-z0-9-]+\.iam\.gserviceaccount\.com'''
+keywords = ["iam.gserviceaccount.com"]
+
+[[rules]]
+id = "gcp-service-account-json"
+description = "GCP service account JSON file marker"
+regex = '''"type":\s*"service_account"'''
+keywords = ["service_account"]
+
+[[rules]]
+id = "azure-storage-account-key"
+description = "Azure storage account key (88-char base64 ending ==)"
+regex = '''AccountKey=[A-Za-z0-9+/]{86}=='''
+keywords = ["AccountKey="]
+
+[[rules]]
+id = "azure-storage-conn-string"
+description = "Azure storage / Cosmos DB connection string"
+regex = '''DefaultEndpointsProtocol=https;AccountName='''
+keywords = ["DefaultEndpointsProtocol"]
+
+[[rules]]
+id = "sendgrid-api-key"
+description = "SendGrid API key (SG.XXX.YYY)"
+regex = '''SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}'''
+keywords = ["SG."]
+
+[[rules]]
+id = "digitalocean-pat"
+description = "DigitalOcean personal access / OAuth / refresh token"
+regex = '''do[oprt]_v1_[a-f0-9]{64}'''
+keywords = ["dop_v1_", "doo_v1_", "dor_v1_", "dot_v1_"]
+
+[[rules]]
+id = "notion-internal-token"
+description = "Notion internal integration token"
+regex = '''secret_[A-Za-z0-9]{43}'''
+keywords = ["secret_"]
+
+[[rules]]
+id = "generic-credential-assignment"
+description = "Generic api_key/secret/token/password = '…' with ≥16-char value"
+regex = '''(?i)(api[_-]?key|secret|token|password|passwd|credential)\s*[=:]\s*["'][^"'\s]{16,}["']'''
+keywords = ["api_key", "apikey", "secret", "token", "password", "passwd", "credential"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Allowlist — placeholders + documentation strings that LOOK like credentials
+# but aren't. Add liberally; false-positive friction is what makes devs run
+# --no-verify, which is worse than letting through a placeholder.
+# ─────────────────────────────────────────────────────────────────────────────
+
+[allowlist]
+description = "Placeholders + docs that look credential-shaped"
+paths = [
+	# Documentation that shows usage with explicit placeholders
+	'''(.*?)\.md$''',
+	# Test fixtures that need realistic-looking but synthetic values
+	'''.*/testdata/.*''',
+	# The ubgo-skill rules document the patterns themselves
+	'''skills-ai/ubgo-skills/.*''',
+	# The scanner config files themselves contain the patterns they detect
+	'''\.githooks/pre-commit$''',
+	'''\.gitleaks\.toml$''',
+]
+regexes = [
+	# Standard placeholder shapes
+	'''shpat_xxx''',
+	'''shpat_…''',
+	'''shpat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx''',
+	'''sk-xxx''',
+	'''sk-…''',
+	'''sk-ant-xxx''',
+	'''sk-ant-…''',
+	'''sk_(live|test)_xxx''',
+	'''pk_(live|test)_xxx''',
+	'''ghp_xxx''',
+	'''AKIA[0-9A-Z]{0,15}xxxxx''',
+	# Explicit redaction markers (so a doc that says "we replaced
+	# `shpat_real_value` with [REDACTED-SHOPIFY-TOKEN]" commits cleanly)
+	'''\[REDACTED[^\]]*\]''',
+	'''<TOKEN>''',
+	'''<API_KEY>''',
+	'''\$\{[A-Z_]+_TOKEN\}''',
+	'''\$\{[A-Z_]+_KEY\}''',
+	'''FAKE_TOKEN_FOR_TESTS''',
+]
+# NOTE: no stopwords. gitleaks' stopwords match anywhere on the line
+# and silently exempt real leaks that happen to share the line with
+# common words like "example". Use the `regexes` allowlist above
+# (placeholder-shaped strings that cannot collide with real credentials)
+# instead.

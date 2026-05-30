@@ -190,3 +190,32 @@ tasks:
         fi
         echo "Forwarding webhooks from {{.SMEE_URL}} to http://127.0.0.1:{{.PORT}}/api/sa/webhooks/github"
         smee --url "{{.SMEE_URL}}" --path /api/sa/webhooks/github --port {{.PORT}}
+
+  hooks:install:
+    desc: Activate .githooks/pre-commit secret-scanner for this clone (also installs gitleaks if missing)
+    cmds:
+      - git config --local core.hooksPath .githooks
+      - echo "✓ git hooksPath = .githooks (pre-commit secret scanner active)"
+      - |
+        if ! command -v gitleaks >/dev/null 2>&1; then
+          echo "⚠ gitleaks not installed — installing via brew for stronger detection…"
+          if command -v brew >/dev/null 2>&1; then
+            brew install gitleaks
+          else
+            echo "  brew not available — install gitleaks manually:"
+            echo "  https://github.com/gitleaks/gitleaks#installing"
+            exit 1
+          fi
+        else
+          echo "✓ gitleaks $(gitleaks version) — primary scanner active"
+        fi
+
+  secrets:scan:
+    desc: Run gitleaks against the full repo history (slow but thorough)
+    cmds:
+      - gitleaks detect --redact --no-banner --verbose
+
+  secrets:scan:staged:
+    desc: Run gitleaks against the currently staged diff only (fast)
+    cmds:
+      - gitleaks protect --staged --redact --no-banner --verbose
