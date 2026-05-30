@@ -28,6 +28,32 @@ This project uses the `codeskill` skill as its default operating system. You MUS
 - You MUST run `/codeskill session end` as your LAST action before the conversation ends. No exceptions.
 - These log prompts, decisions, and corrections to `.ai/logs/`. Without them, the session is invisible.
 
+## filemark — docs authoring
+
+Internal docs in this repo are read through **filemark** (Chrome extension + playground). Any time you write or edit a brainstorm, plan, problem doc, roadmap, ADR, architecture note, task list, or component spec in the paths below, **invoke the `/filemark` skill first** and use its component grammar. Do not freehand filemark components from memory.
+
+**Applies to (internal, filemark-rendered):**
+- `.ai/**/*.md` — plans, snapshots, memory, decisions, incidents, skills, guides, workflows, prompts, PATTERNS, ARCHITECTURE, STACK
+- `.claude/rules/*.md` and `.claude/docs/**/*.md` — rule files and deep reference docs
+- Any `PLAN.md`, `ROADMAP.md`, `TASKS.md`, `*_ADR.md`, `*_SPEC.md` outside the paths above
+
+**Does NOT apply (public, GitHub-rendered — keep plain markdown):**
+- `README.md`, `AGENTS.md`, `CLAUDE.md`, `CHANGELOG.md`, `CONTRIBUTING.md`
+- `docs/` if it ships to GitHub / public site
+- Per-module READMEs inside `saas/`, `apidash/`, `dbent/`, `config/`, `examples/`
+
+**Components + tasks to prefer (via `/filemark` skill):**
+- Callouts: `<Callout type="info|warn|danger|tip">` for rules, gotchas, hotfixes
+- Structure: `<Tabs>`, `<Details>` for collapsible sections, `<ADR>` for decisions
+- Data: `<Stats>`, `<Datagrid>`, `<Chart>` for metrics/tables; `<Kanban>` for workflow state
+- Tasks: `<TaskList>`, `<TaskStats>`, `<TaskTimeline>` + sigil task bullets (`- [ ]`, `- [>]`, `- [x]`) and filter DSL
+- Observe the two HTML-in-markdown survival rules the skill enforces (blank lines around block components, no raw `<` inside prose)
+
+**Workflow:**
+1. Before editing any file in the "applies to" set → `/filemark` (load skill if not already active)
+2. Author content with filemark components where they add signal (tasks, callouts, stats, ADR)
+3. Plain markdown is still fine inside filemark — components are additive, not required everywhere
+
 ## Where We Left Off
 - **Last session**: _none — fresh init on 2026-04-18 by @khanakia_
 - **Working on**: Scaffolding `.ai/` directory via `/codeskill init`
@@ -179,6 +205,11 @@ Never grep, explore, or reference:
 - Conventional format: `feat(scope): description`
 - Never add "Co-Authored-By" lines or any mention of Claude/AI
 - Never commit `.env`, `*.creds`, `*.pem`, `*.key`, or API keys
+
+### Project — V2 Plans Location
+- All v2-mission plans + design docs for `github.com/ubgo/*` modules live at: `/Volumes/D/www/projects/khanakia/private-repo/boilerplate/<topic>/`
+- Code lives at: `/Volumes/D/www/projects/khanakia/boilerplate/<repo>/` → pushes to `github.com/ubgo/<repo>`
+- Never put v2 module plans inside this repo's `.ai/plans/`
 
 ## Active Hotfixes
 

@@ -57,3 +57,12 @@ Never grep, explore, or reference:
 - Conventional format: `feat(scope): description`, `fix(scope): ...`, `refactor(scope): ...`
 - Never add "Co-Authored-By" lines or any mention of Claude/AI
 - Never commit `.env`, `*.creds`, `*.pem`, `*.key`, or API keys
+
+## V2 Plans Location
+
+All v2-mission plans, brainstorms, and design docs for `github.com/ubgo/*` repos live OUTSIDE this repo:
+
+- **Plans dir**: `/Volumes/D/www/projects/khanakia/private-repo/boilerplate/<topic>/`
+- **Code dir**: `/Volumes/D/www/projects/khanakia/boilerplate/<repo>/` → pushes to `github.com/ubgo/<repo>`
+
+When user says "plan", "brainstorm", "design doc" for a v2 module → write to `private-repo/boilerplate/<topic>/PLAN.md`, never inside this repo's `.ai/plans/`.

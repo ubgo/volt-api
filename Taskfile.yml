@@ -35,6 +35,78 @@ includes:
   # END CUSTOM
 
 tasks:
+  dev:
+    desc: alias → saas:dev (plain air)
+    cmds:
+      - task: saas:dev
+
+  dev:portless:
+    desc: alias → saas:dev:portless (https://api.app.localhost)
+    cmds:
+      - task: saas:dev:portless
+
+  pkl:link:
+    desc: |
+      Stabilize PKL paths from each mod-* Go module into config/pkl/modules/.
+      Uses `go list -m -f '{{.Dir}}'` so paths resolve regardless of vendor /
+      module-cache / go.work-replace mode (ADR-V2-007).
+    cmds:
+      - rm -rf config/pkl/modules
+      - mkdir -p config/pkl/modules
+      - |
+        set -e
+        for path in $(go list -m -json all 2>/dev/null | jq -r 'select(.Path | startswith("github.com/khanakia/boilerplate-golang/modules/mod-")) | .Path + "\t" + (.Dir // "")' || true); do
+          name=$(echo "$path" | awk -F'/mod-' '{print $2}' | awk '{print $1}')
+          dir=$(echo "$path" | awk -F'\t' '{print $2}')
+          if [ -z "$dir" ] || [ ! -d "$dir/config" ]; then
+            continue
+          fi
+          target="config/pkl/modules/$name"
+          ln -sfn "$dir/config" "$target"
+          echo "linked $target -> $dir/config"
+        done
+
+  modules:entg:
+    desc: Run ent codegen for every mod-* module under modules/
+    cmds:
+      - |
+        set -e
+        for d in modules/mod-*; do
+          if [ -f "$d/cmd/entg/main.go" ]; then
+            echo ">> $d"
+            (cd "$d" && go run ./cmd/entg)
+          fi
+        done
+
+  modules:tidy:
+    desc: go mod tidy for every module under modules/
+    cmds:
+      - |
+        set -e
+        for d in modules/* ; do
+          if [ -f "$d/go.mod" ]; then
+            echo ">> $d"
+            (cd "$d" && go mod tidy)
+          fi
+        done
+
+  modules:build:
+    desc: Build every module under modules/
+    cmds:
+      - |
+        set -e
+        for d in modules/*; do
+          if [ -f "$d/go.mod" ]; then
+            echo ">> $d"
+            (cd "$d" && go build ./...)
+          fi
+        done
+
+  modapi:run:
+    desc: Run the V2 modapi reference entry (smoke test)
+    cmds:
+      - cd saas && go run ./cmd/modapi -smoke
+
   workvendor:
     desc: fix work vendor mismatch on server
     cmds:

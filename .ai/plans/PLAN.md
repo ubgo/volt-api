@@ -10,8 +10,7 @@ Go monorepo boilerplate — API + Cron + CLI binaries sharing workspace modules 
 
 | Feature | Priority | Status | File |
 |---------|----------|--------|------|
-
-_No active plans._
+| Simple Authentication | high | in-progress | [simple-auth-plan.md](features/simple-auth-plan.md) |
 
 ## Completed
 
