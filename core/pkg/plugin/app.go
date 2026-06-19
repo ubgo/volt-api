@@ -9,9 +9,9 @@ import (
 	"context"
 	"core/pkg/redisclient"
 	"dbent"
+	"encoding/json"
 	"lace/bootinfo"
 	"lace/crypt"
-	"lace/goerr"
 	"lace/gotel"
 	"lace/gozap"
 	"log"
@@ -23,9 +23,36 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/ubgo/cache"
 	rediscache "github.com/ubgo/cache-redis"
+	"github.com/ubgo/errx"
 
 	_ "dbent/gen/ent/runtime"
 )
+
+// errReporter fans structured error Reports out to registered sinks. It
+// replaces goerr's package-global AddCallback. Reporting is explicit:
+// call ReportError(ctx, err).
+var errReporter = errx.NewRegistry()
+
+// ReportError projects err into an errx.Report and emits it to every
+// registered sink (no-op if err is not an *errx.Error).
+func ReportError(ctx context.Context, err error) {
+	errReporter.Report(ctx, err)
+}
+
+// errxGozapSink logs each error Report as structured JSON via gozap, so the
+// key/values stay expandable in HyperDX instead of collapsing to a string.
+type errxGozapSink struct{}
+
+func (errxGozapSink) Name() string { return "gozap" }
+
+func (errxGozapSink) Emit(ctx context.Context, r *errx.Report) error {
+	data, err := json.Marshal(r)
+	if err != nil {
+		return err
+	}
+	gozap.FromCtx(ctx).Sugar().Errorw(r.Message, "result", string(data))
+	return nil
+}
 
 type Plugin struct {
 	Cli         cli.Cli
@@ -158,10 +185,10 @@ func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Se
 	// 	return fields
 	// })
 
-	goerr.AddCallback(func(ctx context.Context, resp *goerr.ErrorResult) {
-		// send as JSON to hyperdx so it we can expand the key, values otherwise it will be a string
-		gozap.FromCtx(ctx).Sugar().Errorw(resp.Message, "result", resp.ToJSON())
-	})
+	// Wire the structured error-reporting sink. Unlike goerr's old global
+	// AddCallback (which auto-fired on Error()), errx is explicit: callers
+	// report via ReportError(ctx, err), which fans out to this gozap sink.
+	errReporter.Add(errxGozapSink{})
 
 	return nil
 }

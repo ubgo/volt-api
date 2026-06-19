@@ -19,6 +19,7 @@ require (
 	github.com/go-co-op/gocron/v2 v2.19.1
 	github.com/spf13/cobra v1.10.2
 	github.com/tmc/langchaingo v0.1.14
+	github.com/ubgo/errx v0.0.0-20260519152519-457a59143afb
 	github.com/ubgo/goutil v0.1.4
 	github.com/ubgo/shutdown v0.2.0
 	go.opentelemetry.io/otel v1.40.0
