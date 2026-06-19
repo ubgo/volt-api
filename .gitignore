@@ -46,3 +46,4 @@ thewildai_chat_rr
 shell
 
 .github/.secrets.*
+.claude/settings.local.json
