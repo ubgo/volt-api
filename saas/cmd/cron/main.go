@@ -10,11 +10,12 @@ import (
 	"lace/gocron/gocronmonitor"
 	"lace/gocron/gocronui"
 	"lace/gozap"
-	"lace/shutdown"
 
 	"saas/pkg/app"
+	"saas/pkg/shutlog"
 
 	"github.com/go-co-op/gocron/v2"
+	"github.com/ubgo/shutdown"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -86,33 +87,35 @@ func main() {
 
 	fmt.Println("Cron scheduler started. Press Ctrl+C to exit.")
 
-	shutdown.New(
-		shutdown.WithMsgShuttingDown("Shutting down scheduler..."),
-		shutdown.WithMsgShutdownCompleted("Scheduler stopped."),
-		shutdown.WithMsgShutdownFailed("Error shutting down scheduler"),
-		shutdown.WithLogger(gozap.GetLogger()),
-		shutdown.WithGracefulShutdownTimeout(0),
-		shutdown.WithShutdownHandler(
-			func(ctx context.Context) error {
-				// Shutdown the gocron-ui HTTP server
-				if httpSrv != nil {
-					if err := httpSrv.Shutdown(ctx); err != nil {
-						gozap.GetLogger().Error("Error shutting down gocron-ui server", zap.Error(err))
-					}
-				}
-				if err := scheduler.StopJobs(); err != nil {
-					gozap.GetLogger().Error("Error stopping scheduler jobs")
-					return err
-				}
-				if err := scheduler.Shutdown(); err != nil {
-					gozap.GetLogger().Error("Error shutting down scheduler")
-					return err
-				}
-				gozap.GetLogger().Info("Scheduler jobs stopped gracefully")
-				return nil
-			},
-		),
-	).Listen()
+	mgr := shutdown.New(
+		shutdown.WithLogger(shutlog.New(gozap.GetLogger())),
+		// Jobs may run long; allow a generous drain window (mirrors the old
+		// gocron WithStopTimeout(24h)) before the watchdog force-exits.
+		shutdown.WithBudget(24*time.Hour),
+	)
+
+	// Stop serving the dashboard first, then drain in-flight jobs.
+	_ = mgr.Register("gocron-ui", func(ctx context.Context) error {
+		if httpSrv == nil {
+			return nil
+		}
+		return httpSrv.Shutdown(ctx)
+	}, shutdown.WithPhase(shutdown.PhaseStopAccepting))
+
+	_ = mgr.Register("scheduler", func(ctx context.Context) error {
+		if err := scheduler.StopJobs(); err != nil {
+			return err
+		}
+		if err := scheduler.Shutdown(); err != nil {
+			return err
+		}
+		gozap.FromCtx(ctx).Info("Scheduler jobs stopped gracefully")
+		return nil
+	}, shutdown.WithPhase(shutdown.PhaseDrainTraffic), shutdown.WithTimeout(24*time.Hour))
+
+	if err := mgr.Listen(context.Background()); err != nil {
+		gozap.GetLogger().Error("shutdown completed with errors", zap.Error(err))
+	}
 }
 
 func registerExampleJob(scheduler gocron.Scheduler, customApp *app.CustomApp) {

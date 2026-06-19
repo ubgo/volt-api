@@ -6,9 +6,6 @@ replace (
 	apidash => ../apidash
 	config => ../config
 	core => ../core
-	github.com/khanakia/boilerplate-golang/modules/mod-auth => ../modules/mod-auth
-	github.com/khanakia/boilerplate-golang/modules/mod-workspace => ../modules/mod-workspace
-	github.com/khanakia/boilerplate-golang/modules/modkit => ../modules/modkit
 	lace => ../lace
 )
 
@@ -20,13 +17,10 @@ require (
 	github.com/cohesivestack/valgo v0.7.1
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-co-op/gocron/v2 v2.19.1
-	github.com/khanakia/boilerplate-golang/modules/mod-auth v0.0.0
-	github.com/khanakia/boilerplate-golang/modules/mod-workspace v0.0.0-00010101000000-000000000000
-	github.com/khanakia/boilerplate-golang/modules/modkit v0.0.0
-	github.com/lib/pq v1.12.3
 	github.com/spf13/cobra v1.10.2
 	github.com/tmc/langchaingo v0.1.14
 	github.com/ubgo/goutil v0.1.4
+	github.com/ubgo/shutdown v0.2.0
 	go.opentelemetry.io/otel v1.40.0
 	go.opentelemetry.io/otel/trace v1.40.0
 	go.uber.org/zap v1.27.1
@@ -91,7 +85,6 @@ require (
 	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.7 // indirect
-	github.com/matoous/go-nanoid/v2 v2.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect

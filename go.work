@@ -7,9 +7,6 @@ use (
 	./dbent
 	./examples
 	./lace
-	./modules/mod-auth
-	./modules/mod-workspace
-	./modules/modkit
 	./saas
 	./scripts
 )

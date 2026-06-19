@@ -11,7 +11,7 @@ require (
 	github.com/99designs/gqlgen v0.17.86
 	github.com/fatih/color v1.18.0
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/lib/pq v1.11.1
+	github.com/lib/pq v1.12.3
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/vektah/gqlparser/v2 v2.5.31
 )

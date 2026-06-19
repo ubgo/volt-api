@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"lace/shutdown"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ubgo/shutdown"
 )
 
 func main() {
@@ -29,12 +29,13 @@ func main() {
 		}
 	}()
 
-	s := shutdown.New(
-		shutdown.WithShutdownHandler(func(ctx context.Context) error {
-			log.Println("Shutting down server...")
-			return srv.Shutdown(ctx)
-		}),
-	)
+	mgr := shutdown.New()
+	_ = mgr.Register("http-server", func(ctx context.Context) error {
+		log.Println("Shutting down server...")
+		return srv.Shutdown(ctx)
+	}, shutdown.WithPhase(shutdown.PhaseStopAccepting))
 
-	s.Listen()
+	if err := mgr.Listen(context.Background()); err != nil {
+		log.Printf("shutdown: %v", err)
+	}
 }

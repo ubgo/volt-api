@@ -11,12 +11,14 @@ import (
 	"lace/ginserver"
 	"lace/gozap"
 	"lace/httppkg/middlewares"
-	"lace/shutdown"
 	"lace/util"
 	"saas/pkg/app"
 	"saas/pkg/apphandlers"
+	"saas/pkg/shutlog"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ubgo/shutdown"
 	"go.uber.org/zap"
 )
 
@@ -58,20 +60,28 @@ func main() {
 		RootConfig:     plugins.RootConfig,
 	})
 
-	defer shutdown.New(
-		shutdown.WithMsgShuttingDown("Shutting down API..."),
-		shutdown.WithMsgShutdownCompleted("API stopped."),
-		shutdown.WithMsgShutdownFailed("Error shutting down API"),
-		shutdown.WithLogger(gozap.GetLogger()),
-		shutdown.WithShutdownHandler(plugin.ShutdownHandler, func(ctx context.Context) error {
-			// Step 1: Stop receiving HTTP traffic
-			if err := serverServer.Shutdown(ctx); err != nil {
-				gozap.FromCtx(ctx).Error("HTTP server shutdown failed", zap.Error(err))
-				return err
-			}
-			return nil
-		}),
-	).Listen()
+	mgr := shutdown.New(
+		shutdown.WithLogger(shutlog.New(gozap.GetLogger())),
+		shutdown.WithBudget(45*time.Second),
+	)
+
+	// Stop accepting HTTP traffic first, then close downstream clients
+	// (NATS drain, DB, Redis, OTEL flush) in a later phase.
+	_ = mgr.Register("http-server", func(ctx context.Context) error {
+		if err := serverServer.Shutdown(ctx); err != nil {
+			gozap.FromCtx(ctx).Error("HTTP server shutdown failed", zap.Error(err))
+			return err
+		}
+		return nil
+	}, shutdown.WithPhase(shutdown.PhaseStopAccepting))
+
+	_ = mgr.Register("core-plugins", plugin.ShutdownHandler,
+		shutdown.WithPhase(shutdown.PhaseCloseClients),
+		shutdown.WithTimeout(30*time.Second))
 
 	go serverServer.Start()
+
+	if err := mgr.Listen(context.Background()); err != nil {
+		gozap.GetLogger().Error("shutdown completed with errors", zap.Error(err))
+	}
 }
