@@ -12,6 +12,8 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/redis/go-redis/v9 v9.17.3
 	github.com/spf13/cobra v1.10.2
+	github.com/ubgo/cache v0.1.0
+	github.com/ubgo/cache-redis v0.1.0
 	go.opentelemetry.io/otel v1.40.0
 	go.uber.org/zap v1.27.1
 	lace v0.0.0-00010101000000-000000000000

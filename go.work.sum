@@ -2232,6 +2232,8 @@ github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc h1:9lRDQMhESg+zvGYm
 github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc/go.mod h1:bciPuU6GHm1iF1pBvUfxfsH0Wmnc2VbpgvbI9ZWuIRs=
 github.com/uber/jaeger-client-go v2.30.0+incompatible h1:D6wyKGCecFaSRUpo8lCVbaOOb6ThwMmTEbhRwtKR97o=
 github.com/uber/jaeger-client-go v2.30.0+incompatible/go.mod h1:WVhlPFC8FDjOFMMWRy2pZqQJSXxYSwNYOkTr/Z6d3Kk=
+github.com/ubgo/cache v0.1.0/go.mod h1:2Z6dYQnKqvklI06GfUpUxaopjTNay8wV5GYM+m1/zDk=
+github.com/ubgo/cache-redis v0.1.0/go.mod h1:dvXbkrNll5Uvo+1CTpNJvh1xWr+g1gXlBXJT6yO77w4=
 github.com/ubgo/shutdown v0.2.0/go.mod h1:8aQb1xNlwltR5/QoZdliTpQV0c1CT8KyjqN/eHndla8=
 github.com/ugorji/go/codec v1.3.0 h1:Qd2W2sQawAfG8XSvzwhBeoGq71zXOC/Q1E9y/wUcsUA=
 github.com/ugorji/go/codec v1.3.0/go.mod h1:pRBVtBSKl77K30Bv8R2P+cLSGaTtex6fsA2Wjqmfxj4=

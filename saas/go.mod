@@ -104,6 +104,8 @@ require (
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
+	github.com/ubgo/cache v0.1.0 // indirect
+	github.com/ubgo/cache-redis v0.1.0 // indirect
 	github.com/ugorji/go/codec v1.3.1 // indirect
 	github.com/urfave/cli/v3 v3.6.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

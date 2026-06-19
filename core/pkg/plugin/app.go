@@ -10,19 +10,19 @@ import (
 	"core/pkg/redisclient"
 	"dbent"
 	"lace/bootinfo"
-	"lace/cacheredis"
 	"lace/crypt"
 	"lace/goerr"
 	"lace/gotel"
 	"lace/gozap"
 	"log"
 
-	"lace/cache"
 	"lace/db"
 
 	"lace/cli"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/ubgo/cache"
+	rediscache "github.com/ubgo/cache-redis"
 
 	_ "dbent/gen/ent/runtime"
 )
@@ -31,7 +31,7 @@ type Plugin struct {
 	Cli         cli.Cli
 	DB          db.DB
 	EntDB       dbent.EntDB
-	Cache       cache.Store
+	Cache       cache.Cache
 	RootConfig  *rootconfig.RootConfig
 	RedisClient *redis.Client
 }
@@ -66,7 +66,7 @@ func New(options ...AppPkgOption) *Plugin {
 
 	// entClient := plugins.EntDB.Client()
 
-	plugins.Cache = cacheredis.New(plugins.RedisClient)
+	plugins.Cache = rediscache.New(plugins.RedisClient)
 
 	crypt.LoadKey(configroot.Core.EncryptionKey)
 
