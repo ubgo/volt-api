@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"lace/buildinfo"
 	"lace/crypt"
-	"lace/gotel"
 	"lace/gozap"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.uber.org/zap"
@@ -70,8 +70,7 @@ func dbEntMigrateCommand(plugin *plugin.Plugin) *cobra.Command {
 		Use:   "migrate",
 		Short: "run migration command after re-deploy the app",
 		Run: func(cmd *cobra.Command, args []string) {
-			telem := gotel.MustGetTelemetry()
-			ctx, span := telem.TraceStart(context.Background(), "migrate-cli-command")
+			ctx, span := otel.Tracer("cli").Start(context.Background(), "migrate-cli-command")
 			span.SetAttributes(
 				buildinfo.WrapOtelAttributes(attribute.String("job.name", "migrate"))...,
 			)

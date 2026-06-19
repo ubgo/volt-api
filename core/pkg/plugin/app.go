@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"lace/bootinfo"
 	"lace/crypt"
-	"lace/gotel"
 	"lace/gozap"
 	"log"
 
@@ -24,6 +23,8 @@ import (
 	"github.com/ubgo/cache"
 	rediscache "github.com/ubgo/cache-redis"
 	"github.com/ubgo/errx"
+	"github.com/ubgo/otelkit"
+	sdklog "go.opentelemetry.io/otel/sdk/log"
 
 	_ "dbent/gen/ent/runtime"
 )
@@ -64,6 +65,10 @@ type Plugin struct {
 }
 
 var plugins *Plugin
+
+// telemetry holds the initialized OTEL bootstrap handle (nil when telemetry is
+// disabled), used by ShutdownHandler to flush on exit.
+var telemetry *otelkit.Telemetry
 
 func New(options ...AppPkgOption) *Plugin {
 	cfg := apppkgconfig{}
@@ -127,9 +132,11 @@ func ShutdownHandler(ctx context.Context) error {
 		log.Printf("Redis close failed: %v", err)
 	}
 
-	// Step 2: Wait for service-level background tasks to complete
-	if err := gotel.MustGetTelemetry().Shutdown(ctx); err != nil {
-		log.Printf("OpenTelemetry shutdown failed: %v", err)
+	// Step 2: Flush and shut down telemetry (ordered: logs, metrics, traces).
+	if telemetry != nil {
+		if err := telemetry.Shutdown(ctx); err != nil {
+			log.Printf("OpenTelemetry shutdown failed: %v", err)
+		}
 	}
 	return nil
 }
@@ -139,22 +146,46 @@ func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Se
 		return nil
 	}
 
-	telem, err := gotel.NewTelemetryWithPreExporters(context.Background(), gotel.PreExporterConfig{
-		Config: gotel.Config{
+	// Map the PKL otel config onto an otelkit Config. PKL is authoritative
+	// (WithEnvOverrides(false)). gotel could tee stdout+http per signal; otelkit
+	// is single-transport-per-signal, so HTTP wins when both are enabled.
+	auth := otelconfig.ApiKey
+	if otelconfig.PrefixBasic {
+		auth = "Basic " + auth
+	}
+	headers := map[string]string{}
+	if auth != "" {
+		headers["authorization"] = auth
+	}
+	signal := func(enabled bool) otelkit.SignalConfig {
+		sc := otelkit.SignalConfig{Enabled: enabled}
+		switch {
+		case otelconfig.EnableHttp:
+			sc.Transport = otelkit.TransportHTTP
+			sc.Endpoint = otelconfig.Endpoint
+			sc.EndpointIsURL = otelconfig.IsEndpoingUrl
+			sc.Headers = headers
+		case otelconfig.EnableStdout:
+			sc.Transport = otelkit.TransportStdout
+		}
+		return sc
+	}
+	tlsMode := otelkit.TLSModeTLS
+	if otelconfig.Insecure {
+		tlsMode = otelkit.TLSModePlaintext
+	}
+
+	tel, err := otelkit.Init(context.Background(),
+		otelkit.WithConfig(otelkit.Config{
 			ServiceName:    otelconfig.ServiceName,
 			ServiceVersion: otelconfig.ServiceVersion,
-			EnableLogs:     otelconfig.EnableLogs,
-			EnableTraces:   otelconfig.EnableTraces,
-			EnableMetrics:  otelconfig.EnableMetrics,
-		},
-		EnableStdout:  otelconfig.EnableStdout,
-		EnableHttp:    otelconfig.EnableHttp,
-		Endpoint:      otelconfig.Endpoint,
-		IsEndpoingUrl: otelconfig.IsEndpoingUrl,
-		PrefixBasic:   otelconfig.PrefixBasic,
-		ApiKey:        otelconfig.ApiKey,
-		Insecure:      otelconfig.Insecure,
-	})
+			Traces:         signal(otelconfig.EnableTraces),
+			Metrics:        signal(otelconfig.EnableMetrics),
+			Logs:           signal(otelconfig.EnableLogs),
+		}),
+		otelkit.WithEnvOverrides(false),
+		otelkit.WithTLS(tlsMode),
+	)
 	if err != nil {
 		bootinfo.GetBootInfo().SetServiceStatus("otel", bootinfo.ServiceStatus{
 			Status:  "error",
@@ -164,7 +195,13 @@ func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Se
 		panic(err)
 	}
 
-	telem.SetGlobal()
+	telemetry = tel
+	tel.SetGlobal()
+
+	// gozap's OTEL bridge wants the concrete SDK LoggerProvider; otelkit
+	// exposes the API interface. Type-assert (nil when logs are disabled —
+	// gozap guards against a nil provider).
+	sdkLP, _ := tel.LoggerProvider().(*sdklog.LoggerProvider)
 
 	gozap.InitGlobalLogger(gozap.Config{
 		EnableStdout: loggerconfig.EnableStdout,
@@ -175,7 +212,7 @@ func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Se
 			LogFile: loggerconfig.LocalConfig.LogFile,
 		},
 		ServiceName:    otelconfig.ServiceName,
-		LoggerProvider: telem.GetLoggerProvider(),
+		LoggerProvider: sdkLP,
 	})
 
 	// gozap.FromCtxInitCb(func(ctx context.Context) []zap.Field {
