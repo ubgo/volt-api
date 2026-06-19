@@ -1,44 +1,41 @@
 package gocronlogger
 
 import (
-	"go.uber.org/zap"
+	ulog "github.com/ubgo/logger"
 )
 
-// ZapLogger is a gocron.Logger adapter for zap
-type ZapLogger struct {
-	logger *zap.Logger
+// Logger is a gocron.Logger adapter backed by github.com/ubgo/logger.
+type Logger struct {
+	lg *ulog.Logger
 }
 
-// NewZapLogger creates a new ZapLogger
-func New(logger *zap.Logger) *ZapLogger {
-	return &ZapLogger{logger: logger}
+// New creates a gocron.Logger backed by ubgo/logger.
+func New(lg *ulog.Logger) *Logger {
+	return &Logger{lg: lg}
 }
 
-func (l *ZapLogger) Debug(msg string, args ...any) {
-	l.logger.Debug(msg, argsToZapFields(args)...)
+func (l *Logger) Debug(msg string, args ...any) {
+	l.lg.Debug(msg, argsToFields(args)...)
 }
 
-func (l *ZapLogger) Error(msg string, args ...any) {
-	l.logger.Error(msg, argsToZapFields(args)...)
+func (l *Logger) Error(msg string, args ...any) {
+	l.lg.Error(msg, argsToFields(args)...)
 }
 
-func (l *ZapLogger) Info(msg string, args ...any) {
-	l.logger.Info(msg, argsToZapFields(args)...)
+func (l *Logger) Info(msg string, args ...any) {
+	l.lg.Info(msg, argsToFields(args)...)
 }
 
-func (l *ZapLogger) Warn(msg string, args ...any) {
-	l.logger.Warn(msg, argsToZapFields(args)...)
+func (l *Logger) Warn(msg string, args ...any) {
+	l.lg.Warn(msg, argsToFields(args)...)
 }
 
-// argsToZapFields converts key-value pairs to zap fields
-func argsToZapFields(args []any) []zap.Field {
-	fields := make([]zap.Field, 0, len(args)/2)
-	for i := 0; i < len(args); i += 2 {
-		if i+1 < len(args) {
-			key, ok := args[i].(string)
-			if ok {
-				fields = append(fields, zap.Any(key, args[i+1]))
-			}
+// argsToFields converts gocron's key-value pairs to logger fields.
+func argsToFields(args []any) []ulog.Field {
+	fields := make([]ulog.Field, 0, len(args)/2)
+	for i := 0; i+1 < len(args); i += 2 {
+		if key, ok := args[i].(string); ok {
+			fields = append(fields, ulog.Any(key, args[i+1]))
 		}
 	}
 	return fields

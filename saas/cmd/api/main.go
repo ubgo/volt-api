@@ -6,10 +6,10 @@ import (
 	"config"
 	"config/gen/coreconfig/environment"
 	"context"
+	"core/pkg/applog"
 	"core/pkg/coreapi"
 	"core/pkg/plugin"
 	"lace/ginserver"
-	"lace/gozap"
 	"lace/httppkg/middlewares"
 	"lace/util"
 	"saas/pkg/app"
@@ -18,8 +18,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	ulog "github.com/ubgo/logger"
 	"github.com/ubgo/shutdown"
-	"go.uber.org/zap"
 )
 
 func main() {
@@ -61,7 +61,7 @@ func main() {
 	})
 
 	mgr := shutdown.New(
-		shutdown.WithLogger(shutlog.New(gozap.GetLogger())),
+		shutdown.WithLogger(shutlog.New(applog.GetLogger())),
 		shutdown.WithBudget(45*time.Second),
 	)
 
@@ -69,7 +69,7 @@ func main() {
 	// (NATS drain, DB, Redis, OTEL flush) in a later phase.
 	_ = mgr.Register("http-server", func(ctx context.Context) error {
 		if err := serverServer.Shutdown(ctx); err != nil {
-			gozap.FromCtx(ctx).Error("HTTP server shutdown failed", zap.Error(err))
+			applog.FromCtx(ctx).Error("HTTP server shutdown failed", ulog.Err(err))
 			return err
 		}
 		return nil
@@ -82,6 +82,6 @@ func main() {
 	go serverServer.Start()
 
 	if err := mgr.Listen(context.Background()); err != nil {
-		gozap.GetLogger().Error("shutdown completed with errors", zap.Error(err))
+		applog.GetLogger().Error("shutdown completed with errors", ulog.Err(err))
 	}
 }

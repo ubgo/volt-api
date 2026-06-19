@@ -2,21 +2,21 @@ package clicmd
 
 import (
 	"context"
+	"core/pkg/applog"
 	"core/pkg/plugin"
 	"dbent/pkg/dbent_migrate"
 	"fmt"
 	"lace/buildinfo"
 	"lace/crypt"
-	"lace/gozap"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
+	ulog "github.com/ubgo/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
-	"go.uber.org/zap"
 )
 
 func AddCommands(plugin *plugin.Plugin) {
@@ -77,7 +77,7 @@ func dbEntMigrateCommand(plugin *plugin.Plugin) *cobra.Command {
 
 			err := dbent_migrate.Migrate(ctx, plugin.DB)
 			if err != nil {
-				gozap.FromCtx(ctx).Error("failed to migrate the database", zap.Error(err))
+				applog.FromCtx(ctx).Error("failed to migrate the database", ulog.Err(err))
 				return
 			}
 			span.SetStatus(codes.Ok, "success")

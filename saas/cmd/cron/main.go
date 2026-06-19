@@ -6,21 +6,21 @@ import (
 	"net/http"
 	"time"
 
+	"core/pkg/applog"
 	"lace/gocron/gocronlogger"
 	"lace/gocron/gocronmonitor"
 	"lace/gocron/gocronui"
-	"lace/gozap"
 
 	"saas/pkg/app"
 	"saas/pkg/shutlog"
 
 	"github.com/go-co-op/gocron/v2"
+	ulog "github.com/ubgo/logger"
 	"github.com/ubgo/shutdown"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
 )
 
 const tracerName = "cron"
@@ -37,9 +37,9 @@ func main() {
 	customApp := app.New()
 
 	scheduler, err := gocron.NewScheduler(
-		gocron.WithLogger(gocronlogger.New(gozap.GetLogger())),
-		gocron.WithMonitor(gocronmonitor.New(gozap.GetLogger())),
-		gocron.WithMonitorStatus(gocronmonitor.New(gozap.GetLogger())),
+		gocron.WithLogger(gocronlogger.New(applog.GetLogger())),
+		gocron.WithMonitor(gocronmonitor.New(applog.GetLogger())),
+		gocron.WithMonitorStatus(gocronmonitor.New(applog.GetLogger())),
 		gocron.WithStopTimeout(24*time.Hour), // Wait up to 24h for jobs to complete on shutdown
 	)
 	if err != nil {
@@ -81,14 +81,14 @@ func main() {
 			InternalKey: customApp.RootConfig.Core.InternalKey,
 		})
 		gocronui.ListenAndLog(httpSrv, gocronCfg.UiPort, func(err error) {
-			gozap.GetLogger().Error("gocron-ui server failed", zap.Error(err))
+			applog.GetLogger().Error("gocron-ui server failed", ulog.Err(err))
 		})
 	}
 
 	fmt.Println("Cron scheduler started. Press Ctrl+C to exit.")
 
 	mgr := shutdown.New(
-		shutdown.WithLogger(shutlog.New(gozap.GetLogger())),
+		shutdown.WithLogger(shutlog.New(applog.GetLogger())),
 		// Jobs may run long; allow a generous drain window (mirrors the old
 		// gocron WithStopTimeout(24h)) before the watchdog force-exits.
 		shutdown.WithBudget(24*time.Hour),
@@ -109,12 +109,12 @@ func main() {
 		if err := scheduler.Shutdown(); err != nil {
 			return err
 		}
-		gozap.FromCtx(ctx).Info("Scheduler jobs stopped gracefully")
+		applog.FromCtx(ctx).Info("Scheduler jobs stopped gracefully")
 		return nil
 	}, shutdown.WithPhase(shutdown.PhaseDrainTraffic), shutdown.WithTimeout(24*time.Hour))
 
 	if err := mgr.Listen(context.Background()); err != nil {
-		gozap.GetLogger().Error("shutdown completed with errors", zap.Error(err))
+		applog.GetLogger().Error("shutdown completed with errors", ulog.Err(err))
 	}
 }
 
@@ -137,7 +137,7 @@ func registerExampleJob(scheduler gocron.Scheduler, customApp *app.CustomApp) {
 
 			span.SetStatus(codes.Ok, "success")
 			span.AddEvent("job_completed")
-			gozap.FromCtx(ctx).Info("Example job completed")
+			applog.FromCtx(ctx).Info("Example job completed")
 		}),
 		gocron.WithName("exampleJob"),
 		gocron.WithSingletonMode(gocron.LimitModeReschedule),

@@ -6,61 +6,63 @@ import (
 
 	"github.com/go-co-op/gocron/v2"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
+	ulog "github.com/ubgo/logger"
 )
 
-// ZapMonitor implements gocron.MonitorStatus for logging job metrics to zap/OpenTelemetry
-type ZapMonitor struct {
-	logger *zap.Logger
+// Monitor implements gocron.MonitorStatus, logging job metrics through
+// github.com/ubgo/logger (and on to OpenTelemetry via its sinks).
+type Monitor struct {
+	lg *ulog.Logger
 }
 
-// NewZapMonitor creates a new ZapMonitor
-func New(logger *zap.Logger) *ZapMonitor {
-	return &ZapMonitor{logger: logger.With(zap.String("component", "cron_monitor"))}
+// New creates a Monitor backed by ubgo/logger.
+func New(lg *ulog.Logger) *Monitor {
+	return &Monitor{lg: lg.With(ulog.String("component", "cron_monitor"))}
 }
 
-// IncrementJob logs job execution counts
-func (m *ZapMonitor) IncrementJob(id uuid.UUID, name string, tags []string, status gocron.JobStatus) {
-	m.logger.Info("job executed",
-		zap.String("job_id", id.String()),
-		zap.String("job_name", name),
-		zap.String("tags", strings.Join(tags, ",")),
-		zap.String("status", string(status)),
+// IncrementJob logs job execution counts.
+func (m *Monitor) IncrementJob(id uuid.UUID, name string, tags []string, status gocron.JobStatus) {
+	m.lg.Info("job executed",
+		ulog.String("job_id", id.String()),
+		ulog.String("job_name", name),
+		ulog.String("tags", strings.Join(tags, ",")),
+		ulog.String("status", string(status)),
 	)
 }
 
-// RecordJobTiming logs job timing metrics
-func (m *ZapMonitor) RecordJobTiming(startTime, endTime time.Time, id uuid.UUID, name string, tags []string) {
+// RecordJobTiming logs job timing metrics.
+func (m *Monitor) RecordJobTiming(startTime, endTime time.Time, id uuid.UUID, name string, tags []string) {
 	duration := endTime.Sub(startTime)
-	m.logger.Info("job timing",
-		zap.String("job_id", id.String()),
-		zap.String("job_name", name),
-		zap.String("tags", strings.Join(tags, ",")),
-		zap.Time("start_time", startTime),
-		zap.Time("end_time", endTime),
-		zap.Duration("duration", duration),
-		zap.Float64("duration_ms", float64(duration.Milliseconds())),
+	m.lg.Info("job timing",
+		ulog.String("job_id", id.String()),
+		ulog.String("job_name", name),
+		ulog.String("tags", strings.Join(tags, ",")),
+		ulog.Time("start_time", startTime),
+		ulog.Time("end_time", endTime),
+		ulog.Dur("duration", duration),
+		ulog.Float("duration_ms", float64(duration.Milliseconds())),
 	)
 }
 
-// RecordJobTimingWithStatus logs job timing with status and error details (MonitorStatus interface)
-func (m *ZapMonitor) RecordJobTimingWithStatus(startTime, endTime time.Time, id uuid.UUID, name string, tags []string, status gocron.JobStatus, err error) {
+// RecordJobTimingWithStatus logs job timing with status and error details
+// (the gocron.MonitorStatus interface).
+func (m *Monitor) RecordJobTimingWithStatus(startTime, endTime time.Time, id uuid.UUID, name string, tags []string, status gocron.JobStatus, err error) {
 	duration := endTime.Sub(startTime)
-	fields := []zap.Field{
-		zap.String("job_id", id.String()),
-		zap.String("job_name", name),
-		zap.String("tags", strings.Join(tags, ",")),
-		zap.Time("start_time", startTime),
-		zap.Time("end_time", endTime),
-		zap.Duration("duration", duration),
-		zap.Float64("duration_ms", float64(duration.Milliseconds())),
-		zap.String("status", string(status)),
+	fields := []ulog.Field{
+		ulog.String("job_id", id.String()),
+		ulog.String("job_name", name),
+		ulog.String("tags", strings.Join(tags, ",")),
+		ulog.Time("start_time", startTime),
+		ulog.Time("end_time", endTime),
+		ulog.Dur("duration", duration),
+		ulog.Float("duration_ms", float64(duration.Milliseconds())),
+		ulog.String("status", string(status)),
 	}
 
 	if err != nil {
-		fields = append(fields, zap.Error(err))
-		m.logger.Error("job completed with error", fields...)
+		fields = append(fields, ulog.Err(err))
+		m.lg.Error("job completed with error", fields...)
 	} else {
-		m.logger.Info("job completed", fields...)
+		m.lg.Info("job completed", fields...)
 	}
 }

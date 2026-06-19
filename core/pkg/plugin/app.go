@@ -7,12 +7,12 @@ import (
 	"config/gen/redisconfig"
 	"config/gen/rootconfig"
 	"context"
+	"core/pkg/applog"
 	"core/pkg/redisclient"
 	"dbent"
 	"encoding/json"
 	"lace/bootinfo"
 	"lace/crypt"
-	"lace/gozap"
 	"log"
 
 	"lace/db"
@@ -23,8 +23,8 @@ import (
 	"github.com/ubgo/cache"
 	rediscache "github.com/ubgo/cache-redis"
 	"github.com/ubgo/errx"
+	ulog "github.com/ubgo/logger"
 	"github.com/ubgo/otelkit"
-	sdklog "go.opentelemetry.io/otel/sdk/log"
 
 	_ "dbent/gen/ent/runtime"
 )
@@ -51,7 +51,7 @@ func (errxGozapSink) Emit(ctx context.Context, r *errx.Report) error {
 	if err != nil {
 		return err
 	}
-	gozap.FromCtx(ctx).Sugar().Errorw(r.Message, "result", string(data))
+	applog.FromCtx(ctx).Error(r.Message, ulog.String("result", string(data)))
 	return nil
 }
 
@@ -86,13 +86,13 @@ func New(options ...AppPkgOption) *Plugin {
 
 	err := initDB(configroot.Database, plugins)
 	if err != nil {
-		gozap.GetLogger().Sugar().Errorf("Error initializing DB: %v", err)
+		applog.GetLogger().Error("Error initializing DB", ulog.Err(err))
 		panic(err)
 	}
 
 	err = initRedis(&configroot.Redis, plugins)
 	if err != nil {
-		gozap.GetLogger().Sugar().Errorf("Error initializing Redis: %v", err)
+		applog.GetLogger().Error("Error initializing Redis", ulog.Err(err))
 		panic(err)
 	}
 
@@ -198,21 +198,14 @@ func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Se
 	telemetry = tel
 	tel.SetGlobal()
 
-	// gozap's OTEL bridge wants the concrete SDK LoggerProvider; otelkit
-	// exposes the API interface. Type-assert (nil when logs are disabled —
-	// gozap guards against a nil provider).
-	sdkLP, _ := tel.LoggerProvider().(*sdklog.LoggerProvider)
-
-	gozap.InitGlobalLogger(gozap.Config{
+	// applog's OTEL sink reads the global LoggerProvider that tel.SetGlobal()
+	// just registered, so the logger ships logs through the same pipeline.
+	applog.Init(applog.Config{
 		EnableStdout: loggerconfig.EnableStdout,
 		EnableOtel:   loggerconfig.EnableOtel,
-		EnableFile:   loggerconfig.EnableFile,
-		LocalConfig: gozap.LocalConfig{
-			Enabled: loggerconfig.LocalConfig.Enabled,
-			LogFile: loggerconfig.LocalConfig.LogFile,
-		},
-		ServiceName:    otelconfig.ServiceName,
-		LoggerProvider: sdkLP,
+		EnableFile:   loggerconfig.EnableFile && loggerconfig.LocalConfig.Enabled,
+		ServiceName:  otelconfig.ServiceName,
+		LogFile:      loggerconfig.LocalConfig.LogFile,
 	})
 
 	// gozap.FromCtxInitCb(func(ctx context.Context) []zap.Field {
@@ -239,7 +232,7 @@ func initRedis(rediscfg *redisconfig.Setting, plugins *Plugin) error {
 
 	// if error is related to the connection string then panic
 	if err != nil {
-		gozap.GetLogger().Sugar().Errorf("Error initializing Redis: %v", err)
+		applog.GetLogger().Error("Error initializing Redis", ulog.Err(err))
 		return err
 	}
 

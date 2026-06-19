@@ -15,10 +15,11 @@ require (
 	github.com/ubgo/cache v0.1.0
 	github.com/ubgo/cache-redis v0.1.0
 	github.com/ubgo/errx v0.0.0-20260519152519-457a59143afb
+	github.com/ubgo/logger v0.0.0-20260519153132-ab38593754bf
+	github.com/ubgo/logger/contrib/otel v0.0.0-20260519153132-ab38593754bf
 	github.com/ubgo/otelkit v0.0.0-20260619123107-6116534d3d2d
 	go.opentelemetry.io/otel v1.44.0
-	go.opentelemetry.io/otel/sdk/log v0.20.0
-	go.uber.org/zap v1.27.1
+	go.opentelemetry.io/otel/trace v1.44.0
 	lace v0.0.0-00010101000000-000000000000
 )
 
@@ -68,7 +69,6 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/contrib/bridges/otelzap v0.14.0 // indirect
 	go.opentelemetry.io/contrib/otelconf v0.24.0 // indirect
 	go.opentelemetry.io/contrib/propagators/autoprop v0.69.0 // indirect
 	go.opentelemetry.io/contrib/propagators/aws v1.44.0 // indirect
@@ -88,8 +88,8 @@ require (
 	go.opentelemetry.io/otel/log v0.20.0 // indirect
 	go.opentelemetry.io/otel/metric v1.44.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.44.0 // indirect
+	go.opentelemetry.io/otel/sdk/log v0.20.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.44.0 // indirect
-	go.opentelemetry.io/otel/trace v1.44.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
 	go.uber.org/mock v0.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
@@ -105,5 +105,4 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/grpc v1.81.1 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
-	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 )
