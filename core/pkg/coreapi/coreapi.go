@@ -4,11 +4,11 @@ import (
 	"config/gen/coreconfig"
 	"dbent/gen/ent"
 	"lace/bootinfo"
-	"lace/buildinfo"
 	"lace/ginserver"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ubgo/buildinfo"
 )
 
 type Config struct {
@@ -37,7 +37,7 @@ func New(config Config) {
 
 // versionHandler returns build information
 func (pkg coreApi) versionHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, buildinfo.Info())
+	c.JSON(http.StatusOK, buildinfo.Map())
 }
 
 // bootinfoHandler returns boot information

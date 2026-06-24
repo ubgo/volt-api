@@ -6,13 +6,13 @@ import (
 	"core/pkg/plugin"
 	"dbent/pkg/dbent_migrate"
 	"fmt"
-	"lace/buildinfo"
 	"lace/crypt"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
+	buildinfootel "github.com/ubgo/buildinfo/contrib/buildinfo-otel"
 	ulog "github.com/ubgo/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -72,7 +72,7 @@ func dbEntMigrateCommand(plugin *plugin.Plugin) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx, span := otel.Tracer("cli").Start(context.Background(), "migrate-cli-command")
 			span.SetAttributes(
-				buildinfo.WrapOtelAttributes(attribute.String("job.name", "migrate"))...,
+				buildinfootel.Attributes(attribute.String("job.name", "migrate"))...,
 			)
 
 			err := dbent_migrate.Migrate(ctx, plugin.DB)

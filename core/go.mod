@@ -12,6 +12,8 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/redis/go-redis/v9 v9.17.3
 	github.com/spf13/cobra v1.10.2
+	github.com/ubgo/buildinfo v0.1.0
+	github.com/ubgo/buildinfo/contrib/buildinfo-otel v0.1.0
 	github.com/ubgo/cache v0.1.0
 	github.com/ubgo/cache-redis v0.1.0
 	github.com/ubgo/errx v0.0.0-20260519152519-457a59143afb
