@@ -11,7 +11,6 @@ import (
 	"core/pkg/redisclient"
 	"dbent"
 	"encoding/json"
-	"lace/bootinfo"
 	"lace/crypt"
 	"log"
 
@@ -23,6 +22,8 @@ import (
 	"github.com/ubgo/cache"
 	rediscache "github.com/ubgo/cache-redis"
 	"github.com/ubgo/errx"
+	"github.com/ubgo/health"
+	healthredis "github.com/ubgo/health/contrib/health-redis"
 	ulog "github.com/ubgo/logger"
 	"github.com/ubgo/otelkit"
 
@@ -62,6 +63,10 @@ type Plugin struct {
 	Cache       cache.Cache
 	RootConfig  *rootconfig.RootConfig
 	RedisClient *redis.Client
+	// Health is the dependency health-check registry. Live checkers for the
+	// database and Redis are registered during New(); the api binary mounts
+	// /healthz, /readyz, /startupz over it and runs a background re-check loop.
+	Health *health.Registry
 }
 
 var plugins *Plugin
@@ -82,6 +87,7 @@ func New(options ...AppPkgOption) *Plugin {
 	plugins = &Plugin{
 		Cli:        cli,
 		RootConfig: configroot,
+		Health:     health.NewRegistry(),
 	}
 
 	err := initDB(configroot.Database, plugins)
@@ -187,11 +193,6 @@ func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Se
 		otelkit.WithTLS(tlsMode),
 	)
 	if err != nil {
-		bootinfo.GetBootInfo().SetServiceStatus("otel", bootinfo.ServiceStatus{
-			Status:  "error",
-			Error:   err.Error(),
-			Message: "OpenTelemetry initialization failed",
-		})
 		panic(err)
 	}
 
@@ -239,44 +240,27 @@ func initRedis(rediscfg *redisconfig.Setting, plugins *Plugin) error {
 	// error is on the redis side maybe permission related errors
 	err = redisclient.PingRedis(redisClient)
 	if err != nil {
-		bootinfo.GetBootInfo().SetServiceStatus("redis", bootinfo.ServiceStatus{
-			Status:  "error",
-			Error:   err.Error(),
-			Message: "Redis connection failed",
-		})
 		return err
 	}
 	plugins.RedisClient = redisClient
-	bootinfo.GetBootInfo().SetServiceStatus("redis", bootinfo.ServiceStatus{
-		Status:  "ok",
-		Error:   "",
-		Message: "Redis connection successful",
-	})
+
+	// Register a live readiness checker; the background loop re-pings Redis
+	// rather than relying on this boot-time outcome.
+	_ = plugins.Health.Register(healthredis.New("redis", redisClient))
 	return nil
 }
 
 func initDB(databaseconfig databaseconfig.Setting, plugins *Plugin) error {
 	db := dbent.InitDB(databaseconfig)
 
-	errdb := db.Ping()
-	if errdb != nil {
-		bootinfo.GetBootInfo().SetServiceStatus("database", bootinfo.ServiceStatus{
-			Status:  "error",
-			Error:   errdb.Error(),
-			Message: "Database connection failed",
-		})
-	} else {
-		bootinfo.GetBootInfo().SetServiceStatus("database", bootinfo.ServiceStatus{
-			Status:  "ok",
-			Error:   "",
-			Message: "Database connection successful",
-		})
-	}
-
 	entClient := dbent.New(db)
 
 	plugins.DB = db
 	plugins.EntDB = entClient
+
+	// Register a live readiness checker over the *sql.DB pool. Unlike the old
+	// boot-time ping, the background loop re-checks it continuously.
+	_ = plugins.Health.Register(newSQLDBChecker("database", db))
 
 	return nil
 }

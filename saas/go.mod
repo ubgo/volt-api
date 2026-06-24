@@ -21,6 +21,7 @@ require (
 	github.com/tmc/langchaingo v0.1.14
 	github.com/ubgo/errx v0.0.0-20260519152519-457a59143afb
 	github.com/ubgo/goutil v0.1.4
+	github.com/ubgo/health/contrib/health-gin v0.1.0
 	github.com/ubgo/logger v0.0.0-20260519153132-ab38593754bf
 	github.com/ubgo/shutdown v0.2.0
 	go.opentelemetry.io/otel v1.44.0
@@ -104,8 +105,12 @@ require (
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
+	github.com/ubgo/buildinfo v0.1.0 // indirect
+	github.com/ubgo/buildinfo/contrib/buildinfo-otel v0.1.0 // indirect
 	github.com/ubgo/cache v0.1.0 // indirect
 	github.com/ubgo/cache-redis v0.1.0 // indirect
+	github.com/ubgo/health v0.1.0 // indirect
+	github.com/ubgo/health/contrib/health-redis v0.1.0 // indirect
 	github.com/ubgo/logger/contrib/otel v0.0.0-20260519153132-ab38593754bf // indirect
 	github.com/ubgo/otelkit v0.0.0-20260619123107-6116534d3d2d // indirect
 	github.com/ugorji/go/codec v1.3.1 // indirect

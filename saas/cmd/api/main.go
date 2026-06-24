@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	healthgin "github.com/ubgo/health/contrib/health-gin"
 	ulog "github.com/ubgo/logger"
 	"github.com/ubgo/shutdown"
 )
@@ -53,6 +54,15 @@ func main() {
 		CoreConfig:     &appcfg.Core,
 	})
 
+	// Health probes: /healthz (liveness), /readyz (readiness), /startupz —
+	// all behind the internal-key guard. A background loop re-checks the
+	// registered dependency checkers (db, redis) every 30s; the handlers
+	// render the latest snapshot.
+	healthgin.Mount(serverServer.Router, plugins.Health,
+		healthgin.WithMiddleware(ginserver.MiddlewareInternalApiGuard(appcfg.Core.InternalKey)),
+	)
+	plugins.Health.Start(context.Background(), 30*time.Second)
+
 	apphandlers.New(apphandlers.Config{
 		HttpEngine:     serverServer.Router,
 		ApiRouterGroup: apiGroup,
@@ -64,6 +74,13 @@ func main() {
 		shutdown.WithLogger(shutlog.New(applog.GetLogger())),
 		shutdown.WithBudget(45*time.Second),
 	)
+
+	// Stop the background health re-check loop before closing clients, so a
+	// re-check never pings an already-closed DB/Redis connection.
+	_ = mgr.Register("health-checks", func(ctx context.Context) error {
+		plugins.Health.Stop()
+		return nil
+	}, shutdown.WithPhase(shutdown.PhaseStopAccepting))
 
 	// Stop accepting HTTP traffic first, then close downstream clients
 	// (NATS drain, DB, Redis, OTEL flush) in a later phase.
