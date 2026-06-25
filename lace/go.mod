@@ -14,13 +14,10 @@ require (
 	github.com/go-co-op/gocron/v2 v2.19.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.8.0
-	github.com/matoous/go-nanoid/v2 v2.1.0
-	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.10.2
 	github.com/ubgo/logger v0.0.0-20260519153132-ab38593754bf
 	github.com/vektah/gqlparser/v2 v2.5.31
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.65.0
-	go.opentelemetry.io/otel v1.44.0
 	go.opentelemetry.io/otel/trace v1.44.0
 )
 
@@ -72,6 +69,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/propagators/b3 v1.44.0 // indirect
+	go.opentelemetry.io/otel v1.44.0 // indirect
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.44.0 // indirect
 	go.opentelemetry.io/otel/metric v1.44.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.44.0 // indirect
