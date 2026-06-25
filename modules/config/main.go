@@ -9,7 +9,12 @@ import (
 )
 
 func Get() *rootconfig.RootConfig {
-	configDir, err := findDirectoryUp("config")
+	// Prefer the modules/config layout; fall back to a root-level config
+	// directory for older checkouts or alternate working directories.
+	configDir, err := findDirectoryUp(filepath.Join("modules", "config"))
+	if err != nil {
+		configDir, err = findDirectoryUp("config")
+	}
 	if err != nil {
 		panic(err)
 	}

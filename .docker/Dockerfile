@@ -39,13 +39,14 @@ EXPOSE $PORT
 
 COPY go.work ./
 COPY go.work.sum ./
-COPY config/go.mod ./config/
-COPY dbent/go.mod ./dbent/
-COPY apidash/go.mod ./apidash/
-COPY lace/go.mod ./lace/
-COPY scripts/go.mod ./scripts/
-COPY examples/go.mod ./examples/
-COPY saas/go.mod ./saas/
+COPY modules/config/go.mod ./modules/config/
+COPY modules/dbent/go.mod ./modules/dbent/
+COPY modules/apidash/go.mod ./modules/apidash/
+COPY modules/lace/go.mod ./modules/lace/
+COPY modules/scripts/go.mod ./modules/scripts/
+COPY modules/examples/go.mod ./modules/examples/
+COPY modules/core/go.mod ./modules/core/
+COPY modules/saas/go.mod ./modules/saas/
 
 ## CUSTOM
 ## AI: can be modified to include other custom modules

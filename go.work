@@ -1,14 +1,14 @@
 go 1.25.5
 
 use (
-	./apidash
-	./config
-	./core
-	./dbent
-	./examples
-	./lace
-	./saas
-	./scripts
+	./modules/apidash
+	./modules/config
+	./modules/core
+	./modules/dbent
+	./modules/examples
+	./modules/lace
+	./modules/saas
+	./modules/scripts
 )
 
 // replace github.com/getsentry/sentry-go => github.com/getsentry/sentry-go v0.14.0

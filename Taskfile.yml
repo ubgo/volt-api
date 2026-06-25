@@ -9,26 +9,26 @@ includes:
     taskfile: .docker/Taskfile.yml
     dir: ./.docker
   lace:
-    taskfile: ./lace/Taskfile.yml
-    dir: ./lace
+    taskfile: ./modules/lace/Taskfile.yml
+    dir: ./modules/lace
   config:
-    taskfile: ./config/Taskfile.yml
-    dir: ./config
+    taskfile: ./modules/config/Taskfile.yml
+    dir: ./modules/config
   scripts:
-    taskfile: ./scripts/Taskfile.yml
-    dir: ./scripts
+    taskfile: ./modules/scripts/Taskfile.yml
+    dir: ./modules/scripts
   dbent:
-    taskfile: ./dbent/Taskfile.yml
-    dir: ./dbent
+    taskfile: ./modules/dbent/Taskfile.yml
+    dir: ./modules/dbent
   core:
-    taskfile: ./core/Taskfile.yml
-    dir: ./core
+    taskfile: ./modules/core/Taskfile.yml
+    dir: ./modules/core
   saas:
-    taskfile: ./saas/Taskfile.yml
-    dir: ./saas
+    taskfile: ./modules/saas/Taskfile.yml
+    dir: ./modules/saas
   apidash:
-    taskfile: ./apidash/Taskfile.yml
-    dir: ./apidash
+    taskfile: ./modules/apidash/Taskfile.yml
+    dir: ./modules/apidash
 
   # CUSTOM
 
@@ -47,12 +47,12 @@ tasks:
 
   pkl:link:
     desc: |
-      Stabilize PKL paths from each mod-* Go module into config/pkl/modules/.
+      Stabilize PKL paths from each mod-* Go module into modules/config/pkl/modules/.
       Uses `go list -m -f '{{.Dir}}'` so paths resolve regardless of vendor /
       module-cache / go.work-replace mode (ADR-V2-007).
     cmds:
-      - rm -rf config/pkl/modules
-      - mkdir -p config/pkl/modules
+      - rm -rf modules/config/pkl/modules
+      - mkdir -p modules/config/pkl/modules
       - |
         set -e
         for path in $(go list -m -json all 2>/dev/null | jq -r 'select(.Path | startswith("github.com/khanakia/boilerplate-golang/modules/mod-")) | .Path + "\t" + (.Dir // "")' || true); do
@@ -61,7 +61,7 @@ tasks:
           if [ -z "$dir" ] || [ ! -d "$dir/config" ]; then
             continue
           fi
-          target="config/pkl/modules/$name"
+          target="modules/config/pkl/modules/$name"
           ln -sfn "$dir/config" "$target"
           echo "linked $target -> $dir/config"
         done
@@ -105,7 +105,7 @@ tasks:
   modapi:run:
     desc: Run the V2 modapi reference entry (smoke test)
     cmds:
-      - cd saas && go run ./cmd/modapi -smoke
+      - cd modules/saas && go run ./cmd/modapi -smoke
 
   workvendor:
     desc: fix work vendor mismatch on server

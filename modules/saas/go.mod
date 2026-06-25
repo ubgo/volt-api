@@ -109,6 +109,7 @@ require (
 	github.com/ubgo/buildinfo/contrib/buildinfo-otel v0.1.0 // indirect
 	github.com/ubgo/cache v0.1.0 // indirect
 	github.com/ubgo/cache-redis v0.1.0 // indirect
+	github.com/ubgo/crypt v0.0.0-20260504095124-aefc1abb0446 // indirect
 	github.com/ubgo/health v0.1.0 // indirect
 	github.com/ubgo/health/contrib/health-redis v0.1.0 // indirect
 	github.com/ubgo/logger/contrib/otel v0.0.0-20260519153132-ab38593754bf // indirect
