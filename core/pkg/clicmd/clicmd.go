@@ -6,13 +6,13 @@ import (
 	"core/pkg/plugin"
 	"dbent/pkg/dbent_migrate"
 	"fmt"
-	"lace/crypt"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
 	buildinfootel "github.com/ubgo/buildinfo/contrib/buildinfo-otel"
+	ubgocrypt "github.com/ubgo/crypt"
 	ulog "github.com/ubgo/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -57,7 +57,7 @@ func AddCommands(plugin *plugin.Plugin) {
 	rootCmd.AddCommand(pingCommand)
 	rootCmd.AddCommand(dbEntMigrateCommand(plugin))
 	rootCmd.AddCommand(writeDateTime)
-	rootCmd.AddCommand(cryptCommand())
+	rootCmd.AddCommand(cryptCommand(plugin.RootConfig.Core.EncryptionKey))
 }
 
 func dbEntMigrateCommand(plugin *plugin.Plugin) *cobra.Command {
@@ -94,9 +94,11 @@ func dbEntMigrateCommand(plugin *plugin.Plugin) *cobra.Command {
 - go run ./cmd/cli crypt -e "hello world"
 - go run ./cmd/cli crypt -d "encrypted text here"
 */
-func cryptCommand() *cobra.Command {
+func cryptCommand(encryptionKey string) *cobra.Command {
 	var encrypt bool
 	var decrypt bool
+
+	key := []byte(encryptionKey)
 
 	cmd := &cobra.Command{
 		Use:   "crypt",
@@ -106,20 +108,22 @@ func cryptCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			text := args[0]
 
+			// AES-CBC (hex(IV||PKCS7) wire format) preserves compatibility with
+			// values previously written by the old lace/crypt package.
 			if encrypt {
-				encrypted, err := crypt.Encrypt(text)
+				encrypted, err := ubgocrypt.EncryptCBC(key, []byte(text))
 				if err != nil {
 					fmt.Printf("Error encrypting text: %v\n", err)
 					return
 				}
 				fmt.Printf("Encrypted: %s\n", encrypted)
 			} else if decrypt {
-				decrypted, err := crypt.Decrypt(text)
+				decrypted, err := ubgocrypt.DecryptCBC(key, text)
 				if err != nil {
 					fmt.Printf("Error decrypting text: %v\n", err)
 					return
 				}
-				fmt.Printf("Decrypted: %s\n", decrypted)
+				fmt.Printf("Decrypted: %s\n", string(decrypted))
 			} else {
 				fmt.Println("Please specify either --encrypt or --decrypt flag")
 				cmd.Help()

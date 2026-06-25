@@ -16,6 +16,7 @@ require (
 	github.com/ubgo/buildinfo/contrib/buildinfo-otel v0.1.0
 	github.com/ubgo/cache v0.1.0
 	github.com/ubgo/cache-redis v0.1.0
+	github.com/ubgo/crypt v0.0.0-20260504095124-aefc1abb0446
 	github.com/ubgo/errx v0.0.0-20260519152519-457a59143afb
 	github.com/ubgo/health v0.1.0
 	github.com/ubgo/health/contrib/health-redis v0.1.0

@@ -11,7 +11,6 @@ import (
 	"core/pkg/redisclient"
 	"dbent"
 	"encoding/json"
-	"lace/crypt"
 	"log"
 
 	"lace/db"
@@ -105,8 +104,6 @@ func New(options ...AppPkgOption) *Plugin {
 	// entClient := plugins.EntDB.Client()
 
 	plugins.Cache = rediscache.New(plugins.RedisClient)
-
-	crypt.LoadKey(configroot.Core.EncryptionKey)
 
 	// pubsub.New()
 
