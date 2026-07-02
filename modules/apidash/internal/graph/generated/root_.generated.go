@@ -6,32 +6,21 @@ import (
 	"bytes"
 	"context"
 	"dbent/gen/ent"
-	"errors"
+	"fmt"
 	"sync/atomic"
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/99designs/gqlgen/graphql/introspection"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
 // NewExecutableSchema creates an ExecutableSchema from the ResolverRoot interface.
 func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
-	return &executableSchema{
-		schema:     cfg.Schema,
-		resolvers:  cfg.Resolvers,
-		directives: cfg.Directives,
-		complexity: cfg.Complexity,
-	}
+	return &executableSchema{SchemaData: cfg.Schema, Resolvers: cfg.Resolvers, Directives: cfg.Directives, ComplexityRoot: cfg.Complexity}
 }
 
-type Config struct {
-	Schema     *ast.Schema
-	Resolvers  ResolverRoot
-	Directives DirectiveRoot
-	Complexity ComplexityRoot
-}
+type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
 	Mutation() MutationResolver
@@ -94,27 +83,22 @@ type ComplexityRoot struct {
 	}
 }
 
-type executableSchema struct {
-	schema     *ast.Schema
-	resolvers  ResolverRoot
-	directives DirectiveRoot
-	complexity ComplexityRoot
-}
+type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 func (e *executableSchema) Schema() *ast.Schema {
-	if e.schema != nil {
-		return e.schema
+	if e.SchemaData != nil {
+		return e.SchemaData
 	}
 	return parsedSchema
 }
 
 func (e *executableSchema) Complexity(ctx context.Context, typeName, field string, childComplexity int, rawArgs map[string]any) (int, bool) {
-	ec := executionContext{nil, e, 0, 0, nil}
+	ec := newExecutionContext(nil, e, nil)
 	_ = ec
 	switch typeName + "." + field {
 
 	case "Mutation.createUser":
-		if e.complexity.Mutation.CreateUser == nil {
+		if e.ComplexityRoot.Mutation.CreateUser == nil {
 			break
 		}
 
@@ -123,10 +107,9 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(ent.CreateUserInput)), true
-
+		return e.ComplexityRoot.Mutation.CreateUser(childComplexity, args["input"].(ent.CreateUserInput)), true
 	case "Mutation.deleteUser":
-		if e.complexity.Mutation.DeleteUser == nil {
+		if e.ComplexityRoot.Mutation.DeleteUser == nil {
 			break
 		}
 
@@ -135,17 +118,15 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteUser(childComplexity, args["id"].(string)), true
-
+		return e.ComplexityRoot.Mutation.DeleteUser(childComplexity, args["id"].(string)), true
 	case "Mutation.ping":
-		if e.complexity.Mutation.Ping == nil {
+		if e.ComplexityRoot.Mutation.Ping == nil {
 			break
 		}
 
-		return e.complexity.Mutation.Ping(childComplexity), true
-
+		return e.ComplexityRoot.Mutation.Ping(childComplexity), true
 	case "Mutation.updateUser":
-		if e.complexity.Mutation.UpdateUser == nil {
+		if e.ComplexityRoot.Mutation.UpdateUser == nil {
 			break
 		}
 
@@ -154,10 +135,9 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(string), args["input"].(ent.UpdateUserInput)), true
-
+		return e.ComplexityRoot.Mutation.UpdateUser(childComplexity, args["id"].(string), args["input"].(ent.UpdateUserInput)), true
 	case "Mutation.updateUserName":
-		if e.complexity.Mutation.UpdateUserName == nil {
+		if e.ComplexityRoot.Mutation.UpdateUserName == nil {
 			break
 		}
 
@@ -166,38 +146,35 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateUserName(childComplexity, args["id"].(string), args["name"].(string)), true
+		return e.ComplexityRoot.Mutation.UpdateUserName(childComplexity, args["id"].(string), args["name"].(string)), true
 
 	case "PageInfo.endCursor":
-		if e.complexity.PageInfo.EndCursor == nil {
+		if e.ComplexityRoot.PageInfo.EndCursor == nil {
 			break
 		}
 
-		return e.complexity.PageInfo.EndCursor(childComplexity), true
-
+		return e.ComplexityRoot.PageInfo.EndCursor(childComplexity), true
 	case "PageInfo.hasNextPage":
-		if e.complexity.PageInfo.HasNextPage == nil {
+		if e.ComplexityRoot.PageInfo.HasNextPage == nil {
 			break
 		}
 
-		return e.complexity.PageInfo.HasNextPage(childComplexity), true
-
+		return e.ComplexityRoot.PageInfo.HasNextPage(childComplexity), true
 	case "PageInfo.hasPreviousPage":
-		if e.complexity.PageInfo.HasPreviousPage == nil {
+		if e.ComplexityRoot.PageInfo.HasPreviousPage == nil {
 			break
 		}
 
-		return e.complexity.PageInfo.HasPreviousPage(childComplexity), true
-
+		return e.ComplexityRoot.PageInfo.HasPreviousPage(childComplexity), true
 	case "PageInfo.startCursor":
-		if e.complexity.PageInfo.StartCursor == nil {
+		if e.ComplexityRoot.PageInfo.StartCursor == nil {
 			break
 		}
 
-		return e.complexity.PageInfo.StartCursor(childComplexity), true
+		return e.ComplexityRoot.PageInfo.StartCursor(childComplexity), true
 
 	case "Query.getUser":
-		if e.complexity.Query.GetUser == nil {
+		if e.ComplexityRoot.Query.GetUser == nil {
 			break
 		}
 
@@ -206,10 +183,10 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.GetUser(childComplexity, args["id"].(string)), true
+		return e.ComplexityRoot.Query.GetUser(childComplexity, args["id"].(string)), true
 
 	case "Query.node":
-		if e.complexity.Query.Node == nil {
+		if e.ComplexityRoot.Query.Node == nil {
 			break
 		}
 
@@ -218,10 +195,9 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Node(childComplexity, args["id"].(string)), true
-
+		return e.ComplexityRoot.Query.Node(childComplexity, args["id"].(string)), true
 	case "Query.nodes":
-		if e.complexity.Query.Nodes == nil {
+		if e.ComplexityRoot.Query.Nodes == nil {
 			break
 		}
 
@@ -230,17 +206,15 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Nodes(childComplexity, args["ids"].([]string)), true
-
+		return e.ComplexityRoot.Query.Nodes(childComplexity, args["ids"].([]string)), true
 	case "Query.ping":
-		if e.complexity.Query.Ping == nil {
+		if e.ComplexityRoot.Query.Ping == nil {
 			break
 		}
 
-		return e.complexity.Query.Ping(childComplexity), true
-
+		return e.ComplexityRoot.Query.Ping(childComplexity), true
 	case "Query.user":
-		if e.complexity.Query.User == nil {
+		if e.ComplexityRoot.Query.User == nil {
 			break
 		}
 
@@ -249,10 +223,9 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.User(childComplexity, args["id"].(string)), true
-
+		return e.ComplexityRoot.Query.User(childComplexity, args["id"].(string)), true
 	case "Query.userByEmail":
-		if e.complexity.Query.UserByEmail == nil {
+		if e.ComplexityRoot.Query.UserByEmail == nil {
 			break
 		}
 
@@ -261,10 +234,9 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.UserByEmail(childComplexity, args["email"].(string)), true
-
+		return e.ComplexityRoot.Query.UserByEmail(childComplexity, args["email"].(string)), true
 	case "Query.users":
-		if e.complexity.Query.Users == nil {
+		if e.ComplexityRoot.Query.Users == nil {
 			break
 		}
 
@@ -273,112 +245,100 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Users(childComplexity, args["after"].(*entgql.Cursor[string]), args["first"].(*int), args["before"].(*entgql.Cursor[string]), args["last"].(*int), args["orderBy"].([]*ent.UserOrder), args["where"].(*ent.UserWhereInput)), true
+		return e.ComplexityRoot.Query.Users(childComplexity, args["after"].(*entgql.Cursor[string]), args["first"].(*int), args["before"].(*entgql.Cursor[string]), args["last"].(*int), args["orderBy"].([]*ent.UserOrder), args["where"].(*ent.UserWhereInput)), true
 
 	case "User.createdAt":
-		if e.complexity.User.CreatedAt == nil {
+		if e.ComplexityRoot.User.CreatedAt == nil {
 			break
 		}
 
-		return e.complexity.User.CreatedAt(childComplexity), true
-
+		return e.ComplexityRoot.User.CreatedAt(childComplexity), true
 	case "User.displayName":
-		if e.complexity.User.DisplayName == nil {
+		if e.ComplexityRoot.User.DisplayName == nil {
 			break
 		}
 
-		return e.complexity.User.DisplayName(childComplexity), true
-
+		return e.ComplexityRoot.User.DisplayName(childComplexity), true
 	case "User.email":
-		if e.complexity.User.Email == nil {
+		if e.ComplexityRoot.User.Email == nil {
 			break
 		}
 
-		return e.complexity.User.Email(childComplexity), true
-
+		return e.ComplexityRoot.User.Email(childComplexity), true
 	case "User.firstName":
-		if e.complexity.User.FirstName == nil {
+		if e.ComplexityRoot.User.FirstName == nil {
 			break
 		}
 
-		return e.complexity.User.FirstName(childComplexity), true
-
+		return e.ComplexityRoot.User.FirstName(childComplexity), true
 	case "User.fullName":
-		if e.complexity.User.FullName == nil {
+		if e.ComplexityRoot.User.FullName == nil {
 			break
 		}
 
-		return e.complexity.User.FullName(childComplexity), true
-
+		return e.ComplexityRoot.User.FullName(childComplexity), true
 	case "User.id":
-		if e.complexity.User.ID == nil {
+		if e.ComplexityRoot.User.ID == nil {
 			break
 		}
 
-		return e.complexity.User.ID(childComplexity), true
-
+		return e.ComplexityRoot.User.ID(childComplexity), true
 	case "User.isActive":
-		if e.complexity.User.IsActive == nil {
+		if e.ComplexityRoot.User.IsActive == nil {
 			break
 		}
 
-		return e.complexity.User.IsActive(childComplexity), true
-
+		return e.ComplexityRoot.User.IsActive(childComplexity), true
 	case "User.lastName":
-		if e.complexity.User.LastName == nil {
+		if e.ComplexityRoot.User.LastName == nil {
 			break
 		}
 
-		return e.complexity.User.LastName(childComplexity), true
-
+		return e.ComplexityRoot.User.LastName(childComplexity), true
 	case "User.name":
-		if e.complexity.User.Name == nil {
+		if e.ComplexityRoot.User.Name == nil {
 			break
 		}
 
-		return e.complexity.User.Name(childComplexity), true
-
+		return e.ComplexityRoot.User.Name(childComplexity), true
 	case "User.updatedAt":
-		if e.complexity.User.UpdatedAt == nil {
+		if e.ComplexityRoot.User.UpdatedAt == nil {
 			break
 		}
 
-		return e.complexity.User.UpdatedAt(childComplexity), true
+		return e.ComplexityRoot.User.UpdatedAt(childComplexity), true
 
 	case "UserConnection.edges":
-		if e.complexity.UserConnection.Edges == nil {
+		if e.ComplexityRoot.UserConnection.Edges == nil {
 			break
 		}
 
-		return e.complexity.UserConnection.Edges(childComplexity), true
-
+		return e.ComplexityRoot.UserConnection.Edges(childComplexity), true
 	case "UserConnection.pageInfo":
-		if e.complexity.UserConnection.PageInfo == nil {
+		if e.ComplexityRoot.UserConnection.PageInfo == nil {
 			break
 		}
 
-		return e.complexity.UserConnection.PageInfo(childComplexity), true
-
+		return e.ComplexityRoot.UserConnection.PageInfo(childComplexity), true
 	case "UserConnection.totalCount":
-		if e.complexity.UserConnection.TotalCount == nil {
+		if e.ComplexityRoot.UserConnection.TotalCount == nil {
 			break
 		}
 
-		return e.complexity.UserConnection.TotalCount(childComplexity), true
+		return e.ComplexityRoot.UserConnection.TotalCount(childComplexity), true
 
 	case "UserEdge.cursor":
-		if e.complexity.UserEdge.Cursor == nil {
+		if e.ComplexityRoot.UserEdge.Cursor == nil {
 			break
 		}
 
-		return e.complexity.UserEdge.Cursor(childComplexity), true
-
+		return e.ComplexityRoot.UserEdge.Cursor(childComplexity), true
 	case "UserEdge.node":
-		if e.complexity.UserEdge.Node == nil {
+		if e.ComplexityRoot.UserEdge.Node == nil {
 			break
 		}
 
-		return e.complexity.UserEdge.Node(childComplexity), true
+		return e.ComplexityRoot.UserEdge.Node(childComplexity), true
 
 	}
 	return 0, false
@@ -386,7 +346,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
-	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
+	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateUserInput,
 		ec.unmarshalInputUpdateUserInput,
@@ -405,9 +365,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 				ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
 				data = ec._Query(ctx, opCtx.Operation.SelectionSet)
 			} else {
-				if atomic.LoadInt32(&ec.pendingDeferred) > 0 {
-					result := <-ec.deferredResults
-					atomic.AddInt32(&ec.pendingDeferred, -1)
+				if atomic.LoadInt32(&ec.PendingDeferred) > 0 {
+					result := <-ec.DeferredResults
+					atomic.AddInt32(&ec.PendingDeferred, -1)
 					data = result.Result
 					response.Path = result.Path
 					response.Label = result.Label
@@ -419,8 +379,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			var buf bytes.Buffer
 			data.MarshalGQL(&buf)
 			response.Data = buf.Bytes()
-			if atomic.LoadInt32(&ec.deferred) > 0 {
-				hasNext := atomic.LoadInt32(&ec.pendingDeferred) > 0
+			if atomic.LoadInt32(&ec.Deferred) > 0 {
+				hasNext := atomic.LoadInt32(&ec.PendingDeferred) > 0
 				response.HasNext = &hasNext
 			}
 
@@ -448,44 +408,22 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 }
 
 type executionContext struct {
-	*graphql.OperationContext
-	*executableSchema
-	deferred        int32
-	pendingDeferred int32
-	deferredResults chan graphql.DeferredResult
+	*graphql.ExecutionContextState[ResolverRoot, DirectiveRoot, ComplexityRoot]
 }
 
-func (ec *executionContext) processDeferredGroup(dg graphql.DeferredGroup) {
-	atomic.AddInt32(&ec.pendingDeferred, 1)
-	go func() {
-		ctx := graphql.WithFreshResponseContext(dg.Context)
-		dg.FieldSet.Dispatch(ctx)
-		ds := graphql.DeferredResult{
-			Path:   dg.Path,
-			Label:  dg.Label,
-			Result: dg.FieldSet,
-			Errors: graphql.GetErrors(ctx),
-		}
-		// null fields should bubble up
-		if dg.FieldSet.Invalids > 0 {
-			ds.Result = graphql.Null
-		}
-		ec.deferredResults <- ds
-	}()
-}
-
-func (ec *executionContext) introspectSchema() (*introspection.Schema, error) {
-	if ec.DisableIntrospection {
-		return nil, errors.New("introspection disabled")
+func newExecutionContext(
+	opCtx *graphql.OperationContext,
+	execSchema *executableSchema,
+	deferredResults chan graphql.DeferredResult,
+) *executionContext {
+	return &executionContext{
+		ExecutionContextState: graphql.NewExecutionContextState[ResolverRoot, DirectiveRoot, ComplexityRoot](
+			opCtx,
+			(*graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot])(execSchema),
+			parsedSchema,
+			deferredResults,
+		),
 	}
-	return introspection.WrapSchema(ec.Schema()), nil
-}
-
-func (ec *executionContext) introspectType(name string) (*introspection.Type, error) {
-	if ec.DisableIntrospection {
-		return nil, errors.New("introspection disabled")
-	}
-	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
 var sources = []*ast.Source{
@@ -603,10 +541,6 @@ type Query {
     where: UserWhereInput
   ): UserConnection!
 }
-"""
-The builtin Time type
-"""
-scalar Time
 """
 UpdateUserInput is used for update User object.
 Input was generated by ent.
@@ -790,6 +724,7 @@ input UserWhereInput {
 `, BuiltIn: false},
 	{Name: "../schemas/schema.graphql", Input: `directive @internal on FIELD_DEFINITION
 
+scalar Time
 scalar Uint
 scalar Uint64
 scalar Map
@@ -867,3 +802,181 @@ extend type Mutation {
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
+
+// childFields_* functions provide shared child field context lookups.
+// Each function is generated once per unique object type, deduplicating the
+// switch statements that were previously inlined in every fieldContext_* function.
+
+func (ec *executionContext) childFields_PageInfo(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "hasNextPage":
+		return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+	case "hasPreviousPage":
+		return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+	case "startCursor":
+		return ec.fieldContext_PageInfo_startCursor(ctx, field)
+	case "endCursor":
+		return ec.fieldContext_PageInfo_endCursor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+}
+
+func (ec *executionContext) childFields_User(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_User_id(ctx, field)
+	case "createdAt":
+		return ec.fieldContext_User_createdAt(ctx, field)
+	case "updatedAt":
+		return ec.fieldContext_User_updatedAt(ctx, field)
+	case "firstName":
+		return ec.fieldContext_User_firstName(ctx, field)
+	case "lastName":
+		return ec.fieldContext_User_lastName(ctx, field)
+	case "email":
+		return ec.fieldContext_User_email(ctx, field)
+	case "isActive":
+		return ec.fieldContext_User_isActive(ctx, field)
+	case "fullName":
+		return ec.fieldContext_User_fullName(ctx, field)
+	case "name":
+		return ec.fieldContext_User_name(ctx, field)
+	case "displayName":
+		return ec.fieldContext_User_displayName(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+}
+
+func (ec *executionContext) childFields_UserConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_UserConnection_edges(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_UserConnection_pageInfo(ctx, field)
+	case "totalCount":
+		return ec.fieldContext_UserConnection_totalCount(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UserConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_UserEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "node":
+		return ec.fieldContext_UserEdge_node(ctx, field)
+	case "cursor":
+		return ec.fieldContext_UserEdge_cursor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UserEdge", field.Name)
+}
+
+func (ec *executionContext) childFields___Directive(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "name":
+		return ec.fieldContext___Directive_name(ctx, field)
+	case "description":
+		return ec.fieldContext___Directive_description(ctx, field)
+	case "isRepeatable":
+		return ec.fieldContext___Directive_isRepeatable(ctx, field)
+	case "locations":
+		return ec.fieldContext___Directive_locations(ctx, field)
+	case "args":
+		return ec.fieldContext___Directive_args(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type __Directive", field.Name)
+}
+
+func (ec *executionContext) childFields___EnumValue(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "name":
+		return ec.fieldContext___EnumValue_name(ctx, field)
+	case "description":
+		return ec.fieldContext___EnumValue_description(ctx, field)
+	case "isDeprecated":
+		return ec.fieldContext___EnumValue_isDeprecated(ctx, field)
+	case "deprecationReason":
+		return ec.fieldContext___EnumValue_deprecationReason(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type __EnumValue", field.Name)
+}
+
+func (ec *executionContext) childFields___Field(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "name":
+		return ec.fieldContext___Field_name(ctx, field)
+	case "description":
+		return ec.fieldContext___Field_description(ctx, field)
+	case "args":
+		return ec.fieldContext___Field_args(ctx, field)
+	case "type":
+		return ec.fieldContext___Field_type(ctx, field)
+	case "isDeprecated":
+		return ec.fieldContext___Field_isDeprecated(ctx, field)
+	case "deprecationReason":
+		return ec.fieldContext___Field_deprecationReason(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type __Field", field.Name)
+}
+
+func (ec *executionContext) childFields___InputValue(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "name":
+		return ec.fieldContext___InputValue_name(ctx, field)
+	case "description":
+		return ec.fieldContext___InputValue_description(ctx, field)
+	case "type":
+		return ec.fieldContext___InputValue_type(ctx, field)
+	case "defaultValue":
+		return ec.fieldContext___InputValue_defaultValue(ctx, field)
+	case "isDeprecated":
+		return ec.fieldContext___InputValue_isDeprecated(ctx, field)
+	case "deprecationReason":
+		return ec.fieldContext___InputValue_deprecationReason(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type __InputValue", field.Name)
+}
+
+func (ec *executionContext) childFields___Schema(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "description":
+		return ec.fieldContext___Schema_description(ctx, field)
+	case "types":
+		return ec.fieldContext___Schema_types(ctx, field)
+	case "queryType":
+		return ec.fieldContext___Schema_queryType(ctx, field)
+	case "mutationType":
+		return ec.fieldContext___Schema_mutationType(ctx, field)
+	case "subscriptionType":
+		return ec.fieldContext___Schema_subscriptionType(ctx, field)
+	case "directives":
+		return ec.fieldContext___Schema_directives(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+}
+
+func (ec *executionContext) childFields___Type(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "kind":
+		return ec.fieldContext___Type_kind(ctx, field)
+	case "name":
+		return ec.fieldContext___Type_name(ctx, field)
+	case "description":
+		return ec.fieldContext___Type_description(ctx, field)
+	case "specifiedByURL":
+		return ec.fieldContext___Type_specifiedByURL(ctx, field)
+	case "fields":
+		return ec.fieldContext___Type_fields(ctx, field)
+	case "interfaces":
+		return ec.fieldContext___Type_interfaces(ctx, field)
+	case "possibleTypes":
+		return ec.fieldContext___Type_possibleTypes(ctx, field)
+	case "enumValues":
+		return ec.fieldContext___Type_enumValues(ctx, field)
+	case "inputFields":
+		return ec.fieldContext___Type_inputFields(ctx, field)
+	case "ofType":
+		return ec.fieldContext___Type_ofType(ctx, field)
+	case "isOneOf":
+		return ec.fieldContext___Type_isOneOf(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
+}

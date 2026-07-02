@@ -1,5 +1,6 @@
 directive @internal on FIELD_DEFINITION
 
+scalar Time
 scalar Uint
 scalar Uint64
 scalar Map
