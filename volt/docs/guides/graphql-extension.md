@@ -48,7 +48,7 @@ import (
     "context"
     "time"
 
-    authapi "github.com/khanakia/boilerplate-golang/modules/mod-auth/api"
+    authapi "github.com/khanakia/volt-api/modules/mod-auth/api"
 )
 
 func (r *userResolver) DateOfBirth(ctx context.Context, obj *authapi.User) (*time.Time, error) {
