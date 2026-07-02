@@ -1,0 +1,23 @@
+# Changelog
+
+All notable changes to Volt API are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- Folded the genuinely useful `.ai/` reference docs into `volt/docs/`: `ARCHITECTURE.md`, `STACK.md`, `BACKEND_PATTERNS.md` (the condensed Go cheat-sheet), and `GRAPHQL_EXTENSION.md` — with `volt/docs/` now the single documentation home (see its `README.md` index).
+- Consolidated everything Volt-specific into a single deletable root **`volt/`** folder — `README.md` (preserved pitch), `CONTRIBUTING.md`, `SECURITY.md`, `SUPPORT.md`, `CHANGELOG.md`, `CLAUDE.md` (the Go agent guide), `rules/`, `templates/`, `brand/` (incl. `BRAND_GUIDELINES.md`), and `docs/` — mirroring the Volt Web repo layout. The root `CLAUDE.md` is a thin `@volt/CLAUDE.md` import and `AGENTS.md` a 3-line pointer. All relative links verified with a link-checker.
+- Split rules into Volt's and the buyer's: **`volt/rules/`** holds Volt's baseline — `code-standards.md` (the standing engineering bar: full type safety, no hardcoded closed-set values, context-dense comments, modular/no-slop, plus the concrete Go stack rules) + `git-commit.md` + the per-action Go guides. **`.claude/rules/`** is the buyer's space (a `README.md` stub; Volt never writes there). `.claude/settings*.json` stays at the root.
+- Volt brand kit under `brand/` (icons, favicon, wordmark, lockups, OG covers, design tokens) driven by `brand.json` + `gen-brand.mjs`.
+- `LICENSE` (Volt API Commercial License), `CONTRIBUTING.md`, `SECURITY.md`, `SUPPORT.md`, `.editorconfig`, and `.gitattributes`.
+- `VOLT.md` — the preserved copy of Volt API's original README, so the "built on Volt API" reference survives after a buyer replaces `README.md` with their own app's.
+
+### Changed
+- Rebranded the project from "Go Boilerplate" to **Volt API**; restructured `README.md` to mirror the Volt (Web) landing page — centered logo header, "Why", "What's inside", features, short getting-started, and FAQ — with all setup moved into `CONTRIBUTING.md`.
+- Rewrote `CONTRIBUTING.md` as the full development guide: prerequisites, install, the portless HTTPS dev workflow (`task dev:portless` → `https://api.app.localhost`), PKL configuration, code generation, migrations, scripts, project structure, API endpoints, deployment, and further docs.
+- Corrected task references (`dbent:entg` → `dbent:g`, `task config` → `config:gen`) and the `modules/` monorepo layout across `README.md`, `AGENTS.md`, `CLAUDE.md`, `volt/rules/`, docs, and templates.
+- Updated all logging docs to the current stack: `github.com/ubgo/logger` (via `core/pkg/applog`) replaces the retired `gozap`/`nlog`/zap references. Rewrote `volt/rules/logging.md` for the real `ulog` field API (`Err`, `Dur`, `Any` — no `Int`/`Strings`/`Sugar`), and refreshed the instrumentation guides to `otelkit` + `applog.Init` + `errx`.
+- License changed from MIT (README-only, no file) to the proprietary Volt API Commercial License.
+
+### Removed
+- Retired the codeskill `.ai/` scaffolding (behaviours, logs, memory stubs, templates, and historical v2 migration transcripts/plans). The repo no longer uses codeskill: agent guidance lives in `CLAUDE.md` → `volt/CLAUDE.md`, per-action rules in `volt/rules/`, and documentation in `volt/docs/`.

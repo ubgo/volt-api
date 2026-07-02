@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="brand/png/icon-512.png" alt="Volt logo — a lightning bolt on a violet tile" width="72" height="72" />
+  <img src="volt/brand/png/icon-512.png" alt="Volt logo — a lightning bolt on a violet tile" width="72" height="72" />
 </p>
 
 <h1 align="center">Volt API ⚡</h1>
@@ -17,11 +17,11 @@
   <img src="https://img.shields.io/badge/license-Commercial-7C3AED" alt="Commercial license" />
 </p>
 
-**Volt API** is a batteries-included starter for quickly bootstrapping a **modular Go backend service**. It ships with schema-first **GraphQL** (gqlgen with Ent types auto-mapped), an **Ent** ORM and typed migrations, **NATS JetStream** events, type-safe **PKL** configuration with Go bindings, **OpenTelemetry** tracing and structured **Zap** logging, a **Cobra** CLI, and **cron** workers — so you skip the plumbing and start on business logic in minutes.
+**Volt API** is a batteries-included starter for quickly bootstrapping a **modular Go backend service**. It ships with schema-first **GraphQL** (gqlgen with Ent types auto-mapped), an **Ent** ORM and typed migrations, **NATS JetStream** events, type-safe **PKL** configuration with Go bindings, **OpenTelemetry** tracing and structured logging, a **Cobra** CLI, and **cron** workers — so you skip the plumbing and start on business logic in minutes.
 
 > Volt API is the backend half of a full-stack family — pair it with **[Volt](https://github.com/khanakia/boilerplate-tanstack)** (the TanStack Start web starter) for an end-to-end stack.
 
-> **Setting up or running Volt API?** All technical docs — prerequisites, install, the portless HTTPS dev workflow (`https://api.app.localhost`), config, code generation, scripts, project structure, and deployment — live in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+> **Setting up or running Volt API?** All technical docs — prerequisites, install, the portless HTTPS dev workflow (`https://api.app.localhost`), config, code generation, scripts, project structure, and deployment — live in **[CONTRIBUTING.md](volt/CONTRIBUTING.md)**.
 
 ## Contents
 
@@ -42,7 +42,7 @@ Most Go "starters" hand you a router and a `main.go` and leave the hard parts �
 - **Ent ORM** — a typed schema with a shared `BaseMixin`, auto-migrations, and pgvector support.
 - **Type-safe config** — PKL compiles to Go bindings, so config errors are caught at build time; secrets still come from the environment.
 - **Event-driven** — NATS JetStream handlers slot into the app bootstrap lifecycle, not import-time globals.
-- **Observability on by default** — OpenTelemetry tracing and structured Zap logging with trace correlation, out of the box.
+- **Observability on by default** — OpenTelemetry tracing and structured logging with trace correlation, out of the box.
 - **Separate binaries** — independent API, cron, and CLI processes sharing one domain and a `lace/` utility library, under a `go.work` monorepo.
 
 **Who it's for:** solo developers shipping a SaaS or side project who want a full backend ready on day one, and teams that want one opinionated, consistent Go foundation across services.
@@ -58,7 +58,7 @@ Most Go "starters" hand you a router and a `main.go` and leave the hard parts �
 | Database | PostgreSQL (with pgvector) |
 | Events | NATS JetStream, registered in the app lifecycle |
 | Config | PKL → generated Go bindings, `CONFIG_ENV`-selected |
-| Observability | OpenTelemetry tracing + Zap structured logging (trace-correlated) |
+| Observability | OpenTelemetry tracing + structured logging via ubgo/logger (trace-correlated) |
 | CLI | Cobra |
 | Scheduling | gocron cron workers |
 | Caching | Redis (optional) |
@@ -70,7 +70,7 @@ Most Go "starters" hand you a router and a `main.go` and leave the hard parts �
 - **Ent ORM** — typed schema, a shared `BaseMixin`, auto-migrations, and pgvector support for embeddings.
 - **Type-safe config** — PKL configuration with generated Go bindings and no raw `os.Getenv` in app code; environments selected via `CONFIG_ENV`.
 - **Event-driven** — NATS JetStream for async messaging and real-time features, wired into the bootstrap lifecycle.
-- **Observability** — OpenTelemetry tracing, structured Zap logging with trace correlation, and error tracking.
+- **Observability** — OpenTelemetry tracing, structured logging with trace correlation, and error tracking.
 - **Code generation** — Ent ORM and gqlgen for type-safe database and API code.
 - **Separate binaries** — independent API, cron, and CLI processes under one `go.work` monorepo.
 
@@ -84,7 +84,7 @@ task dev                 # air hot reload (port from PKL/$PORT)
 task dev:portless        # ★ https://api.app.localhost  (needs portless)
 ```
 
-That's the short path. For the full setup — **prerequisites** (Go, PostgreSQL, NATS, Task, PKL CLI, portless), the **portless HTTPS dev workflow** (`task dev:portless` → `https://api.app.localhost`), **PKL configuration**, **code generation**, all **scripts & tasks**, the **project structure**, how to **start your real app**, and **deployment** — see **[CONTRIBUTING.md](CONTRIBUTING.md)**. Deeper per-topic guides live in [`docs/volt/`](docs/volt/).
+That's the short path. For the full setup — **prerequisites** (Go, PostgreSQL, NATS, Task, PKL CLI, portless), the **portless HTTPS dev workflow** (`task dev:portless` → `https://api.app.localhost`), **PKL configuration**, **code generation**, all **scripts & tasks**, the **project structure**, how to **start your real app**, and **deployment** — see **[CONTRIBUTING.md](volt/CONTRIBUTING.md)**. Deeper per-topic guides live in [`volt/docs/`](volt/docs/).
 
 ## FAQ
 
@@ -109,8 +109,12 @@ PostgreSQL (with pgvector for embeddings). Ent can target other databases, but t
 **Can I remove the parts I don't need?**
 Yes. `modules/saas`, `modules/apidash`, `modules/dbent`, and `modules/config` are the writable core; `lace/`, `core/`, and `scripts/` are shared/external. Trim the GraphQL, NATS, or cron pieces you don't use.
 
+## Making it your own
+
+Everything Volt-specific lives under **[`volt/`](volt/)** — this pitch's preserved copy, the [dev guide](volt/CONTRIBUTING.md), the [brand kit](volt/brand/), and the [docs](volt/docs/). When you build your app on top of Volt API: replace this `README.md` and the root `LICENSE` with your own, then keep `volt/` as the boilerplate reference or delete it. The agent guide chains through the root `CLAUDE.md` → `volt/CLAUDE.md` import, so removing `volt/` means dropping that one import line too.
+
 ## License
 
-Volt API is a **commercial product** distributed under a proprietary license — see [LICENSE](LICENSE). A purchase grants a license to use Volt API as the foundation of your own applications; it does not permit redistributing or reselling Volt API itself (or a derivative starter) as a product. This is not open-source software. For support or licensing questions see [SUPPORT.md](SUPPORT.md).
+Volt API is a **commercial product** distributed under a proprietary license — see [LICENSE](LICENSE). A purchase grants a license to use Volt API as the foundation of your own applications; it does not permit redistributing or reselling Volt API itself (or a derivative starter) as a product. This is not open-source software. For support or licensing questions see [SUPPORT.md](volt/SUPPORT.md).
 
-<sub>Volt API — a commercial Go backend boilerplate / service starter kit: schema-first GraphQL (gqlgen), Ent ORM, NATS JetStream, type-safe PKL config, OpenTelemetry, Zap, Cobra CLI, cron, PostgreSQL + pgvector, in a <code>go.work</code> monorepo.</sub>
+<sub>Volt API — a commercial Go backend boilerplate / service starter kit: schema-first GraphQL (gqlgen), Ent ORM, NATS JetStream, type-safe PKL config, OpenTelemetry, structured logging, Cobra CLI, cron, PostgreSQL + pgvector, in a <code>go.work</code> monorepo.</sub>
