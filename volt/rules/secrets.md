@@ -175,3 +175,20 @@ func validateAPIKey(provided, expected string) bool {
 3. Use `git filter-branch` or BFG to remove from history
 4. Force push (coordinate with team)
 5. Audit access logs for misuse
+
+## Pre-commit secret scanner (gitleaks)
+
+Human attention loses to fatigue; a hook doesn't. The repo ships a `.githooks/pre-commit` scanner backed by **[gitleaks](https://github.com/gitleaks/gitleaks)** — activate it once per clone:
+
+```bash
+task hooks:install        # sets core.hooksPath=.githooks + installs gitleaks (via brew) if missing
+```
+
+`gitleaks` is the primary scanner (with a regex fallback for known token shapes). Two on-demand tasks:
+
+```bash
+task secrets:scan         # gitleaks against the FULL repo history (slow, thorough)
+task secrets:scan:staged  # gitleaks against the staged diff only (fast)
+```
+
+Install gitleaks manually if you don't use Homebrew: [github.com/gitleaks/gitleaks#installing](https://github.com/gitleaks/gitleaks#installing). The hook is defense-in-depth, not the primary defense — keep secrets out of tracked files in the first place. `git commit --no-verify` bypasses it for emergencies only.

@@ -27,7 +27,7 @@ Install these before you start. **Go**, **Task**, the **PKL CLI**, and **pkl-gen
 git clone git@github.com:khanakia/volt-api.git
 cd volt-api
 task workvendor          # sync the go.work workspace (vendored/replace modules)
-task hooks:install       # (recommended) activate the pre-commit secret scanner
+task hooks:install       # (recommended) activate the gitleaks pre-commit secret scanner (installs gitleaks if missing)
 ```
 
 ## 2. Configure your environment

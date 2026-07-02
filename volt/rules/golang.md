@@ -150,7 +150,7 @@ Codegen output is never hand-edited — change the source, re-run the task (`tas
 
 ## 17 · Secrets (summary)
 
-Real credentials live in `.env` (gitignored) and nowhere else — never in a `.go`, `.md`, comment, example, or commit message, not even "to rotate later." Docs/examples use placeholders (`<TOKEN>`, `shpat_xxx`). Sensitive ent fields use `.Sensitive()`; API-key compares use `subtle.ConstantTimeCompare`; encrypt at rest with `ubgo/crypt`. The pre-commit secret scanner (`task hooks:install`) is defense-in-depth — self-scan the staged diff before every commit regardless. Full policy: [secrets.md](secrets.md), [git-commit.md](git-commit.md).
+Real credentials live in `.env` (gitignored) and nowhere else — never in a `.go`, `.md`, comment, example, or commit message, not even "to rotate later." Docs/examples use placeholders (`<TOKEN>`, `shpat_xxx`). Sensitive ent fields use `.Sensitive()`; API-key compares use `subtle.ConstantTimeCompare`; encrypt at rest with `ubgo/crypt`. The pre-commit secret scanner — **gitleaks**, via `task hooks:install` (also `task secrets:scan` / `secrets:scan:staged`) — is defense-in-depth; self-scan the staged diff before every commit regardless. Full policy: [secrets.md](secrets.md), [git-commit.md](git-commit.md).
 
 ## 18 · Anti-pattern catalog
 
