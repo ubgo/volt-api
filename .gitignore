@@ -47,3 +47,7 @@ shell
 
 .github/.secrets.*
 .claude/settings.local.json
+
+# build output from module tasks (e.g. task saas:build → ../tmp/bin)
+modules/*/tmp/
+modules/tmp/
