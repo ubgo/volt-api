@@ -30,7 +30,7 @@ Install these before you start. The first four are required to run the app; **po
 | **NATS Server (JetStream)** | Event bus for async/real-time features. | [nats.io/download](https://nats.io/download/), or via the Docker stack (`task docker:up`) |
 | **Task** | Runs every shortcut command in `Taskfile.yml` (`task dev`, `task dbent:g`, …). | [taskfile.dev/installation](https://taskfile.dev/installation/) — e.g. `brew install go-task` |
 | **PKL CLI** | Compiles the type-safe configuration into Go bindings (`task config:gen`). | [pkl-lang.org](https://pkl-lang.org/main/current/pkl-cli/index.html) — e.g. `brew install pkl` |
-| **portless** _(recommended)_ | Serves the API at a **stable HTTPS URL** (`https://api.app.localhost`) instead of a raw port. | `npm install -g portless` — see [Local development](#local-development-portless) |
+| **portless** _(recommended)_ | Serves the API at a **stable HTTPS URL** (`https://volt-api.localhost`) instead of a raw port. | `npm install -g portless` — see [Local development](#local-development-portless) |
 | **air** _(recommended)_ | Live reload for the Go API server; `task dev` uses it. | `go install github.com/air-verse/air@latest` |
 | **Redis** _(optional)_ | Caching / sessions. | [redis.io/download](https://redis.io/download/), or via the Docker stack |
 | **Docker** _(optional)_ | Runs Postgres + NATS locally with one command (`task docker:up`). | [docker.com](https://www.docker.com/) |
@@ -63,10 +63,10 @@ task dbent:migrate
 
 # 7. Run the dev server — pick one:
 task dev                 # air hot reload, port from PKL/$PORT
-task dev:portless        # ★ https://api.app.localhost  (needs portless — see below)
+task dev:portless        # ★ https://volt-api.localhost  (needs portless — see below)
 ```
 
-The API listens on the port from your PKL config (`PORT`, default `2310`), or at `https://api.app.localhost` when run via portless.
+The API listens on the port from your PKL config (`PORT`, default `2310`), or at `https://volt-api.localhost` when run via portless.
 
 ## Local development (portless)
 
@@ -75,9 +75,9 @@ Volt API supports two ways to run the dev server:
 | Command | URL | Notes |
 |---|---|---|
 | `task dev` | `http://localhost:2310` | air hot reload. Port comes from your PKL config / `$PORT`. |
-| `task dev:portless` | `https://api.app.localhost` | **Recommended.** Stable HTTPS URL via [portless](https://github.com/vercel-labs/portless), air hot reload underneath. |
+| `task dev:portless` | `https://volt-api.localhost` | **Recommended.** Stable HTTPS URL via [portless](https://github.com/vercel-labs/portless), air hot reload underneath. |
 
-**Why portless?** It gives your dev server a fixed, memorable HTTPS URL (`https://api.app.localhost`) instead of a raw port — no port conflicts, no cookie/CORS clashes with the frontend, and real HTTPS locally (needed for secure cookies, cross-origin calls from Volt Web, webhooks, etc.). It runs a small proxy on port 443 and injects the actual port into the app for you.
+**Why portless?** It gives your dev server a fixed, memorable HTTPS URL (`https://volt-api.localhost`) instead of a raw port — no port conflicts, no cookie/CORS clashes with the frontend, and real HTTPS locally (needed for secure cookies, cross-origin calls from Volt Web, webhooks, etc.). It runs a small proxy on port 443 and injects the actual port into the app for you.
 
 ### One-time setup
 
@@ -86,28 +86,28 @@ npm install -g portless     # if not already installed
 portless trust              # install portless' local CA into your system trust store (needs sudo)
 ```
 
-`portless trust` is what makes `https://api.app.localhost` load with **no browser warning** — it adds a locally-generated certificate authority to your trust store. You only do this once per machine.
+`portless trust` is what makes `https://volt-api.localhost` load with **no browser warning** — it adds a locally-generated certificate authority to your trust store. You only do this once per machine.
 
 ### Every day
 
 ```bash
 portless proxy start        # start the HTTPS proxy daemon on :443 (once per boot; auto-elevates with sudo)
-task dev:portless           # start the API at https://api.app.localhost with air hot reload
+task dev:portless           # start the API at https://volt-api.localhost with air hot reload
 ```
 
-Then open **[https://api.app.localhost](https://api.app.localhost)**. Press **Ctrl-C** to stop. Logs are teed to `tmp/air.log`.
+Then open **[https://volt-api.localhost](https://volt-api.localhost)**. Press **Ctrl-C** to stop. Logs are teed to `tmp/air.log`.
 
 ### Changing the dev URL
 
 The subdomain comes from **`modules/saas/portless.json`**:
 
 ```json
-{ "name": "api.app" }
+{ "name": "volt-api" }
 ```
 
-The `name` field is the host: `name: "api.app"` → `https://api.app.localhost`. To change it (e.g. to `https://volt-api.localhost`), edit `name` to `"volt-api"` and restart the dev server. Print all active routes with `portless list`.
+The `name` field is the host: `name: "volt-api"` → `https://volt-api.localhost`. To change it (e.g. to `https://myapi.localhost`), edit `name` to `"myapi"` and restart the dev server. Print all active routes with `portless list`.
 
-> If Volt Web calls this API, point its `VITE_GRAPHQL_URL` (or equivalent) at `https://api.app.localhost` so cookies and CORS line up over HTTPS.
+> If Volt Web calls this API, point its `VITE_GRAPHQL_URL` (or equivalent) at `https://volt-api.localhost` so cookies and CORS line up over HTTPS.
 
 ### portless helper commands
 
@@ -172,7 +172,7 @@ Reusable commands live in the [Taskfile](https://taskfile.dev) — run `task -l`
 ```bash
 task workvendor       # sync the go.work workspace
 task dev              # API with air hot reload (logs → tmp/air.log)
-task dev:portless     # API at https://api.app.localhost
+task dev:portless     # API at https://volt-api.localhost
 task lint             # gofmt + go vet across all modules
 task saas:build       # build the api, cli, and cron binaries → tmp/bin/
 task config:gen       # regenerate PKL config bindings

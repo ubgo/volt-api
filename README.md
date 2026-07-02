@@ -21,7 +21,7 @@
 
 > Volt API is the backend half of a full-stack family — pair it with **[Volt](https://github.com/khanakia/boilerplate-tanstack)** (the TanStack Start web starter) for an end-to-end stack.
 
-> **Setting up or running Volt API?** All technical docs — prerequisites, install, the portless HTTPS dev workflow (`https://api.app.localhost`), config, code generation, scripts, project structure, and deployment — live in **[CONTRIBUTING.md](volt/CONTRIBUTING.md)**.
+> **Setting up or running Volt API?** All technical docs — prerequisites, install, the portless HTTPS dev workflow (`https://volt-api.localhost`), config, code generation, scripts, project structure, and deployment — live in **[CONTRIBUTING.md](volt/CONTRIBUTING.md)**.
 
 ## Contents
 
@@ -62,7 +62,7 @@ Most Go "starters" hand you a router and a `main.go` and leave the hard parts �
 | CLI | Cobra |
 | Scheduling | gocron cron workers |
 | Caching | Redis (optional) |
-| Dev workflow | air hot reload + portless HTTPS (`https://api.app.localhost`) |
+| Dev workflow | air hot reload + portless HTTPS (`https://volt-api.localhost`) |
 
 ## Features
 
@@ -81,10 +81,10 @@ task workvendor          # sync the go.work workspace
 cp env.sample .env       # set PORT + deploy/config values
 task dev                 # air hot reload (port from PKL/$PORT)
 # or, stable HTTPS:
-task dev:portless        # ★ https://api.app.localhost  (needs portless)
+task dev:portless        # ★ https://volt-api.localhost  (needs portless)
 ```
 
-That's the short path. For the full setup — **prerequisites** (Go, PostgreSQL, NATS, Task, PKL CLI, portless), the **portless HTTPS dev workflow** (`task dev:portless` → `https://api.app.localhost`), **PKL configuration**, **code generation**, all **scripts & tasks**, the **project structure**, how to **start your real app**, and **deployment** — see **[CONTRIBUTING.md](volt/CONTRIBUTING.md)**. Deeper per-topic guides live in [`volt/docs/`](volt/docs/).
+That's the short path. For the full setup — **prerequisites** (Go, PostgreSQL, NATS, Task, PKL CLI, portless), the **portless HTTPS dev workflow** (`task dev:portless` → `https://volt-api.localhost`), **PKL configuration**, **code generation**, all **scripts & tasks**, the **project structure**, how to **start your real app**, and **deployment** — see **[CONTRIBUTING.md](volt/CONTRIBUTING.md)**. Deeper per-topic guides live in [`volt/docs/`](volt/docs/).
 
 ## FAQ
 

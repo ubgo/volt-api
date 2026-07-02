@@ -14,7 +14,7 @@ All notable changes to Volt API are documented here. The format is based on [Kee
 
 ### Changed
 - Rebranded the project from "Go Boilerplate" to **Volt API**; restructured `README.md` to mirror the Volt (Web) landing page — centered logo header, "Why", "What's inside", features, short getting-started, and FAQ — with all setup moved into `CONTRIBUTING.md`.
-- Rewrote `CONTRIBUTING.md` as the full development guide: prerequisites, install, the portless HTTPS dev workflow (`task dev:portless` → `https://api.app.localhost`), PKL configuration, code generation, migrations, scripts, project structure, API endpoints, deployment, and further docs.
+- Rewrote `CONTRIBUTING.md` as the full development guide: prerequisites, install, the portless HTTPS dev workflow (`task dev:portless` → `https://volt-api.localhost`), PKL configuration, code generation, migrations, scripts, project structure, API endpoints, deployment, and further docs.
 - Corrected task references (`dbent:entg` → `dbent:g`, `task config` → `config:gen`) and the `modules/` monorepo layout across `README.md`, `AGENTS.md`, `CLAUDE.md`, `volt/rules/`, docs, and templates.
 - Updated all logging docs to the current stack: `github.com/ubgo/logger` (via `core/pkg/applog`) replaces the retired `gozap`/`nlog`/zap references. Rewrote `volt/rules/logging.md` for the real `ulog` field API (`Err`, `Dur`, `Any` — no `Int`/`Strings`/`Sugar`), and refreshed the instrumentation guides to `otelkit` + `applog.Init` + `errx`.
 - License changed from MIT (README-only, no file) to the proprietary Volt API Commercial License.

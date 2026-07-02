@@ -28,7 +28,7 @@ tasks:
       - air 2>&1 | tee ../tmp/air.log
 
   dev:portless:
-    desc: run air via portless → https://api.app.localhost (logs → ../tmp/air.log)
+    desc: run air via portless → https://volt-api.localhost (logs → ../tmp/air.log)
     cmds:
       - mkdir -p ../tmp
       - portless run air 2>&1 | tee ../tmp/air.log

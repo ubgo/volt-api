@@ -41,7 +41,7 @@ tasks:
       - task: saas:dev
 
   dev:portless:
-    desc: alias → saas:dev:portless (https://api.app.localhost)
+    desc: alias → saas:dev:portless (https://volt-api.localhost)
     cmds:
       - task: saas:dev:portless
 

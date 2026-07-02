@@ -26,7 +26,7 @@ task dbent:migrate     # apply the Ent schema to the database
 
 # 5. Run the API (pick one)
 task dev               # air hot reload → http://localhost:2310
-task dev:portless      # ★ stable HTTPS → https://api.app.localhost  (needs portless)
+task dev:portless      # ★ stable HTTPS → https://volt-api.localhost  (needs portless)
 ```
 
 ## Your first GraphQL call

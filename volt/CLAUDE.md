@@ -30,7 +30,7 @@ Read two rules before writing or editing code: **[`volt/rules/code-standards.md`
 
 ## Commands (Taskfile — run `task --list`)
 
-- `task dev` — API with air hot reload (port from PKL/`$PORT`). `task dev:portless` — the same at **https://api.app.localhost** via portless (the dev URL comes from `modules/saas/portless.json`, `name: "api.app"`).
+- `task dev` — API with air hot reload (port from PKL/`$PORT`). `task dev:portless` — the same at **https://volt-api.localhost** via portless (the dev URL comes from `modules/saas/portless.json`, `name: "volt-api"`).
 - `task dbent:g` (regen Ent) · `task dbent:gm` (regen + migrate) · `task dbent:migrate` (migrate) · `task dbent:new -- User` (new schema).
 - `task apidash:gql` / `task gql` — regenerate gqlgen resolvers · `task config:gen` — regenerate PKL bindings · `task config:validate`.
 - `task lint` (gofmt + vet) · `task saas:build` (build api/cli/cron) · `task workvendor` (sync workspace) · `task docker:up` / `docker:down`.
