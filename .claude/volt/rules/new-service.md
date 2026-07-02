@@ -96,4 +96,4 @@ plugins.MyService = myservice.New(plugins.EntDB.Client())
 
 ## Template
 
-See `.claude/templates/service.go.tmpl`
+See `.claude/volt/templates/service.go.tmpl`

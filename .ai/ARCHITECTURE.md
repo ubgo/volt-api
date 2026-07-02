@@ -10,7 +10,7 @@ Go 1.25 workspace monorepo. Schema-first GraphQL, Ent ORM, PKL config, NATS JetS
 | `apidash/` | GraphQL schema + resolvers (`/api/sa` endpoint) | `apidash/internal/graph/` |
 | `dbent/` | Ent schema defs + migration runner | `dbent/schema/`, `dbent/gen/ent/` (generated) |
 | `config/` | PKL schema + generated Go bindings | `config/pkl/schema/`, `config/gen/` (generated) |
-| `lace/` | Shared library — 30+ utility packages (**read-only**) | `lace/gozap/`, `lace/gotel/`, `lace/natso/`, etc. |
+| `lace/` | Shared library — 30+ utility packages (**read-only**) | `lace/gotel/`, `lace/natso/`, `lace/gocron/`, etc. |
 | `core/` | External core module (**read-only**) | `core/` |
 | `scripts/` | Deploy/ops (**read-only**) | `scripts/` |
 | `examples/` | Reference code | `examples/` |

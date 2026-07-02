@@ -33,7 +33,7 @@ artifacts.
 Read both files. Added `## filemark — docs authoring` section to project
 CLAUDE.md right after the codeskill block. Rule:
 
-- **Applies to:** `.ai/**/*.md`, `.claude/rules/*.md`, `.claude/docs/**/*.md`,
+- **Applies to:** `.ai/**/*.md`, `.claude/volt/rules/*.md`, `.claude/volt/docs/**/*.md`,
   any `PLAN/ROADMAP/TASKS/ADR/SPEC` files
 - **Does NOT apply to:** README.md, AGENTS.md, CLAUDE.md, CHANGELOG.md,
   per-module READMEs (GitHub-rendered, plain markdown)

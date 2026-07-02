@@ -2,7 +2,7 @@
 
 **Read before:** Deploying to production VPS.
 
-> **Deep docs:** `.claude/docs/backend/github-actions-deployment.md`, `.claude/docs/backend/docker-production.md`
+> **Deep docs:** `.claude/volt/docs/backend/github-actions-deployment.md`, `.claude/volt/docs/backend/docker-production.md`
 
 ## Quick Reference
 
@@ -110,6 +110,6 @@ docker run -d --name wildai-githubapp ... ghcr.io/<org>/<repo>:<commit-sha>
 
 ## Related Docs
 
-- `.claude/docs/backend/github-actions-deployment.md` - Full setup guide
-- `.claude/docs/backend/docker-production.md` - Dockerfile details
-- `.claude/docs/backend/secrets-cli.md` - Secrets management
+- `.claude/volt/docs/backend/github-actions-deployment.md` - Full setup guide
+- `.claude/volt/docs/backend/docker-production.md` - Dockerfile details
+- `.claude/volt/docs/backend/secrets-cli.md` - Secrets management

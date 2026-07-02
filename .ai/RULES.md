@@ -37,9 +37,9 @@ Always check for `Code generated` header before editing. Edit source, then regen
 - Context first param, error last return: `func Do(ctx context.Context, id string) (*Result, error)`
 - Wrap errors with context: `fmt.Errorf("doThing: %w", err)`
 - Import order: stdlib → local monorepo → third-party (blank line between)
-- Package names: lowercase, single word, specific (`goerr` not `errors`, `gozap` not `logger`)
+- Package names: lowercase, single word, specific (`apidash` not `api_dash`, `dbent` not `db_ent`)
 - Constructors: `New()` or `NewX()` using options pattern for 3+ config fields
-- Logging: `gozap.FromCtx(ctx)` — never `fmt.Println`/`log.Println` in production code
+- Logging: `applog.FromCtx(ctx)` (github.com/ubgo/logger) — never `fmt.Println`/`log.Println` in production code
 - Database access: ALWAYS `app.New()` → `app.GetPlugins().EntDB.Client` — never direct `ent.Open()` / `sql.Open()`
 
 ## Tags in Comments
@@ -49,7 +49,7 @@ Always check for `Code generated` header before editing. Edit source, then regen
 ## Ignore
 
 Never grep, explore, or reference:
-- `docs/framework` — framework internals, off-limits
+- `docs/volt/framework` — framework internals, off-limits
 - `*/gen/*`, `*/generated/*`, `*/vendor/*` — generated/vendored code
 
 ## Commits

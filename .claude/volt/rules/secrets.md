@@ -124,13 +124,13 @@ apiKey := "hardcoded-key"  // BAD!
 
 ```go
 // Bad - logs sensitive data
-gozap.GetLogger().Info("user created", zap.String("password", user.Password))
+applog.GetLogger().Info("user created", ulog.String("password", user.Password))
 
 // Good - omit sensitive fields
-gozap.GetLogger().Info("user created", zap.String("id", user.ID))
+applog.GetLogger().Info("user created", ulog.String("id", user.ID))
 
 // If must log, mask it
-gozap.GetLogger().Info("api call", zap.String("api_key", maskSecret(apiKey)))
+applog.GetLogger().Info("api call", ulog.String("api_key", maskSecret(apiKey)))
 
 func maskSecret(s string) string {
     if len(s) <= 4 {

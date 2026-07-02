@@ -32,7 +32,7 @@
 | Purpose | Library |
 |---------|---------|
 | Tracing + metrics | `go.opentelemetry.io/otel` |
-| Structured logging | `go.uber.org/zap` (wrapped in `lace/gozap`) |
+| Structured logging | `github.com/ubgo/logger` (via `core/pkg/applog`) |
 | Error tracking | `github.com/getsentry/sentry-go` |
 
 ## Validation & Utilities

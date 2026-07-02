@@ -98,7 +98,7 @@ func tracedCommand(plugin *app.Plugin) *cobra.Command {
             // Do work with ctx
             err := doWork(ctx, plugin)
             if err != nil {
-                gozap.FromCtx(ctx).Error("command failed", zap.Error(err))
+                applog.FromCtx(ctx).Error("command failed", ulog.Err(err))
                 span.SetStatus(codes.Error, err.Error())
                 return
             }

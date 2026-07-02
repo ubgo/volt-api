@@ -25,7 +25,7 @@ Check before creating:
 
 | Package | Purpose |
 |---------|---------|
-| `gozap` | Structured logging |
+| `applog` | Structured logging (in `core/pkg/`, wraps ubgo/logger) |
 | `gotel` | OpenTelemetry tracing |
 | `goerr` | Error handling |
 | `cache` | Cache interface |

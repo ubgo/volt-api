@@ -92,7 +92,7 @@ task dev                 # air hot reload (port from PKL/$PORT)
 task dev:portless        # ★ https://api.app.localhost  (needs portless)
 ```
 
-That's the short path. For the full setup — **prerequisites** (Go, PostgreSQL, NATS, Task, PKL CLI, portless), the **portless HTTPS dev workflow** (`task dev:portless` → `https://api.app.localhost`), **PKL configuration**, **code generation**, all **scripts & tasks**, the **project structure**, how to **start your real app**, and **deployment** — see **[CONTRIBUTING.md](CONTRIBUTING.md)**. Deeper per-topic guides live in [`docs/`](docs/).
+That's the short path. For the full setup — **prerequisites** (Go, PostgreSQL, NATS, Task, PKL CLI, portless), the **portless HTTPS dev workflow** (`task dev:portless` → `https://api.app.localhost`), **PKL configuration**, **code generation**, all **scripts & tasks**, the **project structure**, how to **start your real app**, and **deployment** — see **[CONTRIBUTING.md](CONTRIBUTING.md)**. Deeper per-topic guides live in [`docs/volt/`](docs/volt/).
 
 ## FAQ
 

@@ -53,13 +53,13 @@ On-demand rules loaded only when performing specific actions. Keeps token usage 
 
 ## Deep Documentation
 
-For comprehensive guides (500+ lines), see `.claude/docs/`:
+For comprehensive guides (500+ lines), see `.claude/volt/docs/`:
 
 | Topic | Location |
 |-------|----------|
-| GitHub Actions CI/CD | `.claude/docs/backend/github-actions-deployment.md` |
-| Docker Production | `.claude/docs/backend/docker-production.md` |
-| Secrets CLI | `.claude/docs/backend/secrets-cli.md` |
+| GitHub Actions CI/CD | `.claude/volt/docs/backend/github-actions-deployment.md` |
+| Docker Production | `.claude/volt/docs/backend/docker-production.md` |
+| Secrets CLI | `.claude/volt/docs/backend/secrets-cli.md` |
 
 Rules provide quick reference; deep docs provide full context when needed.
 

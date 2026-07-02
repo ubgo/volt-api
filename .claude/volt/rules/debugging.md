@@ -83,14 +83,14 @@ docker compose logs api
 
 ```go
 // Temporary debug logging
-gozap.GetLogger().Debug("debug point",
-    zap.Any("value", someValue),
-    zap.String("state", "before-operation"),
+applog.GetLogger().Debug("debug point",
+    ulog.Any("value", someValue),
+    ulog.String("state", "before-operation"),
 )
 
 // With context for trace correlation
-gozap.FromCtx(ctx).Debug("debug point",
-    zap.Any("request", input),
+applog.FromCtx(ctx).Debug("debug point",
+    ulog.Any("request", input),
 )
 ```
 

@@ -35,6 +35,6 @@ This document provides a detailed breakdown of the `ai_golang_boilerplate` direc
 
 ### `lace/` (Shared Lib)
 
-* **`nlog/`**: Structured logging wrapper (Zap).
+* **Logging**: `core/pkg/applog` — wraps `github.com/ubgo/logger` (console / OTEL / file sinks).
 * **`natso/`**: NATS JetStream wrapper for event-driven architecture.
 * **`threadsafecache/`**: In-memory caching utilities.

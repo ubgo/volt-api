@@ -53,7 +53,7 @@ func registerNatsHandlers(plugin *app.Plugin) {
     }, nats.Durable("order-processor"))
 
     if err != nil {
-        gozap.GetLogger().Error("failed to subscribe", zap.Error(err))
+        applog.GetLogger().Error("failed to subscribe", ulog.Err(err))
     }
 }
 ```
@@ -78,7 +78,7 @@ func handleOrderCreated(plugin *app.Plugin, msg *nats.Msg) {
     if err := json.Unmarshal(msg.Data, &order); err != nil {
         span.SetStatus(codes.Error, "invalid message")
         span.RecordError(err)
-        gozap.FromCtx(ctx).Error("failed to parse message", zap.Error(err))
+        applog.FromCtx(ctx).Error("failed to parse message", ulog.Err(err))
         msg.Nak()  // Negative acknowledgment
         return
     }
@@ -87,7 +87,7 @@ func handleOrderCreated(plugin *app.Plugin, msg *nats.Msg) {
     if err := processOrder(ctx, plugin, &order); err != nil {
         span.SetStatus(codes.Error, err.Error())
         span.RecordError(err)
-        gozap.FromCtx(ctx).Error("failed to process order", zap.Error(err))
+        applog.FromCtx(ctx).Error("failed to process order", ulog.Err(err))
         msg.Nak()
         return
     }

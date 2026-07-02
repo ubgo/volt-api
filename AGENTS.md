@@ -52,28 +52,28 @@ Read before performing these actions:
 
 | Action | Read First |
 |--------|------------|
-| Git commit | `.claude/rules/git-commit.md` |
-| New GraphQL endpoint | `.claude/rules/new-endpoint.md` |
-| New Ent schema/field | `.claude/rules/new-schema.md` |
-| New service | `.claude/rules/new-service.md` |
-| New CLI command | `.claude/rules/new-cli-command.md` |
-| New cron job | `.claude/rules/new-cron-job.md` |
-| New lace package | `.claude/rules/new-lace-package.md` |
-| Configuration | `.claude/rules/configuration.md` |
-| NATS handler | `.claude/rules/nats-handler.md` |
-| Migrations | `.claude/rules/migrations.md` |
-| Writing tests | `.claude/rules/testing.md` |
-| Error handling | `.claude/rules/error-handling.md` |
-| Logging | `.claude/rules/logging.md` |
-| Tracing | `.claude/rules/tracing.md` |
-| Validation | `.claude/rules/validation.md` |
-| Adding dependencies | `.claude/rules/libraries.md` |
-| Authentication | `.claude/rules/authentication.md` |
-| Secrets | `.claude/rules/secrets.md` |
-| Debugging | `.claude/rules/debugging.md` |
-| Docker/local dev | `.claude/rules/docker-dev.md` |
-| Deployment | `.claude/rules/deployment.md` |
-| GitHub secrets | `.claude/rules/github-secrets.md` |
+| Git commit | `.claude/volt/rules/git-commit.md` |
+| New GraphQL endpoint | `.claude/volt/rules/new-endpoint.md` |
+| New Ent schema/field | `.claude/volt/rules/new-schema.md` |
+| New service | `.claude/volt/rules/new-service.md` |
+| New CLI command | `.claude/volt/rules/new-cli-command.md` |
+| New cron job | `.claude/volt/rules/new-cron-job.md` |
+| New lace package | `.claude/volt/rules/new-lace-package.md` |
+| Configuration | `.claude/volt/rules/configuration.md` |
+| NATS handler | `.claude/volt/rules/nats-handler.md` |
+| Migrations | `.claude/volt/rules/migrations.md` |
+| Writing tests | `.claude/volt/rules/testing.md` |
+| Error handling | `.claude/volt/rules/error-handling.md` |
+| Logging | `.claude/volt/rules/logging.md` |
+| Tracing | `.claude/volt/rules/tracing.md` |
+| Validation | `.claude/volt/rules/validation.md` |
+| Adding dependencies | `.claude/volt/rules/libraries.md` |
+| Authentication | `.claude/volt/rules/authentication.md` |
+| Secrets | `.claude/volt/rules/secrets.md` |
+| Debugging | `.claude/volt/rules/debugging.md` |
+| Docker/local dev | `.claude/volt/rules/docker-dev.md` |
+| Deployment | `.claude/volt/rules/deployment.md` |
+| GitHub secrets | `.claude/volt/rules/github-secrets.md` |
 
 ## Code Conventions
 
@@ -114,12 +114,12 @@ We use some tag system in comments like `@tag('dnd', 'skip')` so each tag has sp
 | Topic | Location |
 |-------|----------|
 | Architecture | `.ai/ARCHITECTURE.md` |
-| Backend packages | `.claude/docs/backend/` |
-| CLI reference | `.claude/docs/cli/` |
-| Templates | `.claude/templates/` |
+| Backend packages | `.claude/volt/docs/backend/` |
+| CLI reference | `.claude/volt/docs/cli/` |
+| Templates | `.claude/volt/templates/` |
 
 ## Ignore Files and Folders
 
 Never include these files and folders in your agentic flow or decisions or grep anything at all.
 
-* docs/framework
+* docs/volt/framework

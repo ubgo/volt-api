@@ -86,9 +86,9 @@ Log at boundaries (handler/job start), not in every function. Don't log AND retu
 ## Logging
 
 ```go
-gozap.FromCtx(ctx).Info("user created",
-    zap.String("user_id", user.ID),
-    zap.Duration("elapsed", time.Since(start)),
+applog.FromCtx(ctx).Info("user created",
+    ulog.String("user_id", user.ID),
+    ulog.Dur("elapsed", time.Since(start)),
 )
 ```
 

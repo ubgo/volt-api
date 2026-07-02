@@ -88,7 +88,7 @@ func (h *Handler) GetUser(c *gin.Context) {
     user, err := h.service.GetUser(c.Request.Context(), id)
     if err != nil {
         // Log here - at the boundary
-        h.logger.Error("get user failed", zap.Error(err), zap.String("id", id))
+        h.logger.Error("get user failed", ulog.Err(err), ulog.String("id", id))
         c.JSON(500, gin.H{"error": "internal error"})
         return
     }

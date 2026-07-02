@@ -55,7 +55,7 @@ if !val.Valid() {
 | Purpose | Library | Notes |
 |---------|---------|-------|
 | Tracing/Metrics | `go.opentelemetry.io/otel` | OpenTelemetry |
-| Logging | `go.uber.org/zap` | Structured logs |
+| Logging | `github.com/ubgo/logger` | Structured logs |
 | Error Tracking | `github.com/getsentry/sentry-go` | Production errors |
 
 ## Scheduling
@@ -92,7 +92,7 @@ if !val.Valid() {
 |------------|-----|
 | `encoding/json` for validation | `valgo` |
 | `database/sql` directly | `ent` ORM |
-| `log` package | `gozap` (wrapper around zap) |
+| `log` package | `applog` (github.com/ubgo/logger) |
 | `net/http` directly | `gin` |
 | Custom cron | `gocron/v2` |
 | `jwt-go` (deprecated) | Consider updating |
@@ -110,7 +110,7 @@ These wrap external libraries with project conventions:
 
 | Package | Wraps | Purpose |
 |---------|-------|---------|
-| `lace/gozap` | zap | Logging with OTEL |
+| `core/pkg/applog` | ubgo/logger | Logging with OTEL |
 | `lace/gotel` | otel | Telemetry setup |
 | `lace/natso` | nats.go | NATS connection |
 | `lace/cacheredis` | go-redis | Cache interface |

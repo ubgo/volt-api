@@ -136,7 +136,7 @@ modules/config/pkl/
 - **Secrets** are never hardcoded — PKL reads them from the environment via `read("env:VAR")`, so put real values in `.env`.
 - **After editing any `.pkl`**, run `task config:gen` to regenerate the bindings, and `task config:validate` to check them.
 
-See [.claude/rules/configuration.md](.claude/rules/configuration.md) for adding new config fields/sections.
+See [.claude/volt/rules/configuration.md](.claude/volt/rules/configuration.md) for adding new config fields/sections.
 
 ## Code generation
 
@@ -163,7 +163,7 @@ You can also run migrations through the CLI:
 cd modules/saas && go run ./cmd/cli migrate
 ```
 
-Migrations run with `WithForeignKeys(false)` to avoid ordering issues. For risky changes (required fields, renames, unique constraints), see [.claude/rules/migrations.md](.claude/rules/migrations.md) — the short version is: add nullable/with-default first, backfill, then tighten.
+Migrations run with `WithForeignKeys(false)` to avoid ordering issues. For risky changes (required fields, renames, unique constraints), see [.claude/volt/rules/migrations.md](.claude/volt/rules/migrations.md) — the short version is: add nullable/with-default first, backfill, then tighten.
 
 ## Scripts & tasks
 
@@ -212,7 +212,7 @@ go run ./cmd/cron            # run the cron worker
 │   └── examples/   # Example code
 ├── .docker/        # Docker Compose (Postgres, NATS) + prod Dockerfile
 ├── brand/          # Brand kit (identity, assets, tokens) — regenerates from brand.json
-├── docs/           # Deeper guides (dev, deploy, structure, workflow)
+├── docs/volt/           # Deeper guides (dev, deploy, structure, workflow)
 ├── .github/        # Deploy workflows + secrets templates
 └── go.work         # Go workspace linking the modules
 ```
@@ -226,7 +226,7 @@ go run ./cmd/cron            # run the cron worker
 | `/api/sa` | Dashboard GraphQL API (apidash) | Internal Key header |
 | `/api/i/bootinfo` | Boot/health status (DB, Redis, NATS, OTel) | Internal Key header |
 
-The GraphQL playground is key-gated (a `pkey` query param) so it isn't exposed by default. Internal (`/api/i/*`) routes require the `X-Internal-Key` header (value from config / `INTERNAL_KEY`). See [.claude/rules/authentication.md](.claude/rules/authentication.md).
+The GraphQL playground is key-gated (a `pkey` query param) so it isn't exposed by default. Internal (`/api/i/*`) routes require the `X-Internal-Key` header (value from config / `INTERNAL_KEY`). See [.claude/volt/rules/authentication.md](.claude/volt/rules/authentication.md).
 
 ## Starting your real app
 
@@ -258,15 +258,15 @@ task scripts:gh:secrets:update   # encode .env.prod → ENV_PROD_B64 and push
 task scripts:gh:secrets:push     # push all secrets to the repo
 ```
 
-See [docs/DEPLOY_GUIDE.md](docs/DEPLOY_GUIDE.md), [.claude/rules/deployment.md](.claude/rules/deployment.md), and [.claude/rules/github-secrets.md](.claude/rules/github-secrets.md) for the full flow.
+See [docs/volt/DEPLOY_GUIDE.md](docs/volt/DEPLOY_GUIDE.md), [.claude/volt/rules/deployment.md](.claude/volt/rules/deployment.md), and [.claude/volt/rules/github-secrets.md](.claude/volt/rules/github-secrets.md) for the full flow.
 
 ## Further docs
 
-Deeper guides live in [`docs/`](docs/) and [`.claude/rules/`](.claude/rules/):
+Deeper guides live in [`docs/volt/`](docs/volt/) and [`.claude/volt/rules/`](.claude/volt/rules/):
 
-- [docs/DEV_GUIDE.md](docs/DEV_GUIDE.md) — quick dev notes (hooks, codegen, endpoints).
-- [docs/STRUCTURE.md](docs/STRUCTURE.md) — detailed module map.
-- [docs/API_GQL_GUIDE.md](docs/API_GQL_GUIDE.md) — GraphQL API guide.
-- [docs/DEPLOY_GUIDE.md](docs/DEPLOY_GUIDE.md) — deployment walkthrough.
-- [docs/WORKFLOW_GUIDE.md](docs/WORKFLOW_GUIDE.md) — day-to-day workflow.
-- [.claude/rules/](.claude/rules/) — focused rules for endpoints, schemas, services, migrations, NATS, logging, tracing, auth, secrets, and more.
+- [docs/volt/DEV_GUIDE.md](docs/volt/DEV_GUIDE.md) — quick dev notes (hooks, codegen, endpoints).
+- [docs/volt/STRUCTURE.md](docs/volt/STRUCTURE.md) — detailed module map.
+- [docs/volt/API_GQL_GUIDE.md](docs/volt/API_GQL_GUIDE.md) — GraphQL API guide.
+- [docs/volt/DEPLOY_GUIDE.md](docs/volt/DEPLOY_GUIDE.md) — deployment walkthrough.
+- [docs/volt/WORKFLOW_GUIDE.md](docs/volt/WORKFLOW_GUIDE.md) — day-to-day workflow.
+- [.claude/volt/rules/](.claude/volt/rules/) — focused rules for endpoints, schemas, services, migrations, NATS, logging, tracing, auth, secrets, and more.

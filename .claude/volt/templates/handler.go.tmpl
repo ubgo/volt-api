@@ -8,17 +8,17 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
+	ulog "github.com/ubgo/logger"
 )
 
 // Handler handles {{name}} HTTP requests.
 type Handler struct {
 	service *Service
-	logger  *zap.Logger
+	logger  *ulog.Logger
 }
 
 // NewHandler creates a new {{Name}} handler.
-func NewHandler(service *Service, logger *zap.Logger) *Handler {
+func NewHandler(service *Service, logger *ulog.Logger) *Handler {
 	return &Handler{
 		service: service,
 		logger:  logger,
@@ -47,7 +47,7 @@ func (h *Handler) List(c *gin.Context) {
 
 	results, err := h.service.List(ctx)
 	if err != nil {
-		h.logger.Error("list {{name}}s failed", zap.Error(err))
+		h.logger.Error("list {{name}}s failed", ulog.Err(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
@@ -67,7 +67,7 @@ func (h *Handler) Get(c *gin.Context) {
 
 	result, err := h.service.Get(ctx, id)
 	if err != nil {
-		h.logger.Error("get {{name}} failed", zap.Error(err), zap.String("id", id))
+		h.logger.Error("get {{name}} failed", ulog.Err(err), ulog.String("id", id))
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
@@ -94,7 +94,7 @@ func (h *Handler) Create(c *gin.Context) {
 		// Map request to input
 	})
 	if err != nil {
-		h.logger.Error("create {{name}} failed", zap.Error(err))
+		h.logger.Error("create {{name}} failed", ulog.Err(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
@@ -123,7 +123,7 @@ func (h *Handler) Update(c *gin.Context) {
 		// Map request to input
 	})
 	if err != nil {
-		h.logger.Error("update {{name}} failed", zap.Error(err), zap.String("id", id))
+		h.logger.Error("update {{name}} failed", ulog.Err(err), ulog.String("id", id))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
@@ -142,7 +142,7 @@ func (h *Handler) Delete(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := h.service.Delete(ctx, id); err != nil {
-		h.logger.Error("delete {{name}} failed", zap.Error(err), zap.String("id", id))
+		h.logger.Error("delete {{name}} failed", ulog.Err(err), ulog.String("id", id))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}

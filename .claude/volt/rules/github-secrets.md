@@ -2,7 +2,7 @@
 
 **Read before:** Updating GitHub repository secrets from local files.
 
-> **Deep docs:** `.claude/docs/backend/secrets-cli.md`, `.claude/docs/backend/github-actions-deployment.md`
+> **Deep docs:** `.claude/volt/docs/backend/secrets-cli.md`, `.claude/volt/docs/backend/github-actions-deployment.md`
 
 ## Quick Reference
 

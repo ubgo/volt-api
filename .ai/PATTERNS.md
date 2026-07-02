@@ -1,7 +1,7 @@
 # Patterns
 
 <!-- Canonical code patterns for this project. Add new ones via /codeskill snippet. -->
-<!-- Keep snippets short — link to full examples in .ai/snippets/ or .claude/templates/. -->
+<!-- Keep snippets short — link to full examples in .ai/snippets/ or .claude/volt/templates/. -->
 
 ## Index
 

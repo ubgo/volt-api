@@ -77,7 +77,7 @@ Add JWT-based email/password auth for GraphQL API: register, login, authenticate
 - [ ] Add `RequireUser` guard helper
 - [ ] Unit tests for auth pkg
 - [ ] Resolver integration tests
-- [ ] Update `.claude/rules/authentication.md` with concrete file refs
+- [ ] Update `.claude/volt/rules/authentication.md` with concrete file refs
 
 ## Decisions
 - **JWT over sessions**: stateless, no Redis dep for v1. Tradeoff: no server-side revoke. Acceptable for boilerplate.
@@ -90,6 +90,6 @@ Add JWT-based email/password auth for GraphQL API: register, login, authenticate
 <!-- Self-contained within this repo. No downstream yet. Frontend will consume via GraphQL. -->
 
 ## Related
-- Rules: `.claude/rules/authentication.md`, `.claude/rules/secrets.md`
+- Rules: `.claude/volt/rules/authentication.md`, `.claude/volt/rules/secrets.md`
 - Schema: `dbent/schema/user.go`
-- Config pattern: `.claude/rules/configuration.md`
+- Config pattern: `.claude/volt/rules/configuration.md`

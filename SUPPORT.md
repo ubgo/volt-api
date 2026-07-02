@@ -4,7 +4,7 @@ Volt API is a commercial product. Support is available to licensed users.
 
 ## Getting help
 
-- **Documentation** — start with the [README](README.md), the setup guide in [CONTRIBUTING.md](CONTRIBUTING.md), and the guides in [`docs/`](docs/) (dev, structure, GraphQL API, deployment, workflow).
+- **Documentation** — start with the [README](README.md), the setup guide in [CONTRIBUTING.md](CONTRIBUTING.md), and the guides in [`docs/volt/`](docs/volt/) (dev, structure, GraphQL API, deployment, workflow).
 - **Health check** — run the API and hit `/api/i/bootinfo` (with the internal key) to confirm the database, Redis, NATS, and OpenTelemetry are wired up.
 - **Licensing & account questions** — email **khanakia@gmail.com**.
 - **Bugs** — licensed users can report reproducible issues via the repository issue tracker, or by email if the repo is private. For security-sensitive reports, follow [SECURITY.md](SECURITY.md) instead of filing a public issue.

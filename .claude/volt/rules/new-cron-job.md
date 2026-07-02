@@ -62,13 +62,13 @@ func registerMyJob(scheduler gocron.Scheduler, plugin *app.Plugin) {
             if err != nil {
                 span.SetStatus(codes.Error, err.Error())
                 span.RecordError(err)
-                gozap.FromCtx(ctx).Error("job failed", zap.Error(err))
+                applog.FromCtx(ctx).Error("job failed", ulog.Err(err))
                 return
             }
 
             span.SetStatus(codes.Ok, "success")
             span.AddEvent("job_completed")
-            gozap.FromCtx(ctx).Info("myJob completed")
+            applog.FromCtx(ctx).Info("myJob completed")
         }),
         gocron.WithName("myJob"),
         gocron.WithSingletonMode(gocron.LimitModeReschedule),
@@ -118,7 +118,7 @@ func CleanupOldRecords(ctx context.Context, client *ent.Client) error {
         return fmt.Errorf("cleanup old records: %w", err)
     }
 
-    gozap.FromCtx(ctx).Info("cleanup completed", zap.Int("deleted", deleted))
+    applog.FromCtx(ctx).Info("cleanup completed", ulog.Any("deleted", deleted))
     return nil
 }
 ```
@@ -130,8 +130,8 @@ func main() {
     plugin := app.New(app.WithDisableNats(true))
 
     scheduler, err := gocron.NewScheduler(
-        gocron.WithLogger(gocronlogger.New(gozap.GetLogger())),
-        gocron.WithMonitor(gocronmonitor.New(gozap.GetLogger())),
+        gocron.WithLogger(gocronlogger.New(applog.GetLogger())),
+        gocron.WithMonitor(gocronmonitor.New(applog.GetLogger())),
         gocron.WithStopTimeout(24*time.Hour),
     )
     if err != nil {

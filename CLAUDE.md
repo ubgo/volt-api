@@ -34,12 +34,12 @@ Internal docs in this repo are read through **filemark** (Chrome extension + pla
 
 **Applies to (internal, filemark-rendered):**
 - `.ai/**/*.md` — plans, snapshots, memory, decisions, incidents, skills, guides, workflows, prompts, PATTERNS, ARCHITECTURE, STACK
-- `.claude/rules/*.md` and `.claude/docs/**/*.md` — rule files and deep reference docs
+- `.claude/volt/rules/*.md` and `.claude/volt/docs/**/*.md` — rule files and deep reference docs
 - Any `PLAN.md`, `ROADMAP.md`, `TASKS.md`, `*_ADR.md`, `*_SPEC.md` outside the paths above
 
 **Does NOT apply (public, GitHub-rendered — keep plain markdown):**
 - `README.md`, `AGENTS.md`, `CLAUDE.md`, `CHANGELOG.md`, `CONTRIBUTING.md`
-- `docs/` if it ships to GitHub / public site
+- `docs/volt/` if it ships to GitHub / public site
 - Per-module READMEs inside `saas/`, `apidash/`, `dbent/`, `config/`, `examples/`
 
 **Components + tasks to prefer (via `/filemark` skill):**
@@ -93,7 +93,7 @@ import (
     "context"          // 1. stdlib (alphabetical)
     "fmt"
 
-    "lace/gozap"       // 2. local monorepo packages
+    "core/pkg/applog"       // 2. local monorepo packages
     "saas/pkg/app"
 
     "github.com/gin-gonic/gin"  // 3. third-party (alphabetical)
@@ -101,7 +101,7 @@ import (
 ```
 
 ### Global — Packages
-- All lowercase, no underscores: `apidash`, `gozap`, `goerr`, `natso`
+- All lowercase, no underscores: `apidash`, `applog`, `dbent`, `natso`
 - Never generic names (`util`, `helpers`, `common`) — be specific
 
 ### Global — Constructors (Options Pattern)
@@ -127,9 +127,9 @@ Use for any struct with 3+ configuration fields.
 - Use `@internal` directive for admin-only endpoints
 
 ### Global — Logging
-- Always use `gozap.FromCtx(ctx)` — extracts trace_id + span_id from OpenTelemetry
+- Always use `applog.FromCtx(ctx)` — extracts trace_id + span_id from OpenTelemetry
 - Never use `fmt.Println` or `log.Println` in production code
-- Structured fields: `zap.String("key", val)`, `zap.Error(err)`
+- Structured fields: `ulog.String("key", val)`, `ulog.Err(err)`
 - Don't log AND return errors — one or the other
 - Log at boundaries (handlers, job start/end), not every function
 
@@ -198,7 +198,7 @@ Use for any struct with 3+ configuration fields.
 ### Project — Ignore
 
 Never grep, explore, or reference:
-- `docs/framework`
+- `docs/volt/framework`
 - `*/gen/*`, `*/generated/*`, `*/vendor/*`
 
 ### Project — Commits
@@ -242,7 +242,7 @@ _No active hotfixes._
 **Prefer**
 - Options pattern for constructors — @khanakia
 - Context propagation everywhere — @khanakia
-- Structured logging with zap fields, never string interpolation — @khanakia
+- Structured logging with ulog fields, never string interpolation — @khanakia
 - Schema-first GraphQL — @khanakia
 - Ent mixins for shared fields (`BaseMixin`) — @khanakia
 
@@ -306,7 +306,7 @@ If task touches these paths → suggest switching to `careful`:
 
 _No workflows defined. Add to `.ai/workflows/` as patterns emerge._
 
-Context-specific rules still live in `.claude/rules/` (legacy). See table in `AGENTS.md` for the full list — load relevant file before the matching action:
+Context-specific rules still live in `.claude/volt/rules/` (legacy). See table in `AGENTS.md` for the full list — load relevant file before the matching action:
 - `new-endpoint.md` · `new-schema.md` · `new-service.md` · `new-cli-command.md` · `new-cron-job.md`
 - `migrations.md` · `configuration.md` · `nats-handler.md`
 - `logging.md` · `tracing.md` · `error-handling.md` · `validation.md` · `testing.md`
@@ -334,4 +334,4 @@ Stored in: `.ai/logs/sessions/`, `.ai/logs/activity/`, `.ai/logs/incidents/`
 - `.ai/snippets/` — reusable code patterns
 - `.ai/prompts/` — reusable prompt templates
 - `.ai/guides/` — deep reference docs
-- `.claude/rules/` — legacy context-specific rules (still authoritative)
+- `.claude/volt/rules/` — legacy context-specific rules (still authoritative)

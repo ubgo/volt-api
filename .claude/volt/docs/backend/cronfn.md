@@ -8,7 +8,7 @@
 The `cronfn` package provides a pattern for writing job functions that:
 - Can be reused across cron scheduler and CLI commands (no code duplication)
 - Include built-in OpenTelemetry tracing with spans and events
-- Include structured logging with zap
+- Include structured logging with applog (github.com/ubgo/logger)
 - Handle errors consistently
 - Report stats on completion
 
@@ -34,7 +34,7 @@ func JobName(ctx context.Context, plugin *app.Plugin) error {
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, err.Error())
-        gozap.FromCtx(ctx).Error("Failed to init service", zap.Error(err))
+        applog.FromCtx(ctx).Error("Failed to init service", ulog.Err(err))
         return err
     }
 
@@ -43,7 +43,7 @@ func JobName(ctx context.Context, plugin *app.Plugin) error {
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, err.Error())
-        gozap.FromCtx(ctx).Error("Job failed", zap.Error(err))
+        applog.FromCtx(ctx).Error("Job failed", ulog.Err(err))
         return err
     }
 
@@ -56,7 +56,7 @@ func JobName(ctx context.Context, plugin *app.Plugin) error {
     // 5. Log completion
     span.SetStatus(codes.Ok, "success")
     span.AddEvent("job_completed")
-    gozap.FromCtx(ctx).Info("Job completed", zap.Int("processed", stats.Processed))
+    applog.FromCtx(ctx).Info("Job completed", ulog.Any("processed", stats.Processed))
 
     return nil
 }
@@ -177,7 +177,7 @@ When adding a new cron function:
 - `saas/pkg/app` - Plugin with config and database
 - `saas/pkg/github` - GitHub API service
 - `saas/pkg/wildaisync` - WildAI sync logic
-- `lace/gozap` - Structured logging
+- `core/pkg/applog` - Structured logging
 - `go.opentelemetry.io/otel` - Tracing
 
 ## Related Files

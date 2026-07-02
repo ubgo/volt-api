@@ -42,9 +42,9 @@ In `saas/cmd/cron/main.go`, add `WithStopTimeout` when creating the scheduler:
 
 ```go
 scheduler, err := gocron.NewScheduler(
-    gocron.WithLogger(gocronlogger.New(gozap.GetLogger())),
-    gocron.WithMonitor(gocronmonitor.New(gozap.GetLogger())),
-    gocron.WithMonitorStatus(gocronmonitor.New(gozap.GetLogger())),
+    gocron.WithLogger(gocronlogger.New(applog.GetLogger())),
+    gocron.WithMonitor(gocronmonitor.New(applog.GetLogger())),
+    gocron.WithMonitorStatus(gocronmonitor.New(applog.GetLogger())),
     gocron.WithStopTimeout(24*time.Hour), // Wait up to 24h for jobs to complete on shutdown
 )
 ```
@@ -71,7 +71,7 @@ shutdown.New(
     shutdown.WithMsgShuttingDown("Shutting down scheduler..."),
     shutdown.WithMsgShutdownCompleted("Scheduler stopped."),
     shutdown.WithMsgShutdownFailed("Error shutting down scheduler"),
-    shutdown.WithLogger(gozap.GetLogger()),
+    shutdown.WithLogger(applog.GetLogger()),
     shutdown.WithGracefulShutdownTimeout(0), // No extra sleep needed after jobs complete
     shutdown.WithShutdownHandler(...),
 ).Listen()

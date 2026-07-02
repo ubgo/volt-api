@@ -1,7 +1,7 @@
 ## Some Examples
 
 ```go
-gozap.FromCtx(ctx).Info("chatbotSetFavorite", zap.String("id", id), zap.Bool("isFavorite", isFavorit
+applog.FromCtx(ctx).Info("chatbotSetFavorite", ulog.String("id", id), ulog.Bool("isFavorite", isFavorit
 
 return false, goerr.New(err.Error(), goerr.WithMessageUser("chatbot not found")).ErrorUser()
 ```
@@ -12,7 +12,7 @@ return false, goerr.New(err.Error(), goerr.WithMessageUser("chatbot not found"))
 import (
 	"context"
 	"fmt"
-	"lace/gozap"
+	"core/pkg/applog"
 	"os"
 	"os/signal"
 	"strings"
@@ -23,7 +23,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
+	ulog "github.com/ubgo/logger"
 )
 
 func() {
@@ -41,14 +41,14 @@ func() {
 	if err := chatbotsourcefn.ProcessFiles(ctx, entClient, plugin.RootConfig); err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		gozap.FromCtx(ctx).Error("Error processing files", zap.Error(err))
+		applog.FromCtx(ctx).Error("Error processing files", ulog.Err(err))
 		return
 	}
 
 	span.SetStatus(codes.Ok, "success")
 	span.AddEvent("job_completed")
 
-	gozap.FromCtx(ctx).Info("Successfully processed pending files")
+	applog.FromCtx(ctx).Info("Successfully processed pending files")
 	span.End()
 
 	time.Sleep(5 * time.Minute)
@@ -65,8 +65,8 @@ func() {
 
 	testMulitpleMicroservice(traceCtx)
 
-	// gozap.GetLogger().Info("test gozap1")
-	gozap.FromCtx(traceCtx).Info("test gozap1")
+	// applog.GetLogger().Info("test log1")
+	applog.FromCtx(traceCtx).Info("test log1")
 ```
 
 ```go
@@ -77,7 +77,7 @@ import (
 	"fmt"
 	"io"
 	"lace/gotel"
-	"lace/gozap"
+	"core/pkg/applog"
 	"net/http"
 	"time"
 
@@ -141,16 +141,13 @@ func testHttp() {
 
 	defer telemetry.Shutdown(ctx)
 
-	gozap.InitGlobalLogger(gozap.Config{
-		EnableStdout:   true,
-		EnableOtel:     true,
-		EnableFile:     true,
-		ServiceName:    "test",
-		LoggerProvider: telemetry.GetLoggerProvider(),
-		LocalConfig: gozap.LocalConfig{
-			Enabled: true,
-			LogFile: "./logs/app.log",
-		},
+	// applog.Init runs after SetGlobal so its OTEL sink picks up the global LoggerProvider.
+	applog.Init(applog.Config{
+		EnableStdout: true,
+		EnableOtel:   true,
+		EnableFile:   true,
+		ServiceName:  "test",
+		LogFile:      "./logs/app.log",
 	})
 
 	traceCtx, span := telemetry.TraceStart(ctx, "test-http1")
@@ -160,8 +157,8 @@ func testHttp() {
 
 	testMulitpleMicroservice(traceCtx)
 
-	// gozap.GetLogger().Info("test gozap1")
-	gozap.FromCtx(traceCtx).Info("test gozap1")
+	// applog.GetLogger().Info("test log1")
+	applog.FromCtx(traceCtx).Info("test log1")
 
 	time.Sleep(time.Second * 30)
 }

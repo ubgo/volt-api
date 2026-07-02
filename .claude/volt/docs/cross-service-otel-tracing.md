@@ -107,27 +107,27 @@ defer span.End()
 #### Step 2: Log with Trace Context
 
 ```go
-// gozap.FromCtx extracts trace_id and span_id from context
-gozap.FromCtx(ctx).Info("Demo log from githubapp",
-    zap.String("step", "1"),
-    zap.String("source", "githubapp-cli"),
+// applog.FromCtx extracts trace_id and span_id from context
+applog.FromCtx(ctx).Info("Demo log from githubapp",
+    ulog.String("step", "1"),
+    ulog.String("source", "githubapp-cli"),
 )
 ```
 
 The `FromCtx` function automatically adds trace context to logs:
 
 ```go
-// lace/gozap/gozap.go
+// core/pkg/applog/applog.go
 
-func FromCtx(ctx context.Context) *zap.Logger {
+func FromCtx(ctx context.Context) *ulog.Logger {
     spanContext := trace.SpanContextFromContext(ctx)
     if !spanContext.IsValid() {
         return GetLogger()
     }
 
-    fields := []zap.Field{
-        zap.String("trace_id", spanContext.TraceID().String()),
-        zap.String("span_id", spanContext.SpanID().String()),
+    fields := []ulog.Field{
+        ulog.String("trace_id", spanContext.TraceID().String()),
+        ulog.String("span_id", spanContext.SpanID().String()),
     }
 
     return GetLogger().With(fields...)
@@ -230,9 +230,9 @@ This span automatically becomes a child of the githubapp span because:
 
 ```go
     // Log demo message - will have same trace_id as githubapp
-    gozap.FromCtx(ctx).Info("Demo log from wildaichat",
-        zap.String("step", "2"),
-        zap.String("source", "wildaichat-handler"),
+    applog.FromCtx(ctx).Info("Demo log from wildaichat",
+        ulog.String("step", "2"),
+        ulog.String("source", "wildaichat-handler"),
     )
 ```
 
@@ -246,7 +246,7 @@ This span automatically becomes a child of the githubapp span because:
 │  1. telem.TraceStart(ctx, "testotel-cli-command")                           │
 │     └─► Creates span with new trace_id: abc123, span_id: span001            │
 │                                                                              │
-│  2. gozap.FromCtx(ctx).Info("Demo log from githubapp")                      │
+│  2. applog.FromCtx(ctx).Info("Demo log from githubapp")                      │
 │     └─► Log sent to observability platform with trace_id: abc123            │
 │                                                                              │
 │  3. otel.GetTextMapPropagator().Inject(ctx, headerCarrier(req.Header))      │
@@ -269,7 +269,7 @@ This span automatically becomes a child of the githubapp span because:
 │     └─► Creates child span with trace_id: abc123, span_id: span002          │
 │         parent_span_id: span001                                              │
 │                                                                              │
-│  3. gozap.FromCtx(ctx).Info("Demo log from wildaichat")                     │
+│  3. applog.FromCtx(ctx).Info("Demo log from wildaichat")                     │
 │     └─► Log sent to observability platform with trace_id: abc123            │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
@@ -350,7 +350,7 @@ Waiting for telemetry to flush...
 |-----------|---------|---------|
 | `gotel.NewTelemetryWithPreExporters` | `lace/gotel` | Initialize OpenTelemetry with exporters |
 | `telem.TraceStart` | `lace/gotel` | Create new spans |
-| `gozap.FromCtx` | `lace/gozap` | Log with trace context |
+| `applog.FromCtx` | `core/pkg/applog` | Log with trace context |
 | `otelhttp.NewTransport` | `go.opentelemetry.io/contrib/.../otelhttp` | Auto trace propagation for HTTP clients |
 | `otel.GetTextMapPropagator().Inject` | `go.opentelemetry.io/otel` | Manual: inject trace context into headers |
 | `otel.GetTextMapPropagator().Extract` | `go.opentelemetry.io/otel` | Extract trace context from headers (server) |
@@ -384,7 +384,7 @@ Otel {
 
 ### Logs Missing trace_id
 
-1. **Use `gozap.FromCtx(ctx)`**: Regular `gozap.GetLogger()` won't include trace context
+1. **Use `applog.FromCtx(ctx)`**: Regular `applog.GetLogger()` won't include trace context
 2. **Ensure span is active**: The context must have an active span
 
 ### Spans Not Appearing
