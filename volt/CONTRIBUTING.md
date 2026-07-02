@@ -29,7 +29,8 @@ Install these before you start. The first four are required to run the app; **po
 | **PostgreSQL 15+** | Primary database (with pgvector for embeddings). | [postgresql.org/download](https://www.postgresql.org/download/), Postgres.app, or `task docker:up` (runs it in Docker) |
 | **NATS Server (JetStream)** | Event bus for async/real-time features. | [nats.io/download](https://nats.io/download/), or via the Docker stack (`task docker:up`) |
 | **Task** | Runs every shortcut command in `Taskfile.yml` (`task dev`, `task dbent:g`, …). | [taskfile.dev/installation](https://taskfile.dev/installation/) — e.g. `brew install go-task` |
-| **PKL CLI** | Compiles the type-safe configuration into Go bindings (`task config:gen`). | [pkl-lang.org](https://pkl-lang.org/main/current/pkl-cli/index.html) — e.g. `brew install pkl` |
+| **PKL CLI** | Evaluates the type-safe PKL configuration (used by codegen and at runtime). | [pkl-lang.org](https://pkl-lang.org/main/current/pkl-cli/index.html) — e.g. `brew install pkl` |
+| **pkl-gen-go** | Generates the Go config bindings from the PKL schema — what `task config:gen` runs. | `go install github.com/apple/pkl-go/cmd/pkl-gen-go@latest` |
 | **portless** _(recommended)_ | Serves the API at a **stable HTTPS URL** (`https://volt-api.localhost`) instead of a raw port. | `npm install -g portless` — see [Local development](#local-development-portless) |
 | **air** _(recommended)_ | Live reload for the Go API server; `task dev` uses it. | `go install github.com/air-verse/air@latest` |
 | **Redis** _(optional)_ | Caching / sessions. | [redis.io/download](https://redis.io/download/), or via the Docker stack |
