@@ -1,31 +1,33 @@
-# AI Agent Guidelines
+# AI Agent Guidelines — Volt API
 
-Go workspace with heavy **code generation**. Never modify `gen/`, `generated/`, or `ent/` directories.
+Volt API — the batteries-included Go backend starter. A `go.work` monorepo with modules under `modules/`, heavy **code generation**. Never modify `gen/`, `generated/`, or `ent/` directories.
 
 ## Stack
 
-Go 1.22 | Gin | Ent ORM | gqlgen | PostgreSQL | Redis | NATS | PKL Config | OpenTelemetry
+Go 1.25 | Gin | Ent ORM | gqlgen | PostgreSQL | Redis | NATS | PKL Config | OpenTelemetry
 
 ## Workspace Modules
 
+All modules live under `modules/`. Import paths keep the bare module name (e.g. `saas/pkg/app`); filesystem paths are prefixed with `modules/`.
+
 | Module | Purpose |
 |--------|---------|
-| `saas/` | Core app: CLI, API bootstrap, business logic |
-| `apidash/` | GraphQL API (`/api/sa`) |
-| `dbent/` | Ent ORM schemas & migrations |
-| `lace/` | Shared utility library (30+ packages) |
-| `config/` | PKL configuration |
+| `modules/saas/` | Core app: CLI, API + cron bootstrap, business logic |
+| `modules/apidash/` | GraphQL API (`/api/sa`) |
+| `modules/dbent/` | Ent ORM schemas & migrations |
+| `modules/lace/` | Shared utility library (30+ packages) |
+| `modules/config/` | PKL configuration |
 
 ## Where to Make Changes
 
 | Task | Edit | Run | Avoid |
 |------|------|-----|-------|
-| Database schema | `dbent/schema/*.go` | `task dbent:entg && task dbent:migrate` | `dbent/gen/ent/*` |
-| GraphQL API | `apidash/internal/graph/*.graphqls` | `task apidash:gql` | `apidash/internal/graph/generated/*` |
-| Configuration | `config/*.pkl` | `task config:gen` | `config/gen/*` |
-| Shared utility | `lace/` | - | - |
-| Business logic | `saas/pkg/` | - | - |
-| CLI commands | `saas/cmd/cli/` | - | - |
+| Database schema | `modules/dbent/schema/*.go` | `task dbent:g && task dbent:migrate` | `modules/dbent/gen/ent/*` |
+| GraphQL API | `modules/apidash/internal/graph/*.graphqls` | `task apidash:gql` | `modules/apidash/internal/graph/generated/*` |
+| Configuration | `modules/config/*.pkl` | `task config:gen` | `modules/config/gen/*` |
+| Shared utility | `modules/lace/` | - | - |
+| Business logic | `modules/saas/pkg/` | - | - |
+| CLI commands | `modules/saas/cmd/cli/` | - | - |
 
 ## Task Commands
 
@@ -33,7 +35,8 @@ Go 1.22 | Gin | Ent ORM | gqlgen | PostgreSQL | Redis | NATS | PKL Config | Open
 |---------|---------|
 | `task docker:up` | Start Docker infrastructure |
 | `task docker:down` | Stop Docker containers |
-| `task dbent:entg` | Generate Ent ORM code |
+| `task dbent:g` | Generate Ent ORM code |
+| `task dbent:gm` | Generate Ent code and migrate the DB |
 | `task dbent:migrate` | Run database migrations |
 | `task apidash:gql` | Generate GraphQL resolvers |
 | `task config:gen` | Generate PKL config bindings |

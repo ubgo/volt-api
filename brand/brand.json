@@ -1,0 +1,69 @@
+{
+  "name": "volt-api",
+  "display": "Volt API",
+  "tagline": "The batteries-included Go backend starter.",
+  "description": "Volt API is a production-ready Go backend boilerplate for building modular services — a schema-first GraphQL API via gqlgen, Ent ORM with typed migrations, NATS JetStream events, type-safe PKL config with Go bindings, OpenTelemetry tracing and structured logging, a Cobra CLI, and cron workers, all wired end-to-end under a go.work monorepo.",
+  "repo": "khanakia/boilerplate-golang",
+  "homepage": "https://usevolt.dev",
+  "language": "go",
+  "kind": "service",
+  "license": "LicenseRef-Proprietary",
+  "distribution": "commercial-private",
+  "author": {
+    "name": "khanakia",
+    "email": "khanakia@gmail.com",
+    "github": "khanakia"
+  },
+  "brand": {
+    "concept": "lightning-bolt",
+    "color": "violet",
+    "tile": ["#6366F1", "#8B5CF6"],
+    "fg": "#FFFFFF",
+    "accent": "#7C3AED",
+    "radius": 112
+  },
+  "fonts": {
+    "display": "Space Grotesk",
+    "sans": "Inter",
+    "mono": "JetBrains Mono"
+  },
+  "topics": [
+    "go",
+    "golang",
+    "boilerplate",
+    "starter-kit",
+    "backend",
+    "graphql",
+    "gqlgen",
+    "ent",
+    "orm",
+    "nats",
+    "jetstream",
+    "pkl",
+    "opentelemetry",
+    "postgresql",
+    "monorepo"
+  ],
+  "positioning": {
+    "category": "Go backend boilerplate / service starter kit",
+    "audience": "Solo developers and teams building full-stack Go backend services",
+    "wedge": "GraphQL, ORM, events, config, observability, CLI, and cron are wired end-to-end under one go.work monorepo — so you start on business logic in minutes, not plumbing.",
+    "alternatives": [],
+    "differentiators": [
+      "Schema-first GraphQL via gqlgen with Ent types auto-mapped — edit the .graphqls, regenerate resolvers",
+      "Ent ORM with a shared BaseMixin, typed migrations, and pgvector support",
+      "Type-safe PKL configuration with generated Go bindings — no raw os.Getenv in app code",
+      "Event-driven NATS JetStream handlers wired into the app bootstrap lifecycle",
+      "OpenTelemetry tracing + structured Zap logging with trace correlation, out of the box",
+      "go.work monorepo with separate API, cron, and CLI binaries and a shared lace/ utility library"
+    ]
+  },
+  "install": {
+    "script": "git clone git@github.com:khanakia/boilerplate-golang.git && task workvendor"
+  },
+  "khanakia": {
+    "addToApps": false,
+    "badges": ["beta"],
+    "techStack": ["Go 1.25", "GraphQL (gqlgen)", "Ent ORM", "NATS JetStream", "PKL", "PostgreSQL", "OpenTelemetry"]
+  }
+}

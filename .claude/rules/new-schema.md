@@ -5,7 +5,7 @@
 ## Checklist
 
 - [ ] Create/edit schema in `dbent/schema/`
-- [ ] Run `task dbent:entg` to generate code
+- [ ] Run `task dbent:g` to generate code
 - [ ] Run `task dbent:migrate` to update database
 - [ ] Verify GraphQL types updated (if using ent-gqlgen)
 
@@ -105,6 +105,6 @@ field.Time("processed_at").Optional().Nillable(),
 
 ```bash
 # Always run both commands
-task dbent:entg     # Generate Go code
+task dbent:g     # Generate Go code
 task dbent:migrate  # Update database
 ```

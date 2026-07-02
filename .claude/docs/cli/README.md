@@ -273,7 +273,7 @@ task lint             # Run linters
 task test             # Run tests
 
 # Code Generation
-task saas:entg        # Generate Ent ORM code
+task dbent:g        # Generate Ent ORM code
 task config           # Generate PKL config bindings
 task workvendor       # Sync go.work dependencies
 task gitgen           # Stage generated files for commit
@@ -358,6 +358,6 @@ Make sure:
 
 ### Build errors after schema changes
 ```bash
-task saas:entg   # Regenerate Ent code
+task dbent:g   # Regenerate Ent code
 task migrate     # Update database
 ```

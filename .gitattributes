@@ -1,0 +1,24 @@
+# Normalize line endings
+* text=auto eol=lf
+
+# Go
+*.go text eol=lf
+
+# Generated code — collapse in diffs and exclude from language stats
+modules/**/gen/**        linguist-generated=true
+modules/**/generated/**  linguist-generated=true
+modules/**/ent/**        linguist-generated=true
+modules/config/gen/**    linguist-generated=true
+
+# Vendored / shared modules — don't count toward language stats
+modules/lace/**   linguist-vendored=true
+modules/core/**   linguist-vendored=true
+vendor/**         linguist-vendored=true
+
+# Binary assets
+*.png binary
+*.ico binary
+*.pdf binary
+
+# Scripts keep LF
+*.sh text eol=lf

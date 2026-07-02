@@ -1,0 +1,9 @@
+:root{
+  --volt-tile-a:#6366F1; --volt-tile-b:#8B5CF6;
+  --volt-accent:#A78BFA; --volt-fg:#FFFFFF;
+  --volt-font-display:'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --volt-font-sans:'Inter', ui-sans-serif, system-ui, sans-serif;
+  --volt-font-mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --volt-radius:16px;
+}
+[data-theme="dark"], .dark{ --volt-bg:#2E1065; --volt-fg:#EDE9FE; }

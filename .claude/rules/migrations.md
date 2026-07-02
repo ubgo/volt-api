@@ -5,7 +5,7 @@
 ## Checklist
 
 - [ ] Edit schema in `dbent/schema/`
-- [ ] Run `task dbent:entg` to regenerate code
+- [ ] Run `task dbent:g` to regenerate code
 - [ ] Run `task dbent:migrate` to apply migration
 - [ ] Test migration locally before deploying
 - [ ] Consider data migration if needed
@@ -14,7 +14,7 @@
 
 ```bash
 # Generate Ent code from schema
-task dbent:entg
+task dbent:g
 
 # Apply migrations to database
 task dbent:migrate
@@ -53,12 +53,12 @@ go run ./saas/cmd/cli migrate
 // Step 1: Add as nullable with default
 field.String("code").Optional().Default("")
 
-// Run: task dbent:entg && task dbent:migrate
+// Run: task dbent:g && task dbent:migrate
 
 // Step 2: After backfilling data, make required
 field.String("code").NotEmpty()
 
-// Run: task dbent:entg && task dbent:migrate
+// Run: task dbent:g && task dbent:migrate
 ```
 
 ## Data Migration Pattern
@@ -99,7 +99,7 @@ field.String("full_name").Optional()  // New name
 field.String("name").Optional()       // Old name (keep)
 ```
 
-2. Run migration: `task dbent:entg && task dbent:migrate`
+2. Run migration: `task dbent:g && task dbent:migrate`
 
 3. Create data migration to copy values:
 ```go

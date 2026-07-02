@@ -1,0 +1,18 @@
+{
+  "name": "volt",
+  "tile": [
+    "#6366F1",
+    "#8B5CF6"
+  ],
+  "accent": "#A78BFA",
+  "fg": "#FFFFFF",
+  "dark": [
+    "#4C1D95",
+    "#2E1065"
+  ],
+  "light": [
+    "#EDE9FE",
+    "#DDD6FE"
+  ],
+  "glyphAccent": "#7C3AED"
+}

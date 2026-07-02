@@ -70,10 +70,10 @@ If present → find the source file, edit that, then run the regenerate command.
 
 | Generated | Source | Regenerate |
 |-----------|--------|------------|
-| `*/gen/ent/*` | `dbent/schema/*.go` | `task dbent:entg` |
+| `*/gen/ent/*` | `dbent/schema/*.go` | `task dbent:g` |
 | `*/graph/generated/*` | `*/graph/schemas/*.graphql` | `task <module>:gql` |
 | `*/graph/model/models_gen.go` | `*.graphql` schemas | `task <module>:gql` |
-| `config/gen/*` | `config/pkl/**/*.pkl` | `task config` |
+| `config/gen/*` | `config/pkl/**/*.pkl` | `task config:gen` |
 
 ### Global — Function Signatures
 - Context always first param: `func Do(ctx context.Context, ...)`
@@ -166,7 +166,7 @@ Use for any struct with 3+ configuration fields.
 
 | Generated | Source | Regenerate |
 |-----------|--------|------------|
-| `dbent/gen/ent/*` | `dbent/schema/*.go` | `task dbent:entg` |
+| `dbent/gen/ent/*` | `dbent/schema/*.go` | `task dbent:g` |
 | `apidash/internal/graph/generated/*` | `apidash/internal/graph/*.graphqls` | `task apidash:gql` |
 | `apidash/internal/graph/model/models_gen.go` | `apidash/internal/graph/*.graphqls` | `task apidash:gql` |
 | `config/gen/*` | `config/pkl/**/*.pkl` | `task config:gen` |
