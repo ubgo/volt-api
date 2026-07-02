@@ -1,247 +1,98 @@
-<div align="center">
+<p align="center">
+  <img src="brand/png/icon-512.png" alt="Volt logo — a lightning bolt on a violet tile" width="72" height="72" />
+</p>
 
-<img src="brand/png/icon-512.png" alt="Volt API" width="112" height="112" />
+<h1 align="center">Volt API ⚡</h1>
 
-# Volt API
+<p align="center"><strong>The batteries-included Go backend starter.</strong></p>
 
-**The batteries-included Go backend starter.**
+<p align="center">A production-ready Go backend boilerplate for modular services — schema-first <a href="https://gqlgen.com">GraphQL</a> (gqlgen), <a href="https://entgo.io">Ent</a> ORM, NATS JetStream events, type-safe <a href="https://pkl-lang.org">PKL</a> config, OpenTelemetry, a Cobra CLI, and cron workers, all wired end-to-end under a <code>go.work</code> monorepo.</p>
 
-Volt API is a production-ready Go backend boilerplate for building modular services — schema-first GraphQL, Ent ORM, NATS JetStream events, type-safe PKL config, OpenTelemetry, a Cobra CLI, and cron workers, all wired end-to-end under a `go.work` monorepo.
+<p align="center">
+  <img src="https://img.shields.io/badge/Go-1.25-7C3AED" alt="Go 1.25" />
+  <img src="https://img.shields.io/badge/GraphQL-gqlgen-7C3AED" alt="GraphQL via gqlgen" />
+  <img src="https://img.shields.io/badge/ORM-Ent-7C3AED" alt="Ent ORM" />
+  <img src="https://img.shields.io/badge/Events-NATS%20JetStream-7C3AED" alt="NATS JetStream" />
+  <img src="https://img.shields.io/badge/Config-PKL-7C3AED" alt="PKL config" />
+  <img src="https://img.shields.io/badge/license-Commercial-7C3AED" alt="Commercial license" />
+</p>
 
-[![Go](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)](https://go.dev)
-[![GraphQL](https://img.shields.io/badge/GraphQL-gqlgen-E10098?logo=graphql&logoColor=white)](https://gqlgen.com)
-[![Ent](https://img.shields.io/badge/ORM-Ent-179BD7)](https://entgo.io)
-[![NATS](https://img.shields.io/badge/Events-NATS%20JetStream-27AAE1?logo=natsdotio&logoColor=white)](https://nats.io)
-[![PostgreSQL](https://img.shields.io/badge/DB-PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
-[![License](https://img.shields.io/badge/license-Proprietary-7C3AED)](LICENSE)
+**Volt API** is a batteries-included starter for quickly bootstrapping a **modular Go backend service**. It ships with schema-first **GraphQL** (gqlgen with Ent types auto-mapped), an **Ent** ORM and typed migrations, **NATS JetStream** events, type-safe **PKL** configuration with Go bindings, **OpenTelemetry** tracing and structured **Zap** logging, a **Cobra** CLI, and **cron** workers — so you skip the plumbing and start on business logic in minutes.
 
-</div>
+> Volt API is the backend half of a full-stack family — pair it with **[Volt](https://github.com/khanakia/boilerplate-tanstack)** (the TanStack Start web starter) for an end-to-end stack.
 
----
+> **Setting up or running Volt API?** All technical docs — prerequisites, install, the portless HTTPS dev workflow (`https://api.app.localhost`), config, code generation, scripts, project structure, and deployment — live in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+
+## Contents
+
+- [Why Volt API?](#why-volt-api)
+- [What's inside](#whats-inside)
+- [Features](#features)
+- [Getting started](#getting-started)
+- [FAQ](#faq)
+- [License](#license)
 
 ## Why Volt API?
 
 Most Go "starters" hand you a router and a `main.go` and leave the hard parts — a GraphQL layer, an ORM with migrations, config, events, tracing, a CLI, background jobs — for you to wire yourself. Every project re-solves the same plumbing before writing a single line of business logic.
 
-**Volt API wires all of it end-to-end so you start on features in minutes, not plumbing.** GraphQL resolvers map straight onto Ent types, config is type-checked at compile time, NATS handlers slot into the app lifecycle, and tracing/logging are on by default with trace correlation. It's the same batteries-included philosophy as [Volt Web](https://github.com/khanakia/boilerplate-tanstack), for the backend.
+**Volt API is that plumbing, already done.** Every layer is wired end-to-end and agrees with the others, so day one is feature work.
 
-| | Bare `net/http` starter | Framework scaffold | **Volt API** |
-|---|:---:|:---:|:---:|
-| Schema-first GraphQL (gqlgen) | ❌ | ~ | ✅ |
-| ORM + typed migrations (Ent) | ❌ | ~ | ✅ |
-| Type-safe config (PKL → Go) | ❌ | ❌ | ✅ |
-| Event-driven (NATS JetStream) | ❌ | ❌ | ✅ |
-| Tracing + structured logs (OTel + Zap) | ❌ | ~ | ✅ |
-| Separate API / cron / CLI binaries | ❌ | ~ | ✅ |
-| `go.work` monorepo + shared utils | ❌ | ❌ | ✅ |
+- **Schema-first GraphQL** — edit the `.graphqls`, run one task, and gqlgen regenerates resolvers with your Ent entity types auto-mapped. No hand-written marshaling.
+- **Ent ORM** — a typed schema with a shared `BaseMixin`, auto-migrations, and pgvector support.
+- **Type-safe config** — PKL compiles to Go bindings, so config errors are caught at build time; secrets still come from the environment.
+- **Event-driven** — NATS JetStream handlers slot into the app bootstrap lifecycle, not import-time globals.
+- **Observability on by default** — OpenTelemetry tracing and structured Zap logging with trace correlation, out of the box.
+- **Separate binaries** — independent API, cron, and CLI processes sharing one domain and a `lace/` utility library, under a `go.work` monorepo.
 
-## Contents
+**Who it's for:** solo developers shipping a SaaS or side project who want a full backend ready on day one, and teams that want one opinionated, consistent Go foundation across services.
 
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Development](#development)
-- [API Endpoints](#api-endpoints)
-- [Docker](#docker)
-- [Architecture](#architecture)
-- [Dependencies](#dependencies)
-- [FAQ](#faq)
-- [License](#license)
+## What's inside
+
+| Area | Choice |
+|---|---|
+| Language | Go 1.25, `go.work` monorepo (API · cron · CLI binaries) |
+| HTTP | Gin |
+| GraphQL | gqlgen — schema-first, Ent types auto-mapped |
+| ORM | Ent + typed migrations, `BaseMixin`, pgvector |
+| Database | PostgreSQL (with pgvector) |
+| Events | NATS JetStream, registered in the app lifecycle |
+| Config | PKL → generated Go bindings, `CONFIG_ENV`-selected |
+| Observability | OpenTelemetry tracing + Zap structured logging (trace-correlated) |
+| CLI | Cobra |
+| Scheduling | gocron cron workers |
+| Caching | Redis (optional) |
+| Dev workflow | air hot reload + portless HTTPS (`https://api.app.localhost`) |
 
 ## Features
 
-* **Schema-first GraphQL** — dashboard API via gqlgen with Ent types auto-mapped; edit the `.graphqls`, regenerate resolvers.
-* **Ent ORM** — typed schema, a shared `BaseMixin`, auto-migrations, and pgvector support.
-* **Event-Driven** — NATS JetStream for async messaging and real-time features, registered in the app bootstrap lifecycle.
-* **Type-Safe Config** — PKL configuration language with generated Go bindings; no raw `os.Getenv` in app code.
-* **Observability** — OpenTelemetry tracing, structured Zap logging with trace correlation, and error tracking.
-* **Code Generation** — Ent ORM and gqlgen for type-safe database and API code.
-* **Separate Binaries** — independent API, cron, and CLI processes under one `go.work` monorepo.
+- **Schema-first GraphQL** — dashboard API via gqlgen with Ent types auto-mapped; edit the `.graphqls`, regenerate resolvers.
+- **Ent ORM** — typed schema, a shared `BaseMixin`, auto-migrations, and pgvector support for embeddings.
+- **Type-safe config** — PKL configuration with generated Go bindings and no raw `os.Getenv` in app code; environments selected via `CONFIG_ENV`.
+- **Event-driven** — NATS JetStream for async messaging and real-time features, wired into the bootstrap lifecycle.
+- **Observability** — OpenTelemetry tracing, structured Zap logging with trace correlation, and error tracking.
+- **Code generation** — Ent ORM and gqlgen for type-safe database and API code.
+- **Separate binaries** — independent API, cron, and CLI processes under one `go.work` monorepo.
 
-## Prerequisites
-
-* Go 1.25+
-* PostgreSQL 15+
-* NATS Server with JetStream
-* Redis (optional, for caching)
-* [Task](https://taskfile.dev/) (task runner)
-* [PKL CLI](https://pkl-lang.org/) (for configuration)
-
-## Project Structure
-
-```
-.
-├── modules/
-│   ├── saas/       # Core business logic, CLI, API + cron bootstrap
-│   ├── apidash/    # Dashboard GraphQL API (/api/sa)
-│   ├── dbent/      # Ent ORM schema definitions
-│   ├── config/     # PKL configuration schemas and environments
-│   ├── lace/       # Shared utility library (read-only)
-│   ├── core/       # External core module (read-only)
-│   ├── scripts/    # Deploy/ops scripts (read-only)
-│   └── examples/   # Example code
-├── .docker/        # Docker and development infrastructure
-├── brand/          # Brand kit (identity, assets, tokens)
-└── go.work         # Go workspace linking the modules
-```
-
-## Getting Started
-
-### 1. Clone and Install Dependencies
+## Getting started
 
 ```bash
-git clone git@github.com:khanakia/boilerplate-golang.git
-cd boilerplate-golang
-task workvendor
+task workvendor          # sync the go.work workspace
+cp env.sample .env       # set PORT + deploy/config values
+task dev                 # air hot reload (port from PKL/$PORT)
+# or, stable HTTPS:
+task dev:portless        # ★ https://api.app.localhost  (needs portless)
 ```
 
-### 2. Configure Environment
-
-Copy the sample environment file and configure your settings:
-
-```bash
-cp env.sample .env
-```
-
-Key environment variables:
-
-| Variable | Description |
-|----------|-------------|
-| `CONFIG_ENV` | Configuration environment (`default`, `prod`, `sample`) |
-| `PORT` | API port (also used by Docker Compose) |
-| `DB_HOST`, `DB_PORT`, `DB_NAME` | PostgreSQL connection |
-| `DB_USERNAME`, `DB_PASSWORD` | Database credentials |
-| `NATS_URL` | NATS server URL |
-| `REDIS_URL` | Redis connection URL |
-| `JWT_SECRET` | Secret for JWT token signing |
-| `INTERNAL_KEY` | Key for internal API authentication |
-
-### 3. Start Infrastructure
-
-```bash
-task dev
-```
-
-This starts the local stack (PostgreSQL, NATS) and runs the API with live reload.
-
-### 4. Run Database Migrations
-
-```bash
-cd modules/saas && go run ./cmd/cli migrate
-```
-
-### 5. Start the API Server
-
-```bash
-cd modules/saas && go run ./cmd/api
-```
-
-The server listens on the port from your config (`PORT`, e.g. `2310`).
-
-## Development
-
-### Task Commands
-
-```bash
-task -l                 # List all available tasks
-task workvendor         # Sync workspace dependencies
-task config:gen         # Regenerate PKL config bindings
-task dbent:g            # Regenerate Ent ORM code
-task dbent:gm           # Regenerate Ent code and migrate the DB
-task gql                # Regenerate all GraphQL resolvers
-task lint               # gofmt + go vet on all modules
-task test               # Run tests
-task dev                # Start local infra + API with live reload
-```
-
-### Code Generation
-
-After modifying schemas, regenerate code:
-
-```bash
-# After Ent schema changes (modules/dbent/schema/)
-task dbent:g
-
-# After GraphQL schema changes (*.graphqls)
-task gql
-
-# After PKL config changes (modules/config/pkl/)
-task config:gen
-```
-
-### CLI Commands
-
-```bash
-cd modules/saas
-go run ./cmd/cli ping                    # Health check
-go run ./cmd/cli migrate                 # Run migrations
-```
-
-## API Endpoints
-
-| Endpoint | Description | Auth |
-|----------|-------------|------|
-| `/api/sa` | Dashboard GraphQL API | Internal Key |
-
-## Docker
-
-### Development
-
-```bash
-docker compose -f .docker/docker-compose.yaml up
-```
-
-### Production Build
-
-```bash
-docker build -f .docker/Dockerfile.prod -t app .
-```
-
-See `task -l | grep docker` for the full production, local-prod, and CI (`act`) task set.
-
-## Architecture
-
-```
-GraphQL Resolvers (modules/apidash)
-         │
-         ▼
-    App Plugin (modules/saas/pkg/app)
-         │
-         ▼
-  Domain Services (modules/saas/pkg/*)
-         │
-         ▼
-    Ent ORM Client
-         │
-         ▼
-     PostgreSQL
-```
-
-**Key Principles:**
-
-* Business logic lives in `modules/saas/pkg/`, not in resolvers.
-* Never edit generated code in `gen/`, `generated/`, or `ent/` directories.
-* Use `app.New()` for database access.
-* Run code generation via Taskfile commands.
-
-## Dependencies
-
-Core technologies:
-
-* **HTTP**: Gin
-* **GraphQL**: gqlgen
-* **ORM**: Ent
-* **Database**: PostgreSQL with pgvector
-* **Messaging**: NATS JetStream
-* **Caching**: Redis
-* **Config**: PKL
-* **Observability**: OpenTelemetry, Zap
+That's the short path. For the full setup — **prerequisites** (Go, PostgreSQL, NATS, Task, PKL CLI, portless), the **portless HTTPS dev workflow** (`task dev:portless` → `https://api.app.localhost`), **PKL configuration**, **code generation**, all **scripts & tasks**, the **project structure**, how to **start your real app**, and **deployment** — see **[CONTRIBUTING.md](CONTRIBUTING.md)**. Deeper per-topic guides live in [`docs/`](docs/).
 
 ## FAQ
 
-**Is Volt API related to Volt Web?**
-Yes — they're the same brand family. [Volt Web](https://github.com/khanakia/boilerplate-tanstack) is the batteries-included TanStack Start React frontend; Volt API is the Go backend. Same identity, same "batteries-included starter" philosophy.
+**Is Volt API open source?**
+No. Volt API is a commercial product — purchasing a license grants you access to the repository, and you can use it in your own personal and commercial applications. See [License](#license). It is not redistributable as a starter/boilerplate itself.
+
+**Is Volt API related to Volt (Web)?**
+Yes — same brand family. [Volt](https://github.com/khanakia/boilerplate-tanstack) is the batteries-included TanStack Start React frontend; Volt API is the Go backend. Same identity, same "batteries-included starter" philosophy.
 
 **Why GraphQL instead of REST?**
 The dashboard API is schema-first via gqlgen, with Ent entity types auto-mapped — you get a typed, introspectable API without hand-writing marshaling. You can still add REST handlers via Gin where it fits.
@@ -252,22 +103,14 @@ PKL is type-checked and compiles to Go bindings, so config errors are caught at 
 **Why a `go.work` monorepo with separate binaries?**
 The API, cron, and CLI are independent processes that share the same domain code and a common `lace/` utility library. The workspace keeps them in one repo without coupling them into a single binary.
 
-**Can I remove the modules I don't need?**
-Yes. `modules/saas`, `modules/apidash`, `modules/dbent`, and `modules/config` are the writable core; `lace/`, `core/`, and `scripts/` are shared/external. Trim the GraphQL, NATS, or cron pieces you don't use.
-
 **What database is supported?**
 PostgreSQL (with pgvector for embeddings). Ent can target other databases, but the migrations and schema here assume Postgres.
 
+**Can I remove the parts I don't need?**
+Yes. `modules/saas`, `modules/apidash`, `modules/dbent`, and `modules/config` are the writable core; `lace/`, `core/`, and `scripts/` are shared/external. Trim the GraphQL, NATS, or cron pieces you don't use.
+
 ## License
 
-**Proprietary — all rights reserved.** See [LICENSE](LICENSE). This is commercial, private software; it is not open source. Contact the author for licensing.
+Volt API is a **commercial product** distributed under a proprietary license — see [LICENSE](LICENSE). A purchase grants a license to use Volt API as the foundation of your own applications; it does not permit redistributing or reselling Volt API itself (or a derivative starter) as a product. This is not open-source software. For support or licensing questions see [SUPPORT.md](SUPPORT.md).
 
----
-
-<div align="center">
-<sub>
-
-**Volt API** — Go backend boilerplate · GraphQL · gqlgen · Ent ORM · NATS JetStream · PKL config · OpenTelemetry · PostgreSQL · pgvector · Gin · Zap · Cobra CLI · cron · `go.work` monorepo · type-safe · code generation · schema-first · event-driven · production-ready starter kit
-
-</sub>
-</div>
+<sub>Volt API — a commercial Go backend boilerplate / service starter kit: schema-first GraphQL (gqlgen), Ent ORM, NATS JetStream, type-safe PKL config, OpenTelemetry, Zap, Cobra CLI, cron, PostgreSQL + pgvector, in a <code>go.work</code> monorepo.</sub>

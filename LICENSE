@@ -1,32 +1,52 @@
+Volt API Commercial License
+
 Copyright (c) 2026 khanakia. All rights reserved.
 
-PROPRIETARY AND CONFIDENTIAL
+This software and its source code ("Volt API") are proprietary and confidential.
+Access is granted only to holders of a valid, paid license.
 
-This software and its associated source code, documentation, and assets
-(collectively, the "Software") are the proprietary and confidential property
-of khanakia (the "Owner"). The Software is licensed, not sold.
+1. Grant of license
+   Subject to payment of the applicable fee and continued compliance with these
+   terms, you are granted a non-exclusive, non-transferable, worldwide license
+   to use, modify, and incorporate Volt API as the foundation of your own
+   software applications ("Your Applications"), and to deploy and distribute
+   Your Applications to your end users.
 
-No license, right, or permission is granted to any person to use, copy, modify,
-merge, publish, distribute, sublicense, sell, or otherwise exploit the Software,
-in whole or in part, except under a separate written agreement signed by the
-Owner. Absent such an agreement, no rights are granted.
+2. Permitted use
+   - Use Volt API to build an unlimited number of Your Applications, personal or
+     commercial.
+   - Modify the source code as needed for Your Applications.
+   - Deploy Your Applications, including their compiled/bundled output.
 
-You may NOT, without the Owner's prior written consent:
-  - copy, reproduce, or redistribute the Software or any portion of it;
-  - create derivative works based on the Software;
-  - reverse engineer, decompile, or disassemble the Software;
-  - remove or alter any copyright, trademark, or proprietary notices; or
-  - use the Software for any commercial or production purpose.
+3. Restrictions
+   You may NOT:
+   - Redistribute, resell, sublicense, publish, or share Volt API's source code,
+     in whole or in substantial part, whether modified or unmodified.
+   - Distribute Volt API (or a derivative of it) as a template, boilerplate,
+     starter kit, or component library — i.e. any product whose primary value
+     is Volt API itself rather than an application built with it.
+   - Remove or obscure this license or the copyright notice from the source.
 
-Unauthorized use, reproduction, or distribution of the Software, or any portion
-of it, may result in severe civil and criminal penalties, and will be prosecuted
-to the maximum extent possible under the law.
+4. Ownership
+   Volt API is licensed, not sold. All right, title, and interest in and to
+   Volt API remain with the copyright holder. This license grants no rights to
+   any trademark, service mark, or logo.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE OWNER BE
-LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+5. No warranty
+   VOLT API IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
 
-For licensing inquiries, contact: khanakia@gmail.com
+6. Limitation of liability
+   IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR
+   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE,
+   ARISING FROM, OUT OF, OR IN CONNECTION WITH VOLT API OR THE USE OR OTHER
+   DEALINGS IN VOLT API.
+
+7. Termination
+   This license terminates automatically if you breach any of its terms. On
+   termination you must cease all use of Volt API and destroy all copies of its
+   source code in your possession. Your Applications already deployed are not
+   affected, provided they do not expose Volt API's source.
+
+For licensing inquiries, contact khanakia@gmail.com.
