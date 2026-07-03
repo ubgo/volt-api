@@ -1,6 +1,6 @@
 # secrets CLI
 
-**Path:** `saas/cmd/secrets/`
+**Path:** `webapp/cmd/secrets/`
 **Purpose:** CLI commands for managing GitHub repository secrets from local `.github/.secrets` file.
 
 ## Overview
@@ -20,7 +20,7 @@ Base64 encode `.env.prod`, update `.github/.secrets`, and push `ENV_PROD_B64` to
 task secrets:update
 
 # Direct
-go run ./saas/cmd/secrets update
+go run ./webapp/cmd/secrets update
 ```
 
 **What it does:**
@@ -38,7 +38,7 @@ Parse `.github/.secrets` and push all secrets to GitHub.
 task secrets:push
 
 # Direct
-go run ./saas/cmd/secrets push
+go run ./webapp/cmd/secrets push
 ```
 
 **What it does:**

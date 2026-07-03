@@ -1,9 +1,9 @@
-package app
+package webapp
 
-import "core/pkg/plugin"
+import "core/pkg/volt"
 
 type config struct {
-	coreOptions []plugin.AppPkgOption
+	coreOptions []volt.Option
 }
 
 func (c *config) options(opts ...Option) {
@@ -14,7 +14,7 @@ func (c *config) options(opts ...Option) {
 
 type Option func(*config)
 
-func WithCoreOptions(options ...plugin.AppPkgOption) Option {
+func WithCoreOptions(options ...volt.Option) Option {
 	return func(c *config) {
 		c.coreOptions = append(c.coreOptions, options...)
 	}

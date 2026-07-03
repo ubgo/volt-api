@@ -81,7 +81,7 @@ Packages: singular, short, specific (`httputil` not `httputils`, `dbhook` not `h
 
 ## 9 · Service / package design
 
-Accept interfaces, return structs. Inject dependencies via constructor — no package-level globals, no `app.GetPlugins()` inside service methods. One responsibility per package; split past ~600 lines. Never `panic` for operational errors (only init-time fatals); **`log.Fatal` is banned** — it kills graceful shutdown, return the error to `main`.
+Accept interfaces, return structs. Inject dependencies via constructor — no package-level globals, no a global `*volt.Kernel` inside service methods. One responsibility per package; split past ~600 lines. Never `panic` for operational errors (only init-time fatals); **`log.Fatal` is banned** — it kills graceful shutdown, return the error to `main`.
 
 ## 10 · Logging — `applog` (ubgo/logger)
 

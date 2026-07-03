@@ -20,7 +20,7 @@ task dbent:g
 task dbent:migrate
 
 # Or via CLI
-go run ./saas/cmd/cli migrate
+go run ./webapp/cmd/cli migrate
 ```
 
 ## Safe Changes (Auto-migrate handles)
@@ -66,7 +66,7 @@ field.String("code").NotEmpty()
 For complex data migrations, create a CLI command:
 
 ```go
-// saas/cmd/cli/main.go
+// webapp/cmd/cli/main.go
 var migrateDataCommand = &cobra.Command{
     Use:   "migrate-data-v2",
     Short: "Migrate data for v2 schema",

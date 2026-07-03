@@ -1,4 +1,4 @@
-package plugin
+package volt
 
 import (
 	"config"
@@ -55,7 +55,7 @@ func (errxGozapSink) Emit(ctx context.Context, r *errx.Report) error {
 	return nil
 }
 
-type Plugin struct {
+type Kernel struct {
 	Cli         cli.Cli
 	DB          db.DB
 	EntDB       dbent.EntDB
@@ -68,13 +68,13 @@ type Plugin struct {
 	Health *health.Registry
 }
 
-var plugins *Plugin
+var kernel *Kernel
 
 // telemetry holds the initialized OTEL bootstrap handle (nil when telemetry is
 // disabled), used by ShutdownHandler to flush on exit.
 var telemetry *otelkit.Telemetry
 
-func New(options ...AppPkgOption) *Plugin {
+func New(options ...Option) *Kernel {
 	cfg := apppkgconfig{}
 
 	cfg.options(options...)
@@ -83,27 +83,27 @@ func New(options ...AppPkgOption) *Plugin {
 
 	configroot := config.Get()
 
-	plugins = &Plugin{
+	kernel = &Kernel{
 		Cli:        cli,
 		RootConfig: configroot,
 		Health:     health.NewRegistry(),
 	}
 
-	err := initDB(configroot.Database, plugins)
+	err := initDB(configroot.Database, kernel)
 	if err != nil {
 		applog.GetLogger().Error("Error initializing DB", ulog.Err(err))
 		panic(err)
 	}
 
-	err = initRedis(&configroot.Redis, plugins)
+	err = initRedis(&configroot.Redis, kernel)
 	if err != nil {
 		applog.GetLogger().Error("Error initializing Redis", ulog.Err(err))
 		panic(err)
 	}
 
-	// entClient := plugins.EntDB.Client()
+	// entClient := kernel.EntDB.Client()
 
-	plugins.Cache = rediscache.New(plugins.RedisClient)
+	kernel.Cache = rediscache.New(kernel.RedisClient)
 
 	// pubsub.New()
 
@@ -114,7 +114,7 @@ func New(options ...AppPkgOption) *Plugin {
 		panic("Error initializing global logger: " + err.Error())
 	}
 
-	return plugins
+	return kernel
 }
 
 func ShutdownHandler(ctx context.Context) error {
@@ -124,13 +124,13 @@ func ShutdownHandler(ctx context.Context) error {
 	// }
 
 	// DB close
-	err := plugins.EntDB.Client().Close()
+	err := kernel.EntDB.Client().Close()
 	if err != nil {
 		log.Printf("DB close failed: %v", err)
 	}
 
 	// redis close
-	err = plugins.RedisClient.Close()
+	err = kernel.RedisClient.Close()
 	if err != nil {
 		log.Printf("Redis close failed: %v", err)
 	}
@@ -221,7 +221,7 @@ func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Se
 	return nil
 }
 
-func initRedis(rediscfg *redisconfig.Setting, plugins *Plugin) error {
+func initRedis(rediscfg *redisconfig.Setting, kernel *Kernel) error {
 	if !rediscfg.Status {
 		return nil
 	}
@@ -239,25 +239,25 @@ func initRedis(rediscfg *redisconfig.Setting, plugins *Plugin) error {
 	if err != nil {
 		return err
 	}
-	plugins.RedisClient = redisClient
+	kernel.RedisClient = redisClient
 
 	// Register a live readiness checker; the background loop re-pings Redis
 	// rather than relying on this boot-time outcome.
-	_ = plugins.Health.Register(healthredis.New("redis", redisClient))
+	_ = kernel.Health.Register(healthredis.New("redis", redisClient))
 	return nil
 }
 
-func initDB(databaseconfig databaseconfig.Setting, plugins *Plugin) error {
+func initDB(databaseconfig databaseconfig.Setting, kernel *Kernel) error {
 	db := dbent.InitDB(databaseconfig)
 
 	entClient := dbent.New(db)
 
-	plugins.DB = db
-	plugins.EntDB = entClient
+	kernel.DB = db
+	kernel.EntDB = entClient
 
 	// Register a live readiness checker over the *sql.DB pool. Unlike the old
 	// boot-time ping, the background loop re-checks it continuously.
-	_ = plugins.Health.Register(newSQLDBChecker("database", db))
+	_ = kernel.Health.Register(newSQLDBChecker("database", db))
 
 	return nil
 }

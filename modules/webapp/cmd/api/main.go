@@ -8,13 +8,13 @@ import (
 	"context"
 	"core/pkg/applog"
 	"core/pkg/coreapi"
-	"core/pkg/plugin"
+	"core/pkg/volt"
 	"lace/ginserver"
 	"lace/httppkg/middlewares"
 	"lace/util"
-	"saas/pkg/app"
-	"saas/pkg/apphandlers"
-	"saas/pkg/shutlog"
+	"webapp/pkg/apphandlers"
+	"webapp/pkg/shutlog"
+	"webapp"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +26,7 @@ import (
 func main() {
 	appcfg := config.Get()
 
-	plugins := app.New()
+	circuit := webapp.New()
 
 	handlerFuncs := []gin.HandlerFunc{
 		util.CORSMiddleware(),
@@ -43,14 +43,14 @@ func main() {
 	apiGroup := serverServer.Router.Group("api")
 
 	apidash.Boot(apiGroup, &apidashtypes.Resolver{
-		Plugin:     plugins,
+		Circuit:    circuit,
 		RootConfig: appcfg,
 	})
 
 	coreapi.New(coreapi.Config{
 		HttpEngine:     serverServer.Router,
 		ApiRouterGroup: apiGroup,
-		EntClient:      plugins.EntDB.Client(),
+		EntClient:      circuit.EntDB.Client(),
 		CoreConfig:     &appcfg.Core,
 	})
 
@@ -58,16 +58,16 @@ func main() {
 	// all behind the internal-key guard. A background loop re-checks the
 	// registered dependency checkers (db, redis) every 30s; the handlers
 	// render the latest snapshot.
-	healthgin.Mount(serverServer.Router, plugins.Health,
+	healthgin.Mount(serverServer.Router, circuit.Health,
 		healthgin.WithMiddleware(ginserver.MiddlewareInternalApiGuard(appcfg.Core.InternalKey)),
 	)
-	plugins.Health.Start(context.Background(), 30*time.Second)
+	circuit.Health.Start(context.Background(), 30*time.Second)
 
 	apphandlers.New(apphandlers.Config{
 		HttpEngine:     serverServer.Router,
 		ApiRouterGroup: apiGroup,
-		EntClient:      plugins.EntDB.Client(),
-		RootConfig:     plugins.RootConfig,
+		EntClient:      circuit.EntDB.Client(),
+		RootConfig:     circuit.RootConfig,
 	})
 
 	mgr := shutdown.New(
@@ -78,7 +78,7 @@ func main() {
 	// Stop the background health re-check loop before closing clients, so a
 	// re-check never pings an already-closed DB/Redis connection.
 	_ = mgr.Register("health-checks", func(ctx context.Context) error {
-		plugins.Health.Stop()
+		circuit.Health.Stop()
 		return nil
 	}, shutdown.WithPhase(shutdown.PhaseStopAccepting))
 
@@ -92,7 +92,7 @@ func main() {
 		return nil
 	}, shutdown.WithPhase(shutdown.PhaseStopAccepting))
 
-	_ = mgr.Register("core-plugins", plugin.ShutdownHandler,
+	_ = mgr.Register("core-circuit", volt.ShutdownHandler,
 		shutdown.WithPhase(shutdown.PhaseCloseClients),
 		shutdown.WithTimeout(30*time.Second))
 

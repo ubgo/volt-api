@@ -139,7 +139,7 @@ Resolvers should be **thin wrappers**. They should only:
 
 1. **Validate** input using [valgo](https://github.com/cohesivestack/valgo).
 2. **Authenticate** using `middleware.GetUserFromGqlCtx(ctx)`.
-3. **Call** the logic layer (e.g., `saas/pkg/todofn` or `apidash/internal/apifn`).
+3. **Call** the logic layer (e.g., `webapp/pkg/todofn` or `apidash/internal/apifn`).
 4. **Handle Errors** using `lace/cerr`.
 
 ```go
@@ -148,8 +148,8 @@ package resolver
 import (
     "context"
     "lace/cerr"
-    "saas/pkg/middleware"
-    "saas/pkg/predefinederrors"
+    "webapp/pkg/middleware"
+    "webapp/pkg/predefinederrors"
     "github.com/cohesivestack/valgo"
 )
 
@@ -166,8 +166,8 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, text string) (*model.
          return nil, cerr.NewFromCtx(ctx).SetFriendlyFromErrs(err, err)
     }
 
-    // 3. Call Logic (located in saas/pkg/...)
-    item, err := r.Plugin.EntDB.Client().Todo.Create().
+    // 3. Call Logic (located in webapp/pkg/...)
+    item, err := r.Circuit.EntDB.Client().Todo.Create().
         SetText(text).
         SetUserID(user.ID).
         Save(ctx)
@@ -187,7 +187,7 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, text string) (*model.
 
 Do NOT write private helper functions inside `resolver` packages. Instead, create specialized packages:
 
-* **Business Logic:** `saas/pkg/yourdomainfn` (e.g., `saas/pkg/userfn`).
+* **Business Logic:** `webapp/pkg/yourdomainfn` (e.g., `webapp/pkg/userfn`).
 * **API Logic:** `apidash/internal/apifn` (if specific to GQL).
 
 ### 2. Error Handling (`lace/cerr`)

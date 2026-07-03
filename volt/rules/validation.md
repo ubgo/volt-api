@@ -138,7 +138,7 @@ func (r *mutationResolver) CreateOrder(ctx context.Context, input model.CreateOr
     }
 
     // Proceed with creation
-    return r.Plugin.EntDB.Client().Order.Create()...
+    return r.Circuit.EntDB.Client().Order.Create()...
 }
 ```
 

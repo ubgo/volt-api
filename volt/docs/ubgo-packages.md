@@ -9,7 +9,7 @@ These ship configured — you're already using them.
 | Package | What it does | Where it's used here |
 |---|---|---|
 | [`logger`](https://github.com/ubgo/logger) | Adapter-based, slog-native, zero-alloc structured logging — sampling, redaction, OTel, FingersCrossed debug-on-error, rotation. | Everywhere, via `core/pkg/applog` (aliased `ulog`). `applog.FromCtx(ctx)` adds trace correlation. See [guides/observability.md](guides/observability.md). |
-| [`otelkit`](https://github.com/ubgo/otelkit) | One-constructor OpenTelemetry bootstrap (traces, metrics, logs) with vendor presets (HyperDX, Grafana, Honeycomb, Datadog, New Relic). | Telemetry bootstrap in `core/pkg/plugin`; `applog`'s OTel sink reads the provider it registers. |
+| [`otelkit`](https://github.com/ubgo/otelkit) | One-constructor OpenTelemetry bootstrap (traces, metrics, logs) with vendor presets (HyperDX, Grafana, Honeycomb, Datadog, New Relic). | Telemetry bootstrap in `core/pkg/volt`; `applog`'s OTel sink reads the provider it registers. |
 | [`errx`](https://github.com/ubgo/errx) | One structured error: stable identity, class, redactable fields, return-trace, wire codec. Replaces the old `goerr`. | Error type + explicit `ReportError` sink in the app bootstrap. |
 | [`cache`](https://github.com/ubgo/cache) + [`cache-redis`](https://github.com/ubgo/cache-redis) | Bytes-level cache interface with generics, single-flight `Remember` (SWR/stale-if-error/negative/jitter), distributed locker, pluggable codecs; Redis adapter with SCAN prefix ops + Pub/Sub invalidation. | Caching layer, Redis-backed. |
 | [`health`](https://github.com/ubgo/health) (+ `health-gin`, `health-redis`) | k8s-style health/readiness registry with framework adapters and concrete checkers (Postgres, Redis, NATS, HTTP, DNS). | `/api/i/bootinfo` and readiness probes; Gin + Redis contribs. |
@@ -42,6 +42,6 @@ Not wired in, but designed to drop in. Add with `go get`, then follow the packag
 ## Conventions when adding an ubgo package
 
 - Prefer the ubgo package over hand-rolling or a heavier third-party dep — they follow this repo's conventions (context-first, OTel-aware, options pattern).
-- Wire long-lived clients into the app `*Plugin` (see [architecture.md](architecture.md)) and inject them; don't reach for globals.
+- Wire long-lived clients into the app `*volt.Kernel` (see [architecture.md](architecture.md)) and inject them; don't reach for globals.
 - Most have a zero-dep core plus `contrib/` adapters — import only the adapter you need.
 - Retired: **`goerr`** is superseded by **`errx`**; **`gozap`** by **`logger`**. Don't reintroduce the old ones.

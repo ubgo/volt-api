@@ -107,7 +107,7 @@ Run `seedusers` - see [CLI Reference](../reference/cli.md)
 |------|---------|
 | `apidash/internal/graph/schemas/schema.graphql` | Schema definitions |
 | `apidash/internal/graph/resolver/schema.resolvers.go` | Query implementations |
-| `saas/pkg/middleware/middleware.go` | Auth middleware |
-| `saas/pkg/auth/common.go` | JWT create/validate |
-| `saas/cmd/cli/main.go` | CLI commands (seedusers, logintoken) |
+| `webapp/pkg/middleware/middleware.go` | Auth middleware |
+| `webapp/pkg/auth/common.go` | JWT create/validate |
+| `webapp/cmd/cli/main.go` | CLI commands (seedusers, logintoken) |
 | `config/pkl/default/app.pkl` | Database config |

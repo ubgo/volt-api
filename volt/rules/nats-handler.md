@@ -13,8 +13,8 @@
 
 | Type | Location |
 |------|----------|
-| Handler registration | `saas/cmd/api/main.go` (in `WithAfterNatsInitiated`) |
-| Handler functions | `saas/pkg/<feature>/nats_handlers.go` |
+| Handler registration | `webapp/cmd/api/main.go` (in `WithAfterNatsInitiated`) |
+| Handler functions | `webapp/pkg/<feature>/nats_handlers.go` |
 | NATS utilities | `lace/natso/`, `lace/natsutil/` |
 
 ## Do
@@ -33,17 +33,17 @@
 ## Handler Registration Pattern
 
 ```go
-// saas/cmd/api/main.go
+// webapp/cmd/api/main.go
 func main() {
-    plugin := app.New(
-        app.WithAfterNatsInitiated(func(p *app.Plugin) {
+    circuit := webapp.New(
+        webapp.WithAfterNatsInitiated(func(p *volt.Kernel) {
             registerNatsHandlers(p)
         }),
     )
     // ...
 }
 
-func registerNatsHandlers(plugin *app.Plugin) {
+func registerNatsHandlers(plugin *volt.Kernel) {
     nc := plugin.Natso.GetConn()
     js, _ := nc.JetStream()
 
@@ -61,7 +61,7 @@ func registerNatsHandlers(plugin *app.Plugin) {
 ## Handler with Tracing
 
 ```go
-func handleOrderCreated(plugin *app.Plugin, msg *nats.Msg) {
+func handleOrderCreated(plugin *volt.Kernel, msg *nats.Msg) {
     ctx, span := otel.Tracer("nats").Start(
         context.Background(),
         "nats.orders.created",
@@ -101,7 +101,7 @@ func handleOrderCreated(plugin *app.Plugin, msg *nats.Msg) {
 ## Publishing Messages
 
 ```go
-func publishOrderEvent(ctx context.Context, plugin *app.Plugin, order *Order) error {
+func publishOrderEvent(ctx context.Context, plugin *volt.Kernel, order *Order) error {
     nc := plugin.Natso.GetConn()
     js, err := nc.JetStream()
     if err != nil {
@@ -152,7 +152,7 @@ msgs, _ := sub.Fetch(10, nats.MaxWait(5*time.Second))
 ## Event Types
 
 ```go
-// saas/pkg/events/types.go
+// webapp/pkg/events/types.go
 type OrderEvent struct {
     ID        string    `json:"id"`
     Action    string    `json:"action"`  // created, updated, deleted

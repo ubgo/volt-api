@@ -65,10 +65,10 @@ task docker:up
 task dbent:migrate
 
 # 3. Start API (separate terminal)
-go run ./saas/cmd/api
+go run ./webapp/cmd/api
 
 # 4. Start cron if needed (separate terminal)
-go run ./saas/cmd/cron
+go run ./webapp/cmd/cron
 ```
 
 ## Test Production Build Locally

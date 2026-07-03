@@ -93,8 +93,8 @@ myFeature {
 ## Accessing Config in Go
 
 ```go
-// Via app.Plugin
-func doSomething(plugin *app.Plugin) {
+// Via volt.Kernel
+func doSomething(plugin *volt.Kernel) {
     cfg := plugin.RootConfig
 
     if cfg.MyFeature.Enabled {
@@ -143,5 +143,5 @@ myFeature {
 task config:gen
 
 # Switch environment
-CONFIG_ENV=prod go run ./saas/cmd/api
+CONFIG_ENV=prod go run ./webapp/cmd/api
 ```

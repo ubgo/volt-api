@@ -47,8 +47,8 @@ func Boot(routerGroup *gin.RouterGroup, gqlResolver *apidashtypes.Resolver) {
 
 	handlers.New(handlers.Config{
 		RouterGroup: rg,
-		EntClient:   gqlResolver.Plugin.EntDB.Client(),
-		RootConfig:  gqlResolver.Plugin.RootConfig,
+		EntClient:   gqlResolver.Circuit.EntDB.Client(),
+		RootConfig:  gqlResolver.Circuit.RootConfig,
 	})
 }
 

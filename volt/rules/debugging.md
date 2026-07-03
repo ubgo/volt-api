@@ -42,7 +42,7 @@ docker compose ps
 docker compose exec postgres psql -U postgres -d mydb
 
 # Verify config
-CONFIG_ENV=default go run ./saas/cmd/cli ping
+CONFIG_ENV=default go run ./webapp/cmd/cli ping
 ```
 
 ### NATS Connection

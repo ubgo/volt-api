@@ -12,7 +12,7 @@
 
 ## When to Add to Lace
 
-| Add to Lace | Add to saas/pkg/ |
+| Add to Lace | Add to webapp/pkg/ |
 |-------------|------------------|
 | Generic utilities | Project-specific logic |
 | Reusable across projects | Uses project config/models |

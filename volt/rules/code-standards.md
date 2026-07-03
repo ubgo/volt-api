@@ -40,11 +40,11 @@ Any new AI session or human opening this code must understand *what it is, why i
 
 ### 1.4 Modular, importable, no AI slop
 
-- Organize so a package can be lifted into another project with minimal surgery: clear boundaries, no hidden coupling to app-global singletons, dependencies injected (constructor args) not reached-for via `app.GetPlugins()` inside methods.
+- Organize so a package can be lifted into another project with minimal surgery: clear boundaries, no hidden coupling to app-global singletons, dependencies injected (constructor args) not reached-for via a global `*volt.Kernel` inside methods.
 - One responsibility per package/file, named for what it owns. No generic `util`/`helpers`/`common` grab-bags, no 800-line files.
 - Intentional public surface: export what callers need, keep the rest unexported.
 - "AI slop" smells to avoid: dead scaffolding, copy-pasted near-duplicate blocks instead of a shared helper, generic names (`data`, `handleStuff`, `Manager`), commented-out code left in (unless tagged `@tag('dnd')`), and stubs that silently return empty — a data-returning stub must return an error or log a warning, never look like a real run on empty input.
-- Reuse before rebuild: if a `lace/`, `core/`, or `saas/pkg/` helper already exists, use it — don't hand-roll a local duplicate.
+- Reuse before rebuild: if a `lace/`, `core/`, or `webapp/pkg/` helper already exists, use it — don't hand-roll a local duplicate.
 
 ## 2 · Checklists
 
@@ -53,7 +53,7 @@ Any new AI session or human opening this code must understand *what it is, why i
 - [ ] **Shared resources** — grep every reader/writer of any field/column/table/env var/GraphQL type I'll touch; list them `file:line`; confirm compatibility.
 - [ ] **Constants** — every closed-set value has a named constant + canonical iteration list. No bare literals.
 - [ ] **Types** — every shape expressed; no untyped escape hatch planned; opaque IDs where confusable.
-- [ ] **Reuse** — does a `lace/` / `saas/pkg/` helper already exist? Extend it.
+- [ ] **Reuse** — does a `lace/` / `webapp/pkg/` helper already exist? Extend it.
 - [ ] **Empty / fallback path** — the zero/nil/missing case for every input has a defined graceful degradation (not a crash, not a silent zero).
 - [ ] **Module boundary** — where does this live so it's importable? Dependencies injected, not reached-for.
 
@@ -76,9 +76,9 @@ The universal floor above, plus the concrete rules for Volt API. When these and 
 - **Signatures:** context first, error last — `func Do(ctx context.Context, …) (*Result, error)`. Wrap errors with `fmt.Errorf("op: %w", err)`. Never `panic` in libraries; only `main`/`init` may.
 - **Logging** goes through `core/pkg/applog` (wraps `github.com/ubgo/logger`, aliased `ulog`). Use `applog.FromCtx(ctx)` for trace-correlated logs; fields are `ulog.String` / `ulog.Err` / `ulog.Any` (there is no `zap`). Log at boundaries, not every function; don't log AND return the same error.
 - **Tracing** via OpenTelemetry (`github.com/ubgo/otelkit` bootstrap); span names `<component>.<operation>`. **Errors** reported through `github.com/ubgo/errx`.
-- **Database** access via `app.New()` → the Ent client; never `ent.Open()` / `sql.Open()` directly. Migrations run with `WithForeignKeys(false)`. Sensitive fields use `.Sensitive()`.
-- **GraphQL** is schema-first: edit `.graphqls`, regenerate, implement resolvers. Business logic lives in `modules/saas/pkg/`, not resolvers. Never add helper files in `resolver/` (gqlgen overwrites). File uploads are base64 `String!`, never `graphql.Upload`.
-- **Packages** modular under their boundaries; the `/demo`-equivalent scratch (`modules/examples`, `modules/saas/cmd/test`) is quarantined and deletable.
+- **Database** access via `webapp.New()` → the Ent client; never `ent.Open()` / `sql.Open()` directly. Migrations run with `WithForeignKeys(false)`. Sensitive fields use `.Sensitive()`.
+- **GraphQL** is schema-first: edit `.graphqls`, regenerate, implement resolvers. Business logic lives in `modules/webapp/pkg/`, not resolvers. Never add helper files in `resolver/` (gqlgen overwrites). File uploads are base64 `String!`, never `graphql.Upload`.
+- **Packages** modular under their boundaries; the `/demo`-equivalent scratch (`modules/examples`, `modules/webapp/cmd/test`) is quarantined and deletable.
 - **Post-flight build IS the test:** `go build ./...`, `go vet ./...` (`task lint`), and the repo's tests pass clean.
 
 See the per-action guides in this folder (endpoints, schemas, migrations, NATS, secrets, …) and `../docs/BACKEND_PATTERNS.md` for the condensed cheat-sheet. Commits follow [git-commit.md](git-commit.md).

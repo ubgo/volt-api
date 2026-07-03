@@ -1,6 +1,6 @@
 # cronfn Package
 
-**Path:** `saas/pkg/cronfn/`
+**Path:** `webapp/pkg/cronfn/`
 **Purpose:** Reusable cron/job functions that can be invoked from both scheduled cron jobs and CLI commands.
 
 ## Overview
@@ -17,7 +17,7 @@ The `cronfn` package provides a pattern for writing job functions that:
 Each function in `cronfn` follows this pattern:
 
 ```go
-func JobName(ctx context.Context, plugin *app.Plugin) error {
+func JobName(ctx context.Context, plugin *volt.Kernel) error {
     // 1. Start trace span
     ctx, span := otel.Tracer(tracerName).Start(ctx, "cronfn.JobName",
         trace.WithAttributes(
@@ -69,7 +69,7 @@ func JobName(ctx context.Context, plugin *app.Plugin) error {
 Syncs pending files to WildAI service.
 
 ```go
-func SyncWildAI(ctx context.Context, plugin *app.Plugin) error
+func SyncWildAI(ctx context.Context, plugin *volt.Kernel) error
 ```
 
 **What it does:**
@@ -91,7 +91,7 @@ func SyncWildAI(ctx context.Context, plugin *app.Plugin) error
 Permanently removes soft-deleted item group files.
 
 ```go
-func CleanDeletedFiles(ctx context.Context, plugin *app.Plugin) error
+func CleanDeletedFiles(ctx context.Context, plugin *volt.Kernel) error
 ```
 
 **What it does:**
@@ -114,10 +114,10 @@ func CleanDeletedFiles(ctx context.Context, plugin *app.Plugin) error
 
 ## Usage
 
-### From Cron Scheduler (`saas/cmd/cron/main.go`)
+### From Cron Scheduler (`webapp/cmd/cron/main.go`)
 
 ```go
-import "saas/pkg/cronfn"
+import "webapp/pkg/cronfn"
 
 // Register WildAI sync job
 _, err := scheduler.NewJob(
@@ -142,10 +142,10 @@ _, err = scheduler.NewJob(
 )
 ```
 
-### From CLI (`saas/cmd/cli/main.go`)
+### From CLI (`webapp/cmd/cli/main.go`)
 
 ```go
-import "saas/pkg/cronfn"
+import "webapp/pkg/cronfn"
 
 var syncCommand = &cobra.Command{
     Use:   "syncwildai",
@@ -166,7 +166,7 @@ var syncCommand = &cobra.Command{
 
 When adding a new cron function:
 
-1. Create the function in `saas/pkg/cronfn/cronfn.go` (or a new file if complex)
+1. Create the function in `webapp/pkg/cronfn/cronfn.go` (or a new file if complex)
 2. Follow the pattern above with tracing, logging, and error handling
 3. Register in cron scheduler if it should run on schedule
 4. Optionally add CLI command for manual execution
@@ -174,9 +174,9 @@ When adding a new cron function:
 
 ## Dependencies
 
-- `saas/pkg/app` - Plugin with config and database
-- `saas/pkg/github` - GitHub API service
-- `saas/pkg/wildaisync` - WildAI sync logic
+- `webapp` - Plugin with config and database
+- `webapp/pkg/github` - GitHub API service
+- `webapp/pkg/wildaisync` - WildAI sync logic
 - `core/pkg/applog` - Structured logging
 - `go.opentelemetry.io/otel` - Tracing
 
@@ -184,8 +184,8 @@ When adding a new cron function:
 
 | File | Purpose |
 |------|---------|
-| `saas/pkg/cronfn/cronfn.go` | Cron function implementations |
-| `saas/cmd/cron/main.go` | Cron scheduler entry point |
-| `saas/cmd/cli/main.go` | CLI entry point |
-| `saas/pkg/wildaisync/` | WildAI sync logic |
-| `saas/pkg/app/` | Application plugin/config |
+| `webapp/pkg/cronfn/cronfn.go` | Cron function implementations |
+| `webapp/cmd/cron/main.go` | Cron scheduler entry point |
+| `webapp/cmd/cli/main.go` | CLI entry point |
+| `webapp/pkg/wildaisync/` | WildAI sync logic |
+| `webapp/` | Application plugin/config |

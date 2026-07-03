@@ -13,8 +13,8 @@
 
 | Purpose | Location |
 |---------|----------|
-| JWT handling | `saas/pkg/auth/` (if exists) |
-| Internal key guard | `saas/pkg/apphandlers/` |
+| JWT handling | `webapp/pkg/auth/` (if exists) |
+| Internal key guard | `webapp/pkg/apphandlers/` |
 | GraphQL directive | `@internal` in schema |
 
 ## Do

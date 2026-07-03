@@ -1,4 +1,4 @@
-module saas
+module webapp
 
 go 1.26.4
 

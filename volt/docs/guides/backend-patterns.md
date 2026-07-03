@@ -2,13 +2,13 @@
 
 ## Package Layout
 
-- Business logic → `modules/saas/pkg/<feature>/`
+- Business logic → `modules/webapp/pkg/<feature>/`
 - Generic utilities → `modules/lace/<package>/` (read-only — requires separate PR)
 - Ent schemas → `modules/dbent/schema/`
 - GraphQL schemas → `modules/apidash/internal/graph/*.graphqls`
 - Resolvers → `modules/apidash/internal/graph/resolver/` (**no helpers**, gqlgen overwrites)
-- CLI commands → `modules/saas/cmd/cli/`
-- Cron jobs → `modules/saas/cmd/cron/` + `modules/saas/pkg/cronfn/` for reusable functions
+- CLI commands → `modules/webapp/cmd/cli/`
+- Cron jobs → `modules/webapp/cmd/cron/` + `modules/webapp/pkg/cronfn/` for reusable functions
 
 ## Services
 
@@ -26,7 +26,7 @@ func (s *Service) Do(ctx context.Context, input Input) (*Result, error) {
 }
 ```
 
-Accept deps via constructor — no globals, no `app.GetPlugins()` inside service methods.
+Accept deps via constructor — no globals, no a global `*volt.Kernel` inside service methods.
 
 ## Database
 
@@ -62,11 +62,11 @@ Always: singleton mode, OTEL span, recover from panic (don't crash scheduler).
 
 ## NATS
 
-Register in `WithAfterNatsInitiated` callback — NATS connects async after `app.New()`.
+Register in `WithAfterNatsInitiated` callback — NATS connects async after `webapp.New()`.
 
 ```go
-plugin := app.New(
-    app.WithAfterNatsInitiated(func(p *app.Plugin) {
+circuit := webapp.New(
+    webapp.WithAfterNatsInitiated(func(p *volt.Kernel) {
         js, _ := p.Natso.GetConn().JetStream()
         js.Subscribe("orders.created", handler, nats.Durable("order-processor"))
     }),

@@ -50,7 +50,7 @@ tracestate: vendor1=value1,vendor2=value2
 Both services initialize OpenTelemetry with **`github.com/ubgo/otelkit`** (the v2 bootstrap — `lace/gotel` is gone). One `otelkit.Init` call wires traces, metrics, and logs from the PKL config, then `SetGlobal()` registers the global tracer, logger provider, and propagator. See the full bootstrap in the [Bootstrap section](#bootstrap--initializing-telemetry-logging--error-reporting) below.
 
 ```go
-// modules/core/pkg/plugin — bootstrap (both services)
+// modules/core/pkg/volt — bootstrap (both services)
 
 tel, err := otelkit.Init(ctx,
     otelkit.WithConfig(otelkit.Config{
@@ -80,7 +80,7 @@ otel.SetTextMapPropagator(propagator)
 
 ### 2. Service A: githubapp (CLI Command)
 
-Location: `saas/cmd/cli/main.go`
+Location: `webapp/cmd/cli/main.go`
 
 #### Step 1: Create Parent Span
 
@@ -187,7 +187,7 @@ func (c headerCarrier) Keys() []string {
 
 ### 3. Service B: wildaichat (HTTP Handler)
 
-Location: `saas/pkg/apphandlers/apphandlers.go`
+Location: `webapp/pkg/apphandlers/apphandlers.go`
 
 #### Step 1: Extract Trace Context from Request
 
@@ -304,11 +304,11 @@ Both logs will be linked by the same `trace_id`:
 ```bash
 # Terminal 1: Start wildaichat
 cd /Volumes/D/www/projects/thewildai/thewildai_chat_go
-go run ./saas/cmd/api
+go run ./webapp/cmd/api
 
 # Terminal 2: Run the test
 cd /Volumes/D/www/projects/thewildai/wildai_githubapp
-go run ./saas/cmd/cli testotel
+go run ./webapp/cmd/cli testotel
 ```
 
 ### Expected CLI Output

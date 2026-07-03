@@ -104,10 +104,10 @@ if err != nil {
 
 ```bash
 # Encrypt a value
-go run ./saas/cmd/cli crypt -e "sensitive value"
+go run ./webapp/cmd/cli crypt -e "sensitive value"
 
 # Decrypt a value
-go run ./saas/cmd/cli crypt -d "encrypted-string"
+go run ./webapp/cmd/cli crypt -d "encrypted-string"
 ```
 
 ## Accessing Secrets in Code

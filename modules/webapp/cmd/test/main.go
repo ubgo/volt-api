@@ -2,7 +2,7 @@ package main
 
 import (
 	"core/pkg/applog"
-	"saas/pkg/app"
+	"webapp"
 
 	"github.com/ubgo/errx"
 )
@@ -12,12 +12,12 @@ func test() *errx.Error {
 }
 
 func main() {
-	app := app.New()
-	app.Cli.Execute()
+	circuit := webapp.New()
+	circuit.Cli.Execute()
 
 	applog.GetLogger().Info("test")
 
-	// client := app.EntDB.Client()
+	// client := circuit.EntDB.Client()
 	// ctx := context.Background()
 	// goutil.Use(client, ctx)
 
@@ -141,7 +141,7 @@ func main() {
 	// fmt.Println(cfg)
 	// fmt.Printf("I'm running on host %s\n", cfg.Hostname)
 
-	// // app.RedisClient.JSONDel(ctx, "chatbot-ufpdv3nn36ue5jfv9m", "$")
+	// // circuit.RedisClient.JSONDel(ctx, "chatbot-ufpdv3nn36ue5jfv9m", "$")
 	// // _, err := aifn.GetEmbeddings([]string{"Hello! How can I assist you today", "name"})
 	// // if err != nil {
 	// // 	fmt.Println(err)

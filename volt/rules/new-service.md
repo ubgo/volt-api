@@ -4,15 +4,15 @@
 
 ## Checklist
 
-- [ ] Create package in `saas/pkg/<servicename>/`
+- [ ] Create package in `webapp/pkg/<servicename>/`
 - [ ] Define service struct with dependencies
 - [ ] Add constructor with dependency injection
-- [ ] Register in `app.Plugin` if needed globally
+- [ ] Register in `volt.Kernel` if needed globally
 
 ## File Location
 
 ```
-saas/pkg/<servicename>/
+webapp/pkg/<servicename>/
 ├── service.go      # Main service logic
 ├── types.go        # Input/output types (if many)
 └── service_test.go # Tests
@@ -28,7 +28,7 @@ saas/pkg/<servicename>/
 
 ## Don't
 
-- Call `app.GetPlugins()` inside service methods (inject instead)
+- Call a global `*volt.Kernel` inside service methods (inject instead)
 - Mix HTTP/GraphQL concerns into services
 - Create services for single-use utilities
 
@@ -76,7 +76,7 @@ type Result struct {
 ```go
 // In resolver
 func (r *queryResolver) MyQuery(ctx context.Context) (*Result, error) {
-    svc := myservice.New(r.Plugin.EntDB.Client())
+    svc := myservice.New(r.Circuit.EntDB.Client())
     return svc.DoSomething(ctx, myservice.DoInput{...})
 }
 ```
@@ -84,8 +84,8 @@ func (r *queryResolver) MyQuery(ctx context.Context) (*Result, error) {
 ## Using Globally (if needed)
 
 ```go
-// In saas/pkg/app/app.go - add to Plugin struct
-type Plugin struct {
+// In webapp/app.go - add to Plugin struct
+type Circuit struct {
     // ...existing fields
     MyService *myservice.Service
 }

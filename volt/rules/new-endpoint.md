@@ -22,7 +22,7 @@
 
 - Define clear input/output types in schema
 - Use Ent types for database entities (auto-mapped)
-- Access services via `r.Plugin` in resolvers
+- Access services via `r.Circuit` in resolvers
 - Use `@internal` directive for admin-only endpoints
 
 ## Don't
@@ -59,11 +59,11 @@ input CreateUserInput {
 // In resolver/user.resolvers.go (after running task apidash:gql)
 
 func (r *queryResolver) User(ctx context.Context, id string) (*ent.User, error) {
-    return r.Plugin.EntDB.Client.User.Get(ctx, id)
+    return r.Circuit.EntDB.Client.User.Get(ctx, id)
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*ent.User, error) {
-    return r.Plugin.EntDB.Client.User.
+    return r.Circuit.EntDB.Client.User.
         Create().
         SetEmail(input.Email).
         SetNillableFirstName(input.FirstName).

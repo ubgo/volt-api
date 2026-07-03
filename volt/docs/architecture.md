@@ -6,7 +6,7 @@ Go 1.25 workspace monorepo. Schema-first GraphQL, Ent ORM, PKL config, NATS JetS
 
 | Module | Role | Key Paths |
 |--------|------|-----------|
-| `modules/saas/` | App core — CLI, API, cron entrypoints + business services | `modules/saas/cmd/{api,cron,cli}/`, `modules/saas/pkg/` |
+| `modules/webapp/` | App core — CLI, API, cron entrypoints + business services | `modules/webapp/cmd/{api,cron,cli}/`, `modules/webapp/pkg/` |
 | `modules/apidash/` | GraphQL schema + resolvers (`/api/sa` endpoint) | `modules/apidash/internal/graph/` |
 | `modules/dbent/` | Ent schema defs + migration runner | `modules/dbent/schema/`, `modules/dbent/gen/ent/` (generated) |
 | `modules/config/` | PKL schema + generated Go bindings | `modules/config/pkl/schema/`, `modules/config/gen/` (generated) |
@@ -19,9 +19,9 @@ Go 1.25 workspace monorepo. Schema-first GraphQL, Ent ORM, PKL config, NATS JetS
 
 | Binary | Source | Purpose |
 |--------|--------|---------|
-| API | `modules/saas/cmd/api/main.go` | HTTP server — Gin + GraphQL + REST |
-| Cron | `modules/saas/cmd/cron/main.go` | Scheduled jobs via gocron |
-| CLI | `modules/saas/cmd/cli/main.go` | Cobra-based admin commands |
+| API | `modules/webapp/cmd/api/main.go` | HTTP server — Gin + GraphQL + REST |
+| Cron | `modules/webapp/cmd/cron/main.go` | Scheduled jobs via gocron |
+| CLI | `modules/webapp/cmd/cli/main.go` | Cobra-based admin commands |
 
 ## Request Flow (GraphQL)
 
@@ -29,15 +29,15 @@ Go 1.25 workspace monorepo. Schema-first GraphQL, Ent ORM, PKL config, NATS JetS
 HTTP → Gin middleware (auth, tracing, logging)
      → gqlgen handler
      → modules/apidash/internal/graph/resolver/*.resolvers.go
-     → modules/saas/pkg/<feature>/service.go
+     → modules/webapp/pkg/<feature>/service.go
      → modules/dbent/gen/ent (via plugin.EntDB.Client)
      → PostgreSQL
 ```
 
-## Bootstrap — `app.New()`
+## Bootstrap — `volt.New()` + `webapp.New()`
 
-`modules/saas/pkg/app/` composes a `*Plugin` struct holding: EntDB, Redis, Natso, Cli, RootConfig, telemetry.
-All entrypoints (api, cron, cli) start with `plugin := app.New(opts...)` then wire routes/jobs/commands.
+`volt.New()` (package `core/pkg/volt`) boots the **`*volt.Kernel`** — the shared engine holding EntDB, RedisClient, Cache, Cli, RootConfig, Health. `webapp.New()` (package `webapp`) wraps it in a **`*webapp.Circuit`**, which embeds the Kernel (so `circuit.EntDB`, `circuit.Cache`, … are promoted) and is the seam you extend with your own services. One Kernel can back many Circuits (webapp, adminapp, …).
+All entrypoints (api, cron, cli) start with `circuit := webapp.New(opts...)` then wire routes/jobs/commands.
 
 ## Generated Code
 

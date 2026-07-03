@@ -5,7 +5,7 @@ go 1.26.4
 replace (
 	config => ../config
 	lace => ../lace
-	saas => ../saas
+	webapp => ../webapp
 )
 
 require (
@@ -15,7 +15,7 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/vektah/gqlparser/v2 v2.5.36
 	lace v0.0.0-00010101000000-000000000000
-	saas v0.0.0-00010101000000-000000000000
+	webapp v0.0.0-00010101000000-000000000000
 )
 
 require (

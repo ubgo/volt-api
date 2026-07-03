@@ -4,17 +4,17 @@
 
 ## Checklist
 
-- [ ] Add command in `saas/cmd/cli/main.go`
+- [ ] Add command in `webapp/cmd/cli/main.go`
 - [ ] Register with `rootCmd.AddCommand()`
 - [ ] Add tracing if long-running
-- [ ] Test with `go run ./saas/cmd/cli <command>`
+- [ ] Test with `go run ./webapp/cmd/cli <command>`
 
 ## File Location
 
 | Type | Location |
 |------|----------|
-| Commands | `saas/cmd/cli/main.go` |
-| Complex commands | `saas/cmd/cli/<command>.go` (separate file) |
+| Commands | `webapp/cmd/cli/main.go` |
+| Complex commands | `webapp/cmd/cli/<command>.go` (separate file) |
 
 ## Do
 
@@ -33,7 +33,7 @@
 ## Simple Command
 
 ```go
-func AddCommands(plugin *app.Plugin) {
+func AddCommands(plugin *volt.Kernel) {
     var myCommand = &cobra.Command{
         Use:   "mycommand",
         Short: "Brief description",
@@ -83,7 +83,7 @@ rootCmd.AddCommand(myCommand())
 ## Command with Tracing
 
 ```go
-func tracedCommand(plugin *app.Plugin) *cobra.Command {
+func tracedCommand(plugin *volt.Kernel) *cobra.Command {
     return &cobra.Command{
         Use:   "traced",
         Short: "Command with OpenTelemetry tracing",
@@ -134,11 +134,11 @@ func parentCommand() *cobra.Command {
 
 ```bash
 # Development
-go run ./saas/cmd/cli mycommand --flag=value
+go run ./webapp/cmd/cli mycommand --flag=value
 
 # With args
-go run ./saas/cmd/cli mycommand arg1 arg2
+go run ./webapp/cmd/cli mycommand arg1 arg2
 
 # Help
-go run ./saas/cmd/cli mycommand --help
+go run ./webapp/cmd/cli mycommand --help
 ```

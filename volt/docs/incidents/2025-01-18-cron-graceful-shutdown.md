@@ -38,7 +38,7 @@ Build the binary first, then run the compiled binary directly instead of using `
 
 ### Fix 2: Increase gocron stop timeout
 
-In `saas/cmd/cron/main.go`, add `WithStopTimeout` when creating the scheduler:
+In `webapp/cmd/cron/main.go`, add `WithStopTimeout` when creating the scheduler:
 
 ```go
 scheduler, err := gocron.NewScheduler(
@@ -64,7 +64,7 @@ Without this, Docker's default is 10 seconds, then SIGKILL.
 
 ### Fix 4: Remove extra shutdown delay
 
-In `saas/cmd/cron/main.go`, add `WithGracefulShutdownTimeout(0)` to skip the 30-second post-handler sleep:
+In `webapp/cmd/cron/main.go`, add `WithGracefulShutdownTimeout(0)` to skip the 30-second post-handler sleep:
 
 ```go
 shutdown.New(
@@ -265,7 +265,7 @@ INFO stopped: cron (exit status 0)
 - `.docker/supervisord.conf` - Dev supervisor config (use pre-built binary, set `stopwaitsecs=86400`)
 - `.docker/supervisord.prod.conf` - Prod supervisor config (set `stopsignal=SIGTERM`, `stopwaitsecs=86400`)
 - `.github/workflows/deploy.yml.gotmpl` - Deploy workflow (use `docker run --stop-timeout 86400`)
-- `saas/cmd/cron/main.go` - Cron service entry point (add `WithStopTimeout`, `WithGracefulShutdownTimeout`)
+- `webapp/cmd/cron/main.go` - Cron service entry point (add `WithStopTimeout`, `WithGracefulShutdownTimeout`)
 - `lace/shutdown/shutdown.go` - Graceful shutdown handler
 
 ## How It Works Under The Hood

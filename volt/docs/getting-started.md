@@ -91,7 +91,7 @@ portless proxy start       # start the HTTPS proxy daemon on :443 (once per boot
 task dev:portless          # run the API at https://volt-api.localhost with air hot reload
 ```
 
-Open **https://volt-api.localhost** and press **Ctrl-C** to stop. The dev URL comes from `modules/saas/portless.json` (`name: "volt-api"`); change `name` to change the subdomain.
+Open **https://volt-api.localhost** and press **Ctrl-C** to stop. The dev URL comes from `modules/webapp/portless.json` (`name: "volt-api"`); change `name` to change the subdomain.
 
 Handy portless commands:
 

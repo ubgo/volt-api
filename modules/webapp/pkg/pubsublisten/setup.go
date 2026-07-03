@@ -4,7 +4,7 @@ import (
 	"context"
 	"dbent/gen/ent"
 	"encoding/json"
-	"saas/pkg/pubsub"
+	"webapp/pkg/pubsub"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 )

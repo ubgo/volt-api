@@ -2,10 +2,10 @@ package apidashtypes
 
 import (
 	"config/gen/rootconfig"
-	"saas/pkg/app"
+	"webapp"
 )
 
 type Resolver struct {
-	Plugin     *app.CustomApp
+	Circuit    *webapp.Circuit
 	RootConfig *rootconfig.RootConfig
 }

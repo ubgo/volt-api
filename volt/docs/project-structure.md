@@ -1,6 +1,6 @@
 # Project structure
 
-A map of the `boilerplate-golang` (Volt API) repository, so you know where each kind of logic lives. It's a `go.work` monorepo: all modules sit under `modules/`, but their **import paths keep the bare module name** (e.g. `import "saas/pkg/app"`) — only filesystem paths carry the `modules/` prefix.
+A map of the `boilerplate-golang` (Volt API) repository, so you know where each kind of logic lives. It's a `go.work` monorepo: all modules sit under `modules/`, but their **import paths keep the bare module name** (e.g. `import "webapp"`) — only filesystem paths carry the `modules/` prefix.
 
 ## Root
 
@@ -16,7 +16,7 @@ A map of the `boilerplate-golang` (Volt API) repository, so you know where each 
 
 | Module | Role | Writable |
 | :--- | :--- | :--- |
-| **`saas/`** | App core — business services (`pkg/`) and the API, cron, and CLI entrypoints (`cmd/`). The most important module. | yes |
+| **`webapp/`** | App core — business services (`pkg/`) and the API, cron, and CLI entrypoints (`cmd/`). The most important module. | yes |
 | **`apidash/`** | The dashboard GraphQL API (`/api/sa`) — gqlgen schema + resolvers. | yes |
 | **`dbent/`** | Ent ORM schema definitions + the generated client. | yes |
 | **`config/`** | PKL configuration schemas + generated Go bindings. | yes |
@@ -27,7 +27,7 @@ A map of the `boilerplate-golang` (Volt API) repository, so you know where each 
 
 ## Where things live
 
-### `saas/` — the core
+### `webapp/` — a product surface
 - **`cmd/{api,cron,cli}/`** — the three binaries (see [architecture.md](architecture.md)). `cmd/test/` is a scratch sandbox, safe to delete.
 - **`pkg/<feature>/`** — business logic services. Resolvers delegate here.
 
@@ -46,7 +46,7 @@ A map of the `boilerplate-golang` (Volt API) repository, so you know where each 
 
 ### `lace/` · `core/` (read-only shared)
 - **Logging**: `core/pkg/applog` — wraps [`github.com/ubgo/logger`](ubgo-packages.md) (console / OTEL / file sinks).
-- **Bootstrap**: `core/pkg/plugin` — composes the app `*Plugin` (DB, Redis, NATS, config, telemetry).
+- **Bootstrap**: `core/pkg/volt` — composes the app `*volt.Kernel` (DB, Redis, NATS, config, telemetry).
 - **`lace/natso/`**: NATS JetStream wrapper. Other shared helpers live under `lace/`.
 
 > Rule of thumb: **never edit anything under `gen/`, `generated/`, or `ent/`** (or a file with a `Code generated` header) — edit the source and regenerate. See [`../rules/code-standards.md`](../rules/code-standards.md).

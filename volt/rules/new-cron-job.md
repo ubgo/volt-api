@@ -4,8 +4,8 @@
 
 ## Checklist
 
-- [ ] Add job function in `saas/pkg/cronfn/` or inline in cron main
-- [ ] Register in `saas/cmd/cron/main.go`
+- [ ] Add job function in `webapp/pkg/cronfn/` or inline in cron main
+- [ ] Register in `webapp/cmd/cron/main.go`
 - [ ] Add OpenTelemetry tracing
 - [ ] Use singleton mode to prevent overlap
 - [ ] Test manually before deploying
@@ -14,8 +14,8 @@
 
 | Type | Location |
 |------|----------|
-| Cron scheduler | `saas/cmd/cron/main.go` |
-| Reusable job functions | `saas/pkg/cronfn/` |
+| Cron scheduler | `webapp/cmd/cron/main.go` |
+| Reusable job functions | `webapp/pkg/cronfn/` |
 
 ## Do
 
@@ -36,7 +36,7 @@
 ```go
 const tracerName = "cron"
 
-func registerMyJob(scheduler gocron.Scheduler, plugin *app.Plugin) {
+func registerMyJob(scheduler gocron.Scheduler, plugin *volt.Kernel) {
     _, err := scheduler.NewJob(
         // Schedule: every 5 minutes
         gocron.DurationJob(5*time.Minute),
@@ -99,7 +99,7 @@ func registerMyJob(scheduler gocron.Scheduler, plugin *app.Plugin) {
 ## Reusable Job Function
 
 ```go
-// saas/pkg/cronfn/cleanup.go
+// webapp/pkg/cronfn/cleanup.go
 package cronfn
 
 import (
@@ -127,7 +127,7 @@ func CleanupOldRecords(ctx context.Context, client *ent.Client) error {
 
 ```go
 func main() {
-    plugin := app.New(app.WithDisableNats(true))
+    circuit := webapp.New(webapp.WithDisableNats(true))
 
     scheduler, err := gocron.NewScheduler(
         gocron.WithLogger(gocronlogger.New(applog.GetLogger())),

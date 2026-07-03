@@ -211,7 +211,7 @@ stopasgroup=true         # Kill all child processes together
 killasgroup=true
 ```
 
-#### 3. Cron Shutdown Handler (`saas/cmd/cron/main.go`)
+#### 3. Cron Shutdown Handler (`webapp/cmd/cron/main.go`)
 
 ```go
 shutdown.New(
@@ -230,7 +230,7 @@ shutdown.New(
 ).Listen()
 ```
 
-#### 4. API Shutdown Handler (`saas/cmd/api/main.go`)
+#### 4. API Shutdown Handler (`webapp/cmd/api/main.go`)
 
 ```go
 shutdown.New(

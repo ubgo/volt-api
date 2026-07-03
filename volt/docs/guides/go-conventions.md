@@ -52,7 +52,7 @@ Use short, project-specific path segments with underscores rather than generic o
 ```go
 // Prefer: specific, underscore-style
 import "api/db/hooks"
-import "saas/hook"
+import "webapp/hook"
 
 // Avoid: generic names that collide easily
 import "api/db/hook"  // too generic

@@ -32,7 +32,7 @@ FROM golang:${GO_VERSION}-alpine AS builder
 * Copies go.work, go.mod/go.sum files
 * Copies source code: config, apidash, lace, saas, wildaiadminapi, wildaipartnerapi, config
 * Runs `go work vendor` to download dependencies (not copied from local)
-* Builds binary: `go build -mod=vendor -ldflags="-w -s" -o /build/bin/api ./saas/cmd/api`
+* Builds binary: `go build -mod=vendor -ldflags="-w -s" -o /build/bin/api ./webapp/cmd/api`
 
 ### Stage 2: Runtime
 

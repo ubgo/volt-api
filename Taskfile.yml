@@ -23,9 +23,9 @@ includes:
   core:
     taskfile: ./modules/core/Taskfile.yml
     dir: ./modules/core
-  saas:
-    taskfile: ./modules/saas/Taskfile.yml
-    dir: ./modules/saas
+  webapp:
+    taskfile: ./modules/webapp/Taskfile.yml
+    dir: ./modules/webapp
   apidash:
     taskfile: ./modules/apidash/Taskfile.yml
     dir: ./modules/apidash
@@ -36,14 +36,14 @@ includes:
 
 tasks:
   dev:
-    desc: alias → saas:dev (plain air)
+    desc: alias → webapp:dev (plain air)
     cmds:
-      - task: saas:dev
+      - task: webapp:dev
 
   dev:portless:
-    desc: alias → saas:dev:portless (https://volt-api.localhost)
+    desc: alias → webapp:dev:portless (https://volt-api.localhost)
     cmds:
-      - task: saas:dev:portless
+      - task: webapp:dev:portless
 
   pkl:link:
     desc: |
@@ -105,7 +105,7 @@ tasks:
   modapi:run:
     desc: Run the V2 modapi reference entry (smoke test)
     cmds:
-      - cd modules/saas && go run ./cmd/modapi -smoke
+      - cd modules/webapp && go run ./cmd/modapi -smoke
 
   workvendor:
     desc: fix work vendor mismatch on server

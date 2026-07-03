@@ -4,30 +4,30 @@ import (
 	"context"
 	"core/pkg/clicmd"
 	"fmt"
-	"saas/pkg/app"
+	"webapp"
 
 	"github.com/spf13/cobra"
 )
 
 func main() {
-	app := app.New()
-	clicmd.AddCommands(&app.Plugin)
-	AddCommands(app)
-	app.Cli.Execute()
+	circuit := webapp.New()
+	clicmd.AddCommands(&circuit.Kernel)
+	AddCommands(circuit)
+	circuit.Cli.Execute()
 }
 
-func AddCommands(plugin *app.CustomApp) {
-	rootCmd := plugin.Cli.RootCmd
-	rootCmd.AddCommand(seedUsersCommand(plugin))
+func AddCommands(circuit *webapp.Circuit) {
+	rootCmd := circuit.Cli.RootCmd
+	rootCmd.AddCommand(seedUsersCommand(circuit))
 }
 
-func seedUsersCommand(plugin *app.CustomApp) *cobra.Command {
+func seedUsersCommand(circuit *webapp.Circuit) *cobra.Command {
 	return &cobra.Command{
 		Use:   "seed-users",
 		Short: "Seed dummy users into the database",
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.Background()
-			client := plugin.EntDB.Client()
+			client := circuit.EntDB.Client()
 
 			users := []struct {
 				FirstName string

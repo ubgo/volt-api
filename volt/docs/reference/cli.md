@@ -8,10 +8,10 @@ Quick reference for all CLI commands. Copy and run these directly.
 
 ```bash
 # Build and run
-go run ./saas/cmd/cli <command> [args]
+go run ./webapp/cmd/cli <command> [args]
 
 # Or build first, then run
-go build -o cli ./saas/cmd/cli
+go build -o cli ./webapp/cmd/cli
 ./cli <command> [args]
 ```
 
@@ -23,7 +23,7 @@ go build -o cli ./saas/cmd/cli
 Test that CLI is working.
 
 ```bash
-go run ./saas/cmd/cli ping
+go run ./webapp/cmd/cli ping
 ```
 
 **Output:** `pong`
@@ -34,7 +34,7 @@ go run ./saas/cmd/cli ping
 Create demo users, workspaces, and user-workspace assignments for testing.
 
 ```bash
-go run ./saas/cmd/cli seedusers
+go run ./webapp/cmd/cli seedusers
 ```
 
 **Output:**
@@ -90,7 +90,7 @@ go run ./saas/cmd/cli seedusers
 Generate a JWT login token for a user within a specific workspace.
 
 ```bash
-go run ./saas/cmd/cli logintoken <user_id> <workspace_id>
+go run ./webapp/cmd/cli logintoken <user_id> <workspace_id>
 ```
 
 ---
@@ -100,15 +100,15 @@ Test GitHub App configuration and API connectivity.
 
 ```bash
 # Test config only
-go run ./saas/cmd/cli testgithub
+go run ./webapp/cmd/cli testgithub
 
 # Test config + fetch installation details
-go run ./saas/cmd/cli testgithub <installation_id>
+go run ./webapp/cmd/cli testgithub <installation_id>
 ```
 
 **Example:**
 ```bash
-go run ./saas/cmd/cli testgithub 101705340
+go run ./webapp/cmd/cli testgithub 101705340
 ```
 
 **Output:**
@@ -150,10 +150,10 @@ Sync pending files to WildAI service.
 
 ```bash
 # Sync all pending files
-go run ./saas/cmd/cli syncwildai
+go run ./webapp/cmd/cli syncwildai
 
 # Sync specific item group
-go run ./saas/cmd/cli syncwildai <item_group_id>
+go run ./webapp/cmd/cli syncwildai <item_group_id>
 ```
 
 **Output:**
@@ -180,7 +180,7 @@ Syncing all pending files...
 Permanently delete soft-deleted item group files.
 
 ```bash
-go run ./saas/cmd/cli cleandeleted
+go run ./webapp/cmd/cli cleandeleted
 ```
 
 **What it does:**
@@ -218,16 +218,16 @@ Cleaning up deleted files...
 **Quick Test (copy-paste ready):**
 ```bash
 # John as owner of Personal workspace
-go run ./saas/cmd/cli logintoken udemo_john_doe_00001 ws_demo_personal_01
+go run ./webapp/cmd/cli logintoken udemo_john_doe_00001 ws_demo_personal_01
 
 # Jane as owner of Acme Corp
-go run ./saas/cmd/cli logintoken udemo_jane_smith_01 ws_demo_acme_corp_1
+go run ./webapp/cmd/cli logintoken udemo_jane_smith_01 ws_demo_acme_corp_1
 
 # Bob as admin of Acme Corp
-go run ./saas/cmd/cli logintoken udemo_bob_johnson_1 ws_demo_acme_corp_1
+go run ./webapp/cmd/cli logintoken udemo_bob_johnson_1 ws_demo_acme_corp_1
 
 # Alice as owner of Startup Inc
-go run ./saas/cmd/cli logintoken udemo_alice_willia ws_demo_startup_001
+go run ./webapp/cmd/cli logintoken udemo_alice_willia ws_demo_startup_001
 ```
 
 **Output:**
@@ -254,7 +254,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 **Web App Login:**
 ```bash
 # Generate token and open in browser
-TOKEN=$(go run ./saas/cmd/cli logintoken udemo_john_doe_00001 ws_demo_personal_01)
+TOKEN=$(go run ./webapp/cmd/cli logintoken udemo_john_doe_00001 ws_demo_personal_01)
 open "http://localhost:5173/login?token=$TOKEN"
 ```
 
@@ -289,7 +289,7 @@ cd gql && task gql    # Generate GraphQL code
 
 ## Adding New CLI Commands
 
-1. Edit `saas/cmd/cli/main.go`
+1. Edit `webapp/cmd/cli/main.go`
 2. Add command in `AddCommands()` function:
 
 ```go

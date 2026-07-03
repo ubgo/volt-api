@@ -11,8 +11,8 @@ import (
 	"lace/gocron/gocronmonitor"
 	"lace/gocron/gocronui"
 
-	"saas/pkg/app"
-	"saas/pkg/shutlog"
+	"webapp/pkg/shutlog"
+	"webapp"
 
 	"github.com/go-co-op/gocron/v2"
 	ulog "github.com/ubgo/logger"
@@ -25,7 +25,7 @@ import (
 
 const tracerName = "cron"
 
-type registerFunc func(scheduler gocron.Scheduler, p *app.CustomApp)
+type registerFunc func(scheduler gocron.Scheduler, p *webapp.Circuit)
 
 // allJobs defines all available cron jobs.
 // The map key is the job name used in pkl config's enabledJobs list.
@@ -34,7 +34,7 @@ var allJobs = map[string]registerFunc{
 }
 
 func main() {
-	customApp := app.New()
+	circuit := webapp.New()
 
 	scheduler, err := gocron.NewScheduler(
 		gocron.WithLogger(gocronlogger.New(applog.GetLogger())),
@@ -49,12 +49,12 @@ func main() {
 
 	// Register jobs based on config.
 	// If enabledJobs is empty, all jobs are registered.
-	gocronCfg := customApp.RootConfig.App.Gocron
+	gocronCfg := circuit.RootConfig.App.Gocron
 	enabledJobs := gocronCfg.EnabledJobs
 
 	if len(enabledJobs) == 0 {
 		for name, register := range allJobs {
-			register(scheduler, customApp)
+			register(scheduler, circuit)
 			fmt.Printf("Registered job: %s\n", name)
 		}
 	} else {
@@ -64,7 +64,7 @@ func main() {
 				fmt.Printf("WARNING: unknown job name in enabledJobs: %q\n", name)
 				continue
 			}
-			register(scheduler, customApp)
+			register(scheduler, circuit)
 			fmt.Printf("Registered job: %s\n", name)
 		}
 	}
@@ -77,8 +77,8 @@ func main() {
 	if gocronCfg.UiEnable {
 		httpSrv = gocronui.NewServer(scheduler, gocronui.Config{
 			Port:        gocronCfg.UiPort,
-			Title:       customApp.RootConfig.Core.AppName + " Cron",
-			InternalKey: customApp.RootConfig.Core.InternalKey,
+			Title:       circuit.RootConfig.Core.AppName + " Cron",
+			InternalKey: circuit.RootConfig.Core.InternalKey,
 		})
 		gocronui.ListenAndLog(httpSrv, gocronCfg.UiPort, func(err error) {
 			applog.GetLogger().Error("gocron-ui server failed", ulog.Err(err))
@@ -118,7 +118,7 @@ func main() {
 	}
 }
 
-func registerExampleJob(scheduler gocron.Scheduler, customApp *app.CustomApp) {
+func registerExampleJob(scheduler gocron.Scheduler, circuit *webapp.Circuit) {
 	_, err := scheduler.NewJob(
 		gocron.DurationJob(5*time.Minute),
 		gocron.NewTask(func() {
@@ -133,7 +133,7 @@ func registerExampleJob(scheduler gocron.Scheduler, customApp *app.CustomApp) {
 			span.AddEvent("job_started")
 
 			// Add your cron job logic here
-			_ = customApp.EntDB.Client()
+			_ = circuit.EntDB.Client()
 
 			span.SetStatus(codes.Ok, "success")
 			span.AddEvent("job_completed")

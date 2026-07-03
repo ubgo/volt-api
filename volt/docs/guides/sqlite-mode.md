@@ -119,10 +119,10 @@ PostgreSQL needed host, port, username, password, dbname, sslmode. SQLite just n
 
 The signature changed from `InitDB(databaseconfig.Setting)` to `InitDB(string)`. Use `cfg.Database.DbName + ".db"` to derive the file path from existing PKL config.
 
-**File: `core/pkg/plugin/app.go`**
+**File: `core/pkg/volt/app.go`**
 
 ```diff
- func initDB(databaseconfig databaseconfig.Setting, plugins *Plugin) error {
+ func initDB(databaseconfig databaseconfig.Setting, plugins *volt.Kernel) error {
 -    db := dbent.InitDB(databaseconfig)
 +    db := dbent.InitDB(databaseconfig.DbName + ".db")
      // ... rest unchanged
@@ -191,7 +191,7 @@ cd dbent && go run ./cmd/migrate .
 | `dbent/pkg/dbent_migrate/dbent_migrate.go` | `dialect.Postgres` → `dialect.SQLite` |
 | `dbent/cmd/migrate/main.go` | Pass `cfg.Database.DbName + ".db"` to `InitDB` |
 | `dbent/cmd/entg/main.go` | Remove `_ "github.com/lib/pq"` import |
-| `core/pkg/plugin/app.go` | Pass `databaseconfig.DbName + ".db"` to `InitDB` |
+| `core/pkg/volt/app.go` | Pass `databaseconfig.DbName + ".db"` to `InitDB` |
 | `lace/go.mod` | Add `github.com/mattn/go-sqlite3`, remove `pgx` |
 | `dbent/go.mod` | Add `github.com/mattn/go-sqlite3`, remove `lib/pq` |
 | `.gitignore` | Add `*.db` |
@@ -266,5 +266,5 @@ sqlite3 dbent/<dbname>.db ".tables"
 sqlite3 dbent/<dbname>.db ".schema users"
 
 # 4. Start the API
-go run ./saas/cmd/api
+go run ./webapp/cmd/api
 ```

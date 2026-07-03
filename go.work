@@ -9,7 +9,7 @@ use (
 	./modules/dbent
 	./modules/examples
 	./modules/lace
-	./modules/saas
+	./modules/webapp
 	./modules/scripts
 )
 

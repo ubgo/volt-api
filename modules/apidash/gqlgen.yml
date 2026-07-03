@@ -72,7 +72,7 @@ skip_mod_tidy: true
 autobind:
   - github.com/99designs/gqlgen/graphql/introspection
   - dbent/gen/ent
-  - saas/pkg/constants
+  - webapp/pkg/constants
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -120,4 +120,4 @@ models:
 
   # CrawlExtractInput:
   #   model:
-  #     - saas/pkg/tools/crawlextract.CrawlExtractInput
+  #     - webapp/pkg/tools/crawlextract.CrawlExtractInput

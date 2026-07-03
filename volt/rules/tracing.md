@@ -137,7 +137,7 @@ func childOperation(ctx context.Context) error {
 
 ## HTTP Handler Tracing
 
-Already handled by middleware in `saas/pkg/httppkg/middlewares`:
+Already handled by middleware in `webapp/pkg/httppkg/middlewares`:
 
 ```go
 // Middleware adds span automatically

@@ -3,7 +3,7 @@ package clicmd
 import (
 	"context"
 	"core/pkg/applog"
-	"core/pkg/plugin"
+	"core/pkg/volt"
 	"dbent/pkg/dbent_migrate"
 	"fmt"
 	"os"
@@ -19,7 +19,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 )
 
-func AddCommands(plugin *plugin.Plugin) {
+func AddCommands(kernel *volt.Kernel) {
 	var pingCommand = &cobra.Command{
 		Use:   "ping",
 		Short: "Just a ping command",
@@ -34,7 +34,7 @@ func AddCommands(plugin *plugin.Plugin) {
 		Long:  "Creates a file in the tmp directory with current date and time",
 		Run: func(cmd *cobra.Command, args []string) {
 			currentTime := time.Now().Format("2006-01-02 15:04:05") + "\n"
-			tmpFile := filepath.Join(plugin.RootConfig.Core.Tmpdir, "datetime.txt")
+			tmpFile := filepath.Join(kernel.RootConfig.Core.Tmpdir, "datetime.txt")
 
 			// Open file in append mode, create if not exists
 			f, err := os.OpenFile(tmpFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -53,14 +53,14 @@ func AddCommands(plugin *plugin.Plugin) {
 		},
 	}
 
-	rootCmd := plugin.Cli.RootCmd
+	rootCmd := kernel.Cli.RootCmd
 	rootCmd.AddCommand(pingCommand)
-	rootCmd.AddCommand(dbEntMigrateCommand(plugin))
+	rootCmd.AddCommand(dbEntMigrateCommand(kernel))
 	rootCmd.AddCommand(writeDateTime)
-	rootCmd.AddCommand(cryptCommand(plugin.RootConfig.Core.EncryptionKey))
+	rootCmd.AddCommand(cryptCommand(kernel.RootConfig.Core.EncryptionKey))
 }
 
-func dbEntMigrateCommand(plugin *plugin.Plugin) *cobra.Command {
+func dbEntMigrateCommand(kernel *volt.Kernel) *cobra.Command {
 	// This command allows running migrations from within the main CLI binary.
 	// Useful for Docker deployments where we don't want to build a separate
 	// migration binary. In development, if the CLI fails to compile, you can
@@ -75,7 +75,7 @@ func dbEntMigrateCommand(plugin *plugin.Plugin) *cobra.Command {
 				buildinfootel.Attributes(attribute.String("job.name", "migrate"))...,
 			)
 
-			err := dbent_migrate.Migrate(ctx, plugin.DB)
+			err := dbent_migrate.Migrate(ctx, kernel.DB)
 			if err != nil {
 				applog.FromCtx(ctx).Error("failed to migrate the database", ulog.Err(err))
 				return

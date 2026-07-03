@@ -15,17 +15,17 @@ import (
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
-	return r.Plugin.EntDB.Client().User.Create().SetInput(input).Save(ctx)
+	return r.Circuit.EntDB.Client().User.Create().SetInput(input).Save(ctx)
 }
 
 // UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input ent.UpdateUserInput) (*ent.User, error) {
-	return r.Plugin.EntDB.Client().User.UpdateOneID(id).SetInput(input).Save(ctx)
+	return r.Circuit.EntDB.Client().User.UpdateOneID(id).SetInput(input).Save(ctx)
 }
 
 // DeleteUser is the resolver for the deleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
-	err := r.Plugin.EntDB.Client().User.DeleteOneID(id).Exec(ctx)
+	err := r.Circuit.EntDB.Client().User.DeleteOneID(id).Exec(ctx)
 	if err != nil {
 		return false, fmt.Errorf("delete user: %w", err)
 	}
@@ -43,7 +43,7 @@ func (r *mutationResolver) UpdateUserName(ctx context.Context, id string, name s
 		lastName = parts[1]
 	}
 
-	return r.Plugin.EntDB.Client().User.
+	return r.Circuit.EntDB.Client().User.
 		UpdateOneID(id).
 		SetFirstName(firstName).
 		SetLastName(lastName).
@@ -52,7 +52,7 @@ func (r *mutationResolver) UpdateUserName(ctx context.Context, id string, name s
 
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, id string) (*ent.User, error) {
-	u, err := r.Plugin.EntDB.Client().User.Get(ctx, id)
+	u, err := r.Circuit.EntDB.Client().User.Get(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, nil
@@ -65,7 +65,7 @@ func (r *queryResolver) User(ctx context.Context, id string) (*ent.User, error) 
 // UserByEmail is the resolver for the userByEmail field.
 // DEPRECATED: Use users query with email filter instead
 func (r *queryResolver) UserByEmail(ctx context.Context, email string) (*ent.User, error) {
-	u, err := r.Plugin.EntDB.Client().User.
+	u, err := r.Circuit.EntDB.Client().User.
 		Query().
 		Where(user.EmailEQ(email)).
 		Only(ctx)

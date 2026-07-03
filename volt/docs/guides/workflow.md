@@ -117,8 +117,8 @@ Open the newly generated/updated resolver file (e.g., `apidash/internal/graph/re
 // apidash/internal/graph/resolver/product.resolvers.go
 
 func (r *mutationResolver) CreateProduct(ctx context.Context, name string, price float64) (*model.Product, error) {
-    // Access the Ent client via the Plugin (Dependency Injection)
-    p, err := r.Plugin.EntDB.Client().Product.Create().
+    // Access the Ent client via the Circuit (Dependency Injection)
+    p, err := r.Circuit.EntDB.Client().Product.Create().
         SetName(name).
         SetPrice(price).
         Save(ctx)
@@ -169,10 +169,10 @@ This command automatically:
 
 All CLI tools are located in the `saas` module to leverage the core business logic.
 
-1. **Open `saas/cmd/cli/main.go`.**
+1. **Open `webapp/cmd/cli/main.go`.**
 2. **Define a constructor function** for your command:
    ```go
-   func newMyCommand(plugin app.Plugin) *cobra.Command {
+   func newMyCommand(plugin volt.Kernel) *cobra.Command {
        return &cobra.Command{
            Use:   "my-command",
            Short: "Description of my command",
@@ -209,7 +209,7 @@ Create an Ent schema for the data you are scraping.
 
 Don't put logic in the CLI command. Create a dedicated package.
 
-* **Path:** `saas/pkg/scraper/scraper.go`
+* **Path:** `webapp/pkg/scraper/scraper.go`
 * **Structure:**
   ```go
   package scraper
@@ -233,9 +233,9 @@ Don't put logic in the CLI command. Create a dedicated package.
 
 ### 3. Create the CLI Command
 
-Register a new command in `saas/cmd/cli`.
+Register a new command in `webapp/cmd/cli`.
 
-* **Path:** `saas/cmd/cli/cmd/scrape.go`
+* **Path:** `webapp/cmd/cli/cmd/scrape.go`
 * **Code:**
   ```go
   var scrapeCmd = &cobra.Command{
