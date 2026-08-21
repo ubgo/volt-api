@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/ORM-Ent-7C3AED" alt="Ent ORM" />
   <img src="https://img.shields.io/badge/Events-NATS%20JetStream-7C3AED" alt="NATS JetStream" />
   <img src="https://img.shields.io/badge/Config-PKL-7C3AED" alt="PKL config" />
-  <img src="https://img.shields.io/badge/coverage-0.0%25-red" alt="Hand-written test coverage (auto-updated by CI)" />
+  <img src="https://img.shields.io/badge/coverage-1.7%25-red" alt="Hand-written test coverage (auto-updated by CI)" />
   <img src="https://img.shields.io/badge/license-Commercial-7C3AED" alt="Commercial license" />
 </p>
 
