@@ -4,6 +4,17 @@ version: "3"
 
 dotenv: [".env"]
 
+# Exposed to every task command so PKL's `read?("env:VOLT_ROOT")` in
+# modules/config/pkl/env/default/app.pkl resolves to the repo root regardless
+# of which task chdirs (module Taskfiles run from their own `dir:`). Without
+# this, rootdir = "." picks up cwd and tmpdir + uploadsdir + logFile land
+# under whichever subdir the task happened to be in. ROOT_DIR is task's
+# built-in absolute path to the ROOT Taskfile's directory — unlike
+# TASKFILE_DIR it stays the repo root even when the running task is defined
+# in an included module Taskfile (where TASKFILE_DIR is the module dir).
+env:
+  VOLT_ROOT: "{{.ROOT_DIR}}"
+
 includes:
   docker:
     taskfile: .docker/Taskfile.yml

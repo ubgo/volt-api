@@ -2,6 +2,7 @@ package volt
 
 import (
 	"config"
+	coreenv "config/gen/coreconfig/environment"
 	"config/gen/databaseconfig"
 	"config/gen/loggerconfig"
 	"config/gen/redisconfig"
@@ -105,11 +106,19 @@ func New(options ...Option) *Kernel {
 
 	kernel.Cache = rediscache.New(kernel.RedisClient)
 
+	// Fail closed: a non-dev deployment must never encrypt real data with an
+	// empty or well-known dev-default key (the PKL template placeholders are
+	// public knowledge). Refuse to boot rather than silently using a guessable
+	// key — discovering this after rows are encrypted means a rekey migration.
+	if configroot.Core.Environment != coreenv.Dev && IsWeakOrDefaultKey(configroot.Core.EncryptionKey) {
+		panic("core.encryptionKey is empty or a dev-default placeholder in a non-dev environment (" + string(configroot.Core.Environment) + ") — refusing to boot; set a real 16/24/32-byte key via config or env")
+	}
+
 	// pubsub.New()
 
 	// pubsublisten.SetupSubscribers(entClient)
 
-	err = initGlobalLogger(configroot.Otel, configroot.Logger)
+	err = initGlobalLogger(configroot.Otel, configroot.Logger, string(configroot.Core.Environment))
 	if err != nil {
 		panic("Error initializing global logger: " + err.Error())
 	}
@@ -144,7 +153,7 @@ func ShutdownHandler(ctx context.Context) error {
 	return nil
 }
 
-func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Setting) error {
+func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Setting, environment string) error {
 	if !otelconfig.Enable {
 		return nil
 	}
@@ -182,9 +191,17 @@ func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Se
 		otelkit.WithConfig(otelkit.Config{
 			ServiceName:    otelconfig.ServiceName,
 			ServiceVersion: otelconfig.ServiceVersion,
-			Traces:         signal(otelconfig.EnableTraces),
-			Metrics:        signal(otelconfig.EnableMetrics),
-			Logs:           signal(otelconfig.EnableLogs),
+			// deployment.environment.name — a SECONDARY discriminator. The
+			// PRIMARY environment separation is the per-env service.name
+			// convention (each env emits its own name, e.g. myapp-api vs
+			// myapp-api-stag), because shared observability backends like
+			// HyperDX have no tenant separation and alert rules scoped to a
+			// prod service name must be structurally unable to match staging
+			// noise. See volt/docs/guides/otel-service-naming.md.
+			Environment: environment,
+			Traces:      signal(otelconfig.EnableTraces),
+			Metrics:     signal(otelconfig.EnableMetrics),
+			Logs:        signal(otelconfig.EnableLogs),
 		}),
 		otelkit.WithEnvOverrides(false),
 		otelkit.WithTLS(tlsMode),

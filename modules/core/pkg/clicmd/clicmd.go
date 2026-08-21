@@ -58,6 +58,7 @@ func AddCommands(kernel *volt.Kernel) {
 	rootCmd.AddCommand(dbEntMigrateCommand(kernel))
 	rootCmd.AddCommand(writeDateTime)
 	rootCmd.AddCommand(cryptCommand(kernel.RootConfig.Core.EncryptionKey))
+	rootCmd.AddCommand(cryptRekeyCommand())
 }
 
 func dbEntMigrateCommand(kernel *volt.Kernel) *cobra.Command {

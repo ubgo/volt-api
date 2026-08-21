@@ -10,12 +10,47 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
+// ISO renders a timestamp as an ISO-8601 (RFC3339, UTC) string — for GraphQL
+// time fields where the schema has no Time scalar and carries times as strings.
+func ISO(t time.Time) string {
+	return t.UTC().Format(time.RFC3339)
+}
+
+// ISOPtr renders an OPTIONAL timestamp as an ISO-8601 (RFC3339, UTC) *string —
+// nil in → nil out — for nullable GraphQL time fields.
+func ISOPtr(t *time.Time) *string {
+	if t == nil {
+		return nil
+	}
+	s := ISO(*t)
+	return &s
+}
+
 func Ptr[T any](v T) *T {
 	return &v
+}
+
+// StrPtr returns a pointer to the string, or nil if the string is empty.
+func StrPtr(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+// Deref returns *p, or def when p is nil — the inverse of Ptr, for optional
+// pointer args (e.g. GraphQL nullable inputs). One generic func replaces the
+// per-type deref/derefStr helpers.
+func Deref[T any](p *T, def T) T {
+	if p == nil {
+		return def
+	}
+	return *p
 }
 
 func ToJSON(v any) *jsontype.JSON {

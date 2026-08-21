@@ -10,7 +10,10 @@ core {
   appName = "demo"
   appKey = "demo"
   environment = "dev"
-  rootdir = "/Volumes/D/www/projects/demo"
+  // VOLT_ROOT (exported by the root Taskfile) pins rootdir to the repo root
+  // no matter which directory the launching task chdir'd into — see
+  // env/default/app.pkl for the full rationale.
+  rootdir = read?("env:VOLT_ROOT") ?? "."
   tmpdir = core.rootdir + "/tmp"
   uploadsdir = core.rootdir + "/uploads"
   internalKey = "1234"
@@ -49,7 +52,9 @@ otel {
   enableMetrics = false
   enableLogs = true
   enableTraces = true
-  serviceName = "demo"
+  // Per-env service names: deployed environments set OTEL_SERVICE_NAME —
+  // see volt/docs/guides/otel-service-naming.md.
+  serviceName = read?("env:OTEL_SERVICE_NAME") ?? "demo"
   serviceVersion = "1.0.0"
   enableHttp = true
   enableStdout = true

@@ -11,8 +11,8 @@ import (
 	"lace/gocron/gocronmonitor"
 	"lace/gocron/gocronui"
 
-	"webapp/pkg/shutlog"
 	"webapp"
+	"webapp/pkg/shutlog"
 
 	"github.com/go-co-op/gocron/v2"
 	ulog "github.com/ubgo/logger"

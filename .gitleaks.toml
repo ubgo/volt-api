@@ -92,7 +92,22 @@ keywords = ["api_key", "apikey", "secret", "token", "password", "passwd", "crede
 # --no-verify, which is worse than letting through a placeholder.
 # ─────────────────────────────────────────────────────────────────────────────
 
-[allowlist]
+[[allowlists]]
+description = "false-positive-prone generic rules — restrict to file-path patterns we audit"
+targetRules = ["generic-credential-assignment", "generic-api-key"]
+paths = [
+	# Go module checksums — base64 hashes by design (h1:…=). Not credentials.
+	'''.*\.sum$''',
+	# Test files with shared-secret placeholders (HMAC verification etc.).
+	'''.*_test\.go$''',
+	# Generated code — values are codegen output, not hand-placed secrets.
+	'''.*/gen/.*''',
+	# PKL config templates: committed values are synthetic placeholders
+	# (change-me-*, xxxx); real values come from env at deploy time.
+	'''modules/config/pkl/env/.*\.pkl$''',
+]
+
+[[allowlists]]
 description = "Placeholders + docs that look credential-shaped"
 paths = [
 	# Documentation that shows usage with explicit placeholders

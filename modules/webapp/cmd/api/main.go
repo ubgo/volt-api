@@ -12,10 +12,10 @@ import (
 	"lace/ginserver"
 	"lace/httppkg/middlewares"
 	"lace/util"
+	"time"
+	"webapp"
 	"webapp/pkg/apphandlers"
 	"webapp/pkg/shutlog"
-	"webapp"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	healthgin "github.com/ubgo/health/contrib/health-gin"

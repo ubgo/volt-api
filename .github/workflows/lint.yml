@@ -1,0 +1,59 @@
+# lint.yml — gofmt + go vet over hand-written code.
+#
+# Scope note: generated trees (gen/, generated/) are EXCLUDED at the file-list
+# level, not silenced with directives. That is scoping the tool off tool-output,
+# which is legitimate; suppressing a real finding in hand-written code is not.
+# If this job fails, fix the cause -- run `gofmt -w` on the reported files or
+# correct what vet found. Do not add ignore comments to make it green.
+name: lint
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.work
+          cache: true
+
+      - name: gofmt (hand-written only)
+        run: |
+          set -euo pipefail
+          unformatted=$(find modules -name '*.go' \
+            -not -path '*/gen/*' -not -path '*/generated/*' -not -path '*/vendor/*' \
+            -print0 | xargs -0 gofmt -l)
+          if [ -n "$unformatted" ]; then
+            echo "::error::gofmt found unformatted files. Run: gofmt -w <file>"
+            echo "$unformatted"
+            exit 1
+          fi
+          echo "gofmt clean"
+
+      - name: go vet (hand-written packages, per go.work module)
+        run: |
+          set -uo pipefail
+          MODULES=$(awk '/^use \(/{f=1;next} /^\)/{f=0} f{gsub(/[ \t]/,"");if($0!="")print}' go.work)
+          FAILED=0
+          for m in $MODULES; do
+            [ -d "$m" ] || continue
+            pkgs=$(cd "$m" && go list ./... 2>/dev/null | grep -vE '/gen(/|$)|/generated(/|$)|/vendor/')
+            [ -n "$pkgs" ] || continue
+            if ! (cd "$m" && echo "$pkgs" | xargs go vet); then
+              echo "::error::go vet failed in module $m"
+              FAILED=1
+            fi
+          done
+          exit $FAILED

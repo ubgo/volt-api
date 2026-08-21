@@ -28,8 +28,8 @@ const (
 
 // Prefix for GitHub secrets in .env files
 const (
-	GitHubSecretPrefix          = "GITHUB_SECRET_"
-	GitHubSecretKeyFiles        = "GITHUB_SECRET_KEY_FILES"
+	GitHubSecretPrefix           = "GITHUB_SECRET_"
+	GitHubSecretKeyFiles         = "GITHUB_SECRET_KEY_FILES"
 	GitHubSecretVPSDeployKeyFile = "GITHUB_SECRET_VPS_DEPLOY_KEY_FILE"
 )
 

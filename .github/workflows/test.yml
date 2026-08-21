@@ -1,0 +1,109 @@
+# test.yml — unit tests + an auto-updating coverage badge.
+#
+# Why coverage is scoped to hand-written packages: a large share of this
+# repo's .go files are generated (ent, gqlgen, PKL bindings). Counting them
+# reports a number that says nothing about the code we actually write, and it
+# only ever moves when a generator runs. We exclude gen/ and generated/ so
+# the badge tracks OUR tests.
+#
+# Why no service containers: DB-backed tests must gate themselves behind
+# *_TEST_DATABASE_URL env vars and skip when unset; everything else runs
+# hermetically. `-short` is kept as defense-in-depth for anything added later
+# that honours testing.Short().
+#
+# TRAP (cost a debugging detour on the sync fork, 2026-08-18): GitHub scans
+# the ENTIRE commit message -- subject AND body -- for the CI skip token. A
+# commit whose body merely *describes* the token silently skips every
+# workflow on that push: no tests, no lint, no deploy. It looks exactly like
+# a broken trigger. When writing about the token in a commit message, spell
+# it "skip-ci" or "the skip token" -- never the bracketed literal. Only the
+# auto-generated badge commit below should ever carry the real thing.
+name: test
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+  workflow_dispatch:
+
+# contents: write is required by the badge step, which commits the updated
+# README back to main. Everything else here is read-only.
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          # The badge step pushes back to main, so the token must survive.
+          persist-credentials: true
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          # Sourced from go.work so the CI toolchain can never drift from the
+          # workspace's declared version.
+          go-version-file: go.work
+          cache: true
+
+      - name: Run tests with coverage (hand-written packages only)
+        id: cov
+        run: |
+          set -uo pipefail
+          MODULES=$(awk '/^use \(/{f=1;next} /^\)/{f=0} f{gsub(/[ \t]/,"");if($0!="")print}' go.work)
+          : > coverage.parts
+          FAILED=0
+          for m in $MODULES; do
+            [ -d "$m" ] || continue
+            pkgs=$(cd "$m" && go list ./... 2>/dev/null | grep -vE '/gen(/|$)|/generated(/|$)|/vendor/' | paste -sd, -)
+            [ -n "$pkgs" ] || continue
+            prof=$(mktemp)
+            if ! (cd "$m" && go test -short -covermode=atomic -coverpkg="$pkgs" -coverprofile="$prof" ./...); then
+              echo "::error::tests failed in module $m"
+              FAILED=1
+            fi
+            [ -s "$prof" ] && tail -n +2 "$prof" >> coverage.parts
+            rm -f "$prof"
+          done
+          { echo "mode: atomic"; cat coverage.parts; } > coverage.out
+          rm -f coverage.parts
+
+          # Aggregate by STATEMENT COUNT, not by averaging per-module
+          # percentages -- modules differ hugely in size, so an average would
+          # over-weight the small ones. Fields: "path:a.b,c.d numStmt count".
+          TOTAL=$(awk 'NR==1{next} {s+=$2; if($3>0) c+=$2} END{ if(s==0){print "0.0"; exit} printf "%.1f", (c/s)*100 }' coverage.out)
+          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+          echo "Hand-written coverage: ${TOTAL}%"
+          exit $FAILED
+
+      - name: Update coverage badge in README
+        # Only on main: the badge reflects the shipped state, and running this
+        # on every branch would race pushes against each other.
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          TOTAL: ${{ steps.cov.outputs.total }}
+        run: |
+          set -euo pipefail
+          color=red
+          awk -v t="$TOTAL" 'BEGIN{ exit !(t >= 80) }' && color=brightgreen
+          awk -v t="$TOTAL" 'BEGIN{ exit !(t >= 50 && t < 80) }' && color=yellow
+
+          perl -0pi -e "s#https://img\.shields\.io/badge/coverage-[0-9.]+%25-[a-z]+#https://img.shields.io/badge/coverage-${TOTAL}%25-${color}#g" README.md
+
+          # No change -> nothing to commit. Without this the job fails on a
+          # clean tree every time coverage is unchanged.
+          if git diff --quiet README.md; then
+            echo "Badge already at ${TOTAL}% -- nothing to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          # [skip ci] stops this commit from re-triggering test.yml or tripping
+          # any push-triggered deploy.
+          git commit -m "ci(readme): update coverage badge to ${TOTAL}% [skip ci]"
+          git push origin HEAD:main

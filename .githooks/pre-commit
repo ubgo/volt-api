@@ -136,7 +136,7 @@ SECRET_PATTERNS=(
 #
 # Mirror any allowlist you add to .gitleaks.toml here so both layers stay
 # in sync.
-ALLOW_RE='shpat_xxx|shpat_…|sk-xxx|sk-…|sk-ant-xxx|sk-ant-…|\[REDACTED[^]]*\]|<TOKEN>|<API_KEY>|\$\{[A-Z_]+_(TOKEN|KEY)\}'
+ALLOW_RE='shpat_xxx|shpat_…|sk-xxx|sk-…|sk-ant-xxx|sk-ant-…|\[REDACTED[^]]*\]|<TOKEN>|<API_KEY>|\$\{[A-Z_]+_(TOKEN|KEY)\}|.*"https://oauth2\.googleapis\.com/token".*|.*"https://github\.com/login/oauth/access_token".*'
 
 # Get the list of files that would land in this commit. Excludes deletions
 # because deleting a secret is FINE — it's adding one that's the problem.
@@ -147,6 +147,57 @@ files=$(git diff --cached --name-only --diff-filter=ACMRT \
 
 if [[ -z "$files" ]]; then
 	exit 0
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LAYER 0 — refuse compiled binaries (Mach-O / ELF / PE)
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Runs BEFORE the secret scanners because (a) it's the fastest filter and
+# (b) committing a 30 MB binary is its own incident regardless of whether
+# it leaks secrets. We don't enumerate binary NAMES — Go produces
+# unpredictably-named outputs (every `go build ./X/cmd/Y` writes `./Y` to
+# CWD), and listing every possible cmd basename in .gitignore is a losing
+# game. We check magic bytes instead: if the first 4 bytes look like an
+# executable, refuse the commit.
+#
+# Magic prefixes we catch:
+#   feedface / cefaedfe — Mach-O 32-bit (BE / LE)
+#   feedfacf / cffaedfe — Mach-O 64-bit (BE / LE)
+#   cafebabe            — Mach-O universal (fat binary; also Java .class —
+#                         we don't ship Java, so net positive)
+#   7f454c46            — ELF (\x7fELF — Linux / BSD executables)
+#   4d5a                — PE / Windows .exe (MZ header)
+#
+# Bypass shape: `git commit --no-verify` if you genuinely need to commit a
+# binary blob (rare; usually means add it to git-lfs instead).
+binary_violations=0
+while IFS= read -r f; do
+	[[ -f "$f" ]] || continue
+	# `xxd -l 4 -p` reads the first 4 bytes as hex. Empty / unreadable
+	# files give empty output; we skip those cleanly.
+	magic=$(xxd -l 4 -p "$f" 2>/dev/null || true)
+	case "$magic" in
+		feedface|cefaedfe|feedfacf|cffaedfe|cafebabe)
+			echo "✘ pre-commit: refusing compiled Mach-O binary — $f" >&2
+			binary_violations=$((binary_violations + 1)) ;;
+		7f454c46*)
+			echo "✘ pre-commit: refusing compiled ELF binary — $f" >&2
+			binary_violations=$((binary_violations + 1)) ;;
+		4d5a*)
+			echo "✘ pre-commit: refusing compiled PE/Windows binary — $f" >&2
+			binary_violations=$((binary_violations + 1)) ;;
+	esac
+done <<< "$files"
+
+if (( binary_violations > 0 )); then
+	echo "" >&2
+	echo "Move the build output to a gitignored path (modules/<module>/tmp/ is" >&2
+	echo "the project convention) and re-stage. Build via 'task saas:build' —" >&2
+	echo "it writes into the module's tmp/, never to repo root." >&2
+	echo "" >&2
+	echo "Bypass (USE WITH CARE): git commit --no-verify" >&2
+	exit 1
 fi
 
 found=0

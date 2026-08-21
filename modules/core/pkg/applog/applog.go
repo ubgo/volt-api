@@ -66,16 +66,42 @@ func Init(cfg Config) {
 // GetLogger returns the global logger.
 func GetLogger() *logger.Logger { return global }
 
-// FromCtx returns the global logger enriched with the active trace's trace_id
-// and span_id when ctx carries a valid span, so logs correlate with traces.
-// Mirrors the old gozap.FromCtx ergonomic.
-func FromCtx(ctx context.Context) *logger.Logger {
-	sc := trace.SpanContextFromContext(ctx)
-	if !sc.IsValid() {
-		return global
+// CtxLogger is a context-bound view of the global logger. Every level method
+// emits through the *Context variants so the log Record carries the caller's
+// ctx — that ctx is what the OTEL sink hands to the SDK, which extracts the
+// span and populates the BINARY TraceId/SpanId columns on the OTLP record.
+// Without it (the pre-fix FromCtx returned a plain logger whose .Error() path
+// hardcodes context.Background()), trace ids reached HyperDX only as string
+// attributes and the log row's "Trace" tab showed "No trace id found for
+// event". Same class of bug as the old gozap otelzap ctx-field fix.
+type CtxLogger struct {
+	ctx context.Context
+	lg  *logger.Logger
+}
+
+func (c *CtxLogger) Trace(msg string, f ...logger.Field) { c.lg.TraceContext(c.ctx, msg, f...) }
+func (c *CtxLogger) Debug(msg string, f ...logger.Field) { c.lg.DebugContext(c.ctx, msg, f...) }
+func (c *CtxLogger) Info(msg string, f ...logger.Field)  { c.lg.InfoContext(c.ctx, msg, f...) }
+func (c *CtxLogger) Warn(msg string, f ...logger.Field)  { c.lg.WarnContext(c.ctx, msg, f...) }
+func (c *CtxLogger) Error(msg string, f ...logger.Field) { c.lg.ErrorContext(c.ctx, msg, f...) }
+
+// With returns a child CtxLogger that prepends fields to every record,
+// preserving the bound ctx.
+func (c *CtxLogger) With(f ...logger.Field) *CtxLogger {
+	return &CtxLogger{ctx: c.ctx, lg: c.lg.With(f...)}
+}
+
+// FromCtx returns the global logger bound to ctx: emissions carry ctx for the
+// OTEL sink (binary TraceId/SpanId on OTLP records) AND, when ctx has a valid
+// span, string trace_id/span_id fields so console/file sinks stay
+// trace-correlated too. Mirrors the old gozap.FromCtx ergonomic.
+func FromCtx(ctx context.Context) *CtxLogger {
+	lg := global
+	if sc := trace.SpanContextFromContext(ctx); sc.IsValid() {
+		lg = lg.With(
+			logger.String("trace_id", sc.TraceID().String()),
+			logger.String("span_id", sc.SpanID().String()),
+		)
 	}
-	return global.With(
-		logger.String("trace_id", sc.TraceID().String()),
-		logger.String("span_id", sc.SpanID().String()),
-	)
+	return &CtxLogger{ctx: ctx, lg: lg}
 }
