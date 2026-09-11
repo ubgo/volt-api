@@ -19,7 +19,7 @@ A map of the `boilerplate-golang` (Volt API) repository, so you know where each 
 | **`webapp/`** | App core — business services (`pkg/`) and the API, cron, and CLI entrypoints (`cmd/`). The most important module. | yes |
 | **`apidash/`** | The dashboard GraphQL API (`/api/sa`) — gqlgen schema + resolvers. | yes |
 | **`dbent/`** | Ent ORM schema definitions + the generated client. | yes |
-| **`config/`** | PKL configuration schemas + generated Go bindings. | yes |
+| **`config/`** | The configuration struct, its defaults and its validation — one Go file, nothing generated. | yes |
 | **`lace/`** | Shared utility library. | **read-only** |
 | **`core/`** | External core module (bootstrap, plugin, logging wrapper). | **read-only** |
 | **`scripts/`** | Deploy/ops scripts. | **read-only** |
@@ -41,7 +41,7 @@ A map of the `boilerplate-golang` (Volt API) repository, so you know where each 
 - **`gen/ent/`** — **GENERATED**. Do not edit.
 
 ### `config/` — configuration
-- **`pkl/`** — **SOURCE**. PKL files (schema + per-environment values, selected by `CONFIG_ENV`).
+- **`config.go`** — **SOURCE**. The struct, the `default:` tags and `Validate()`. `CONFIG_ENV` selects which validation rules apply, not which file is read.
 - **`gen/`** — **GENERATED**. Go bindings. Do not edit.
 
 ### `lace/` · `core/` (read-only shared)

@@ -47,7 +47,7 @@ tracestate: vendor1=value1,vendor2=value2
 
 ### 1. Telemetry Setup (Both Services)
 
-Both services initialize OpenTelemetry with **`github.com/ubgo/otelkit`** (the v2 bootstrap — `lace/gotel` is gone). One `otelkit.Init` call wires traces, metrics, and logs from the PKL config, then `SetGlobal()` registers the global tracer, logger provider, and propagator. See the full bootstrap in the [Bootstrap section](#bootstrap--initializing-telemetry-logging--error-reporting) below.
+Both services initialize OpenTelemetry with **`github.com/ubgo/otelkit`** (the v2 bootstrap — `lace/gotel` is gone). One `otelkit.Init` call wires traces, metrics, and logs from `appcfg.Otel`, then `SetGlobal()` registers the global tracer, logger provider, and propagator. See the full bootstrap in the [Bootstrap section](#bootstrap--initializing-telemetry-logging--error-reporting) below.
 
 ```go
 // modules/core/pkg/volt — bootstrap (both services)
@@ -351,21 +351,21 @@ Waiting for telemetry to flush...
 
 ## Configuration
 
-Both services need matching OTEL configuration in their config files:
+Both services need matching OTEL configuration. The fields live on the `Otel` struct in `modules/config/config.go`; each is bound to an environment variable, so a deployment sets them without touching code:
 
-```pkl
-Otel {
-  ServiceName = "githubapp"  // or "wildaichat"
-  ServiceVersion = "1.0.0"
-  EnableLogs = true
-  EnableTraces = true
-  EnableMetrics = false
-  EnableStdout = false
-  EnableHttp = true
-  Endpoint = "https://your-otel-endpoint"
-  ApiKey = "your-api-key"
-}
+```sh
+OTEL_SERVICE_NAME=githubapp        # or wildaichat; defaults to the app key
+OTEL_SERVICE_VERSION=1.0.0
+OTEL_ENABLE_LOGS=true
+OTEL_ENABLE_TRACES=true
+OTEL_ENABLE_METRICS=false
+OTEL_ENABLE_STDOUT=false
+OTEL_ENABLE_HTTP=true
+OTEL_ENDPOINT=https://your-otel-endpoint
+OTEL_API_KEY=your-api-key           # secret: masked in config explain
 ```
+
+`OTEL_API_KEY` is tagged `secret:"true"`, so it never appears in `task config:explain` output or in an error message. Every key above is listed with its default in the generated `.env.example` — see [Configuration](configuration.md).
 
 ## Troubleshooting
 
@@ -384,7 +384,7 @@ Otel {
 
 1. **Check telemetry flush**: Add `time.Sleep(3 * time.Second)` before exit
 2. **Verify OTEL endpoint**: Check the endpoint URL and API key
-3. **Enable stdout exporter**: Set `EnableStdout = true` to see local output
+3. **Enable stdout exporter**: Set `OTEL_ENABLE_STDOUT=true` to see local output
 
 
 ## Bootstrap — initializing telemetry, logging & error reporting
@@ -407,7 +407,7 @@ tel, err := otelkit.Init(context.Background(),
         Metrics:        signal(appcfg.Otel.EnableMetrics),
         Logs:           signal(appcfg.Otel.EnableLogs),
     }),
-    otelkit.WithEnvOverrides(false), // PKL config is authoritative
+    otelkit.WithEnvOverrides(false), // appcfg is the single authority
     otelkit.WithTLS(tlsMode),
 )
 if err != nil {
@@ -418,7 +418,7 @@ if err != nil {
 tel.SetGlobal()
 ```
 
-`signal(enabled)` maps the PKL otel config onto an `otelkit.SignalConfig` (HTTP vs stdout transport, endpoint, headers). otelkit is single-transport-per-signal, so when both HTTP and stdout are enabled, HTTP wins.
+`signal(enabled)` maps `appcfg.Otel` onto an `otelkit.SignalConfig` (HTTP vs stdout transport, endpoint, headers). otelkit is single-transport-per-signal, so when both HTTP and stdout are enabled, HTTP wins.
 
 ## init logging (applog)
 

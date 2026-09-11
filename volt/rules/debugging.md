@@ -10,7 +10,7 @@
 | DB connection fails | PostgreSQL running, connection string |
 | API returns 500 | Logs, trace in observability tool |
 | NATS not working | NATS container, `/api/i/bootinfo` |
-| Config not loading | `CONFIG_ENV`, PKL syntax |
+| Config not loading | `CONFIG_ENV`, `task config:check` |
 
 ## Boot Info Endpoint
 
@@ -142,8 +142,11 @@ grep -i "panic" logs.txt
 # Check which config is loaded
 echo $CONFIG_ENV
 
-# Validate PKL config
-pkl eval config/pkl/env/default/app.pkl
+# Validate the configuration (non-zero exit on any problem)
+task config:check
+
+# See which layer set each field — defaults, .env, or the environment
+task config:explain
 
 # Check Go workspace
 go work sync

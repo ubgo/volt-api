@@ -20,7 +20,7 @@ Use the same libraries everywhere; extend the wrapper, don't bypass it. This rep
 | GraphQL | `gqlgen` (+ `entgo.io/contrib` entgql) | schema-first; resolvers thin, one-line-delegated |
 | ORM | `entgo.io/ent` | `BaseMixin` for id/timestamps; see §12 |
 | CLI | `cobra` via `lace/cli` | |
-| Config | PKL (Apple) | type-safe codegen; secrets via `read("env:VAR")` |
+| Config | `github.com/ubgo/cfgkit` | typed structs in `modules/config/config.go`; secrets tagged `secret:"true"` |
 | Validation | `valgo` (`github.com/cohesivestack/valgo`) | business rules; ent handles structural |
 | **Logging** | **`github.com/ubgo/logger`** via `core/pkg/applog` (aliased `ulog`) | `applog.FromCtx(ctx)` propagates trace IDs. NOT `lace/gozap`/`zap`. |
 | **Tracing** | **`github.com/ubgo/otelkit`** | one-constructor OTel bootstrap. NOT `lace/gotel`. |
@@ -146,7 +146,7 @@ When the API serves multiple tenants (workspaces/teams) from one DB, **every** r
 
 ## 16 · Codegen & gqlgen resolver rule
 
-Codegen output is never hand-edited — change the source, re-run the task (`task dbent:g`, `task apidash:gql`, `task config:gen`), commit the regenerated files. gqlgen **owns** `*.resolvers.go`: those files hold **only** resolver methods (plus the `Resolver` struct in `resolver.go`). Never put a free function, helper type, shared map, or const in a `*.resolvers.go` file — gqlgen relocates or drops it on the next generate. Helpers go in a sibling package (`internal/<domain>fn/`); resolver bodies stay one-line-delegated to a service. Codegen-driven helpers ship a runnable example that regenerates + builds + asserts (see [new-endpoint.md](new-endpoint.md), [testing.md](testing.md)).
+Codegen output is never hand-edited — change the source, re-run the task (`task dbent:g`, `task apidash:gql`), commit the regenerated files. gqlgen **owns** `*.resolvers.go`: those files hold **only** resolver methods (plus the `Resolver` struct in `resolver.go`). Never put a free function, helper type, shared map, or const in a `*.resolvers.go` file — gqlgen relocates or drops it on the next generate. Helpers go in a sibling package (`internal/<domain>fn/`); resolver bodies stay one-line-delegated to a service. Codegen-driven helpers ship a runnable example that regenerates + builds + asserts (see [new-endpoint.md](new-endpoint.md), [testing.md](testing.md)).
 
 ## 17 · Secrets (summary)
 
@@ -175,7 +175,7 @@ Real credentials live in `.env` (gitignored) and nowhere else — never in a `.g
 | `http.Client{}` with no timeout | timeout + reused per dep (§15) |
 | `ctx.Value("user", u)` string key | typed unexported key + accessor (§15) |
 | `math/rand` for tokens/ids | `crypto/rand` (§15) |
-| hardcoded secret in code / committed `.env` | PKL `read("env:VAR")` + gitignore (§17) |
+| hardcoded secret in code / committed `.env` | a config field with `env:` + `secret:"true"` + gitignore (§17) |
 
 ## 19 · Pre-PR checklist
 

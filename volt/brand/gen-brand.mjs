@@ -84,7 +84,7 @@ const og = (file, bgA, bgB, main, sub1, sub2, line, tagline, subline) =>
 </svg>
 `)
 const TAGLINE = "Batteries-included Go backend starter"
-const SUBLINE = "GraphQL · Ent ORM · NATS · PKL config · codegen"
+const SUBLINE = "GraphQL · Ent ORM · NATS · typed config · codegen"
 og("og-cover.svg",       M.dark[0], M.dark[1], "#FFFFFF", M.light[1], M.light[0], M.accent, TAGLINE, SUBLINE)
 og("og-cover-light.svg", M.light[0], M.light[1], M.dark[1], M.dark[0], M.lightFg, M.lightFg, TAGLINE, SUBLINE)
 

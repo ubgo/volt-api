@@ -5,14 +5,14 @@
 ## Checklist
 
 - [ ] Never hardcode secrets in code
-- [ ] Use PKL config with environment variables
+- [ ] Bind it as a config field tagged `secret:"true"`
 - [ ] Add to `.gitignore` if file-based
 - [ ] Use `Sensitive()` for Ent fields
 
 ## Do
 
 - Store secrets in environment variables
-- Use PKL `read("env:VAR_NAME")` for config
+- Bind every secret as a field in `modules/config/config.go` with `env:` and `secret:"true"` — never `os.Getenv` in app code
 - Mark Ent fields as `Sensitive()` to hide from logs
 - Encrypt sensitive data at rest using `lace/crypt`
 
@@ -31,20 +31,24 @@
 | Production | Environment variables / Secret manager |
 | CI/CD | GitHub Secrets / CI variables |
 
-## PKL Config with Secrets
+## Secrets in Config
 
-```pkl
-// config/pkl/env/default/app.pkl
-core {
-    // Read from environment variable
-    encryptionKey = read("env:ENCRYPTION_KEY")
-    internalApiKey = read("env:INTERNAL_API_KEY")
-}
+Declare the field once, in `modules/config/config.go`:
 
-database {
-    password = read("env:DB_PASSWORD")
+```go
+type Core struct {
+    // EncryptionKey encrypts data at rest. secret:"true" is not cosmetic:
+    // the value is STRUCTURALLY masked — it never reaches `config explain`,
+    // the JSON view, or an error message, so that output stays safe to paste
+    // into an issue.
+    EncryptionKey string `env:"ENCRYPTION_KEY" secret:"true" doc:"data encryption key"`
 }
 ```
+
+Two consequences worth knowing:
+
+- **The shipped placeholder is refused outside dev.** `Validate()` fails the load when `CONFIG_ENV` is `stag` or `prod` and the value is still one of `knownPlaceholderSecrets` — a deploy carrying the default encryption key fails the gate rather than the audit. Dev tolerates it, which is what keeps a laptop with nothing set able to boot.
+- **`task config:check` catches it before the rollout.** Run `CONFIG_ENV=prod task config:check` in CI; it reports every missing or placeholder secret at once, without constructing the application.
 
 ## .env File (Local Development)
 

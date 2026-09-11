@@ -14,7 +14,7 @@
 | GraphQL | `github.com/99designs/gqlgen` | Code-first, type-safe |
 | ORM | `entgo.io/ent` | Schema-first, codegen |
 | CLI | `github.com/spf13/cobra` | Commands + flags |
-| Config | PKL (Apple) | Type-safe, codegen |
+| Config | `github.com/ubgo/cfgkit` | Typed structs, no codegen, zero dependencies |
 
 ## Database & Cache
 

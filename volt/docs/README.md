@@ -22,6 +22,8 @@ New here? Start with **[Getting started](getting-started.md)**, then skim **[Arc
 - [Ent CRUD](guides/ent-crud.md) — generate CRUD from an Ent schema.
 - [GraphQL extension](guides/graphql-extension.md) — extend a module's type from the host.
 - [Cron jobs](guides/cron-jobs.md) — scheduled background work.
+- [Configuration](guides/configuration.md) — how a value reaches the struct, the layer order, validation, and secrets.
+- [CLI and the kernel](guides/cli-and-kernel.md) — when dependencies get built, and how to plug in a command that needs none.
 - [Observability](guides/observability.md) — logging, tracing, and the telemetry bootstrap.
 - [Backend patterns](guides/backend-patterns.md) — the condensed Go cheat-sheet.
 - [Go conventions](guides/go-conventions.md) · [pgvector notes](guides/pgvector.md) · [SQLite mode](guides/sqlite-mode.md) · [GraphQL testing](guides/graphql-testing.md) · [Workflow](guides/workflow.md).

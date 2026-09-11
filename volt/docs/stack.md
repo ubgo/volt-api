@@ -10,7 +10,7 @@
 | GraphQL | `github.com/99designs/gqlgen` |
 | ORM | `entgo.io/ent` |
 | CLI | `github.com/spf13/cobra` |
-| Config | PKL (Apple) via `pkl-go` |
+| Config | [`ubgo/cfgkit`](https://github.com/ubgo/cfgkit) — typed Go structs, compiled-in defaults |
 
 ## Data
 

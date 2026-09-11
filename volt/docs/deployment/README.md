@@ -34,7 +34,7 @@ Since we already have a `fly.toml`, you just need to initialize the app on Fly's
 
    You have two options:
 
-   * **Option A (Easy):** Update your PKL config (`config/RootConfig.pkl`) to read `DATABASE_URL` directly.
+   * **Option A (Easy):** Add a `DATABASE_URL` field to `modules/config/config.go` and split it in `Derive()`.
    * **Option B (Manual):** Parse the connection string and set individual secrets:
      ```bash
      fly secrets set DB_HOST=... DB_USER=... DB_PASS=...

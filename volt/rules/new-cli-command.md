@@ -32,20 +32,32 @@
 
 ## Simple Command
 
+Commands receive a `clicmd.KernelFunc` — an accessor that builds the kernel on first call — not a built `*volt.Kernel`. A command that needs no dependencies simply never calls it, and stays runnable on a machine with no database, no Redis and no valid configuration.
+
 ```go
-func AddCommands(plugin *volt.Kernel) {
+func AddCommands(rootCmd *cobra.Command, kernel clicmd.KernelFunc) {
     var myCommand = &cobra.Command{
         Use:   "mycommand",
         Short: "Brief description",
         Long:  "Longer description of what this command does",
         Run: func(cmd *cobra.Command, args []string) {
-            // Command logic
+            // Needs nothing? Never call kernel(). This command then works
+            // even under CONFIG_ENV=prod with placeholder secrets.
             fmt.Println("Command executed")
         },
     }
 
-    rootCmd := plugin.Cli.RootCmd
     rootCmd.AddCommand(myCommand)
+}
+```
+
+**Call `kernel()` inside `Run`, never at construction.** Reading `kernel().RootConfig.X` while building the command tree loads the configuration for *every* invocation of *every* command — which is the bug this design exists to prevent:
+
+```go
+Run: func(cmd *cobra.Command, args []string) {
+    cfg := kernel().RootConfig            // built here, on demand
+    db := kernel().DB                     // same instance; sync.OnceValue
+    ...
 }
 ```
 
@@ -83,7 +95,7 @@ rootCmd.AddCommand(myCommand())
 ## Command with Tracing
 
 ```go
-func tracedCommand(plugin *volt.Kernel) *cobra.Command {
+func tracedCommand(kernel clicmd.KernelFunc) *cobra.Command {
     return &cobra.Command{
         Use:   "traced",
         Short: "Command with OpenTelemetry tracing",

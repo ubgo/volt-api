@@ -1,6 +1,6 @@
 # Architecture
 
-Go 1.25 workspace monorepo. Schema-first GraphQL, Ent ORM, PKL config, NATS JetStream, OpenTelemetry.
+Go workspace monorepo. Schema-first GraphQL, Ent ORM, typed Go config via [cfgkit](guides/configuration.md), NATS JetStream, OpenTelemetry.
 
 ## Workspace Modules
 
@@ -9,7 +9,7 @@ Go 1.25 workspace monorepo. Schema-first GraphQL, Ent ORM, PKL config, NATS JetS
 | `modules/webapp/` | App core — CLI, API, cron entrypoints + business services | `modules/webapp/cmd/{api,cron,cli}/`, `modules/webapp/pkg/` |
 | `modules/apidash/` | GraphQL schema + resolvers (`/api/sa` endpoint) | `modules/apidash/internal/graph/` |
 | `modules/dbent/` | Ent schema defs + migration runner | `modules/dbent/schema/`, `modules/dbent/gen/ent/` (generated) |
-| `modules/config/` | PKL schema + generated Go bindings | `modules/config/pkl/schema/`, `modules/config/gen/` (generated) |
+| `modules/config/` | the configuration struct, defaults and validation, in one Go file | `modules/config/config.go`  |/gen/` (generated) |
 | `modules/lace/` | Shared HTTP/DB/CLI/gqlgen wrappers (**read-only**) | `modules/lace/ginserver/`, `modules/lace/db/`, `modules/lace/cli/`, etc. (observability/errors/cache are `github.com/ubgo/*` — see [ubgo-packages.md](ubgo-packages.md)) |
 | `modules/core/` | Core module — bootstrap, plugin, `applog` (**read-only**) | `modules/core/pkg/{plugin,applog,clicmd}/` |
 | `modules/scripts/` | Deploy/ops (**read-only**) | `modules/scripts/` |

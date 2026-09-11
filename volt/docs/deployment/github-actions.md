@@ -316,9 +316,9 @@ docker run -d \
 
 > **Why `--network host`?**
 >
-> PKL (Apple's configuration language) needs network access to fetch package metadata from `pkg.pkl-lang.org` at startup. Docker's default bridge network mode can cause DNS resolution failures on some VPS configurations. With `--network host`, the container shares the host's network stack directly, bypassing these issues.
+> Historically, because the config evaluator fetched package metadata over the network at startup and bridge-mode DNS failed on some VPS configurations. **That reason no longer exists** — the container reads no configuration over the network.
 >
-> This also means **no port mapping (`-p`) is needed** - the app binds directly to the host's port.
+> What host mode still buys: direct access to host-local Postgres / NATS / Redis on `localhost`, and **no port mapping (`-p`) needed** — the app binds the host's port directly. Switching to bridge mode is now possible but untested on the VPS.
 
 > **Why `chown 1000:1000` on logs directory?**
 >
@@ -360,11 +360,11 @@ docker run -d \
 * Verify `.env.prod` has all required variables
 * Check database connectivity from VPS
 
-**"PKL network/DNS error" or "Error connecting to host 'pkg.pkl-lang.org'":**
+**Container exits with configuration problems listed:**
 
-* PKL needs network access to fetch package metadata at startup
-* Ensure container runs with `--network host` (not bridge mode)
-* Bridge network mode can cause DNS resolution failures on some VPS setups
+* Every problem is reported at once, each naming its key — fix them together, not one per restart
+* Outside dev, a shipped placeholder secret (`ENCRYPTION_KEY`, `JWT_SECRET`, `INTERNAL_KEY`) is refused by design
+* Reproduce locally: `CONFIG_ENV=prod task config:check` against the same `.env.prod`
 
 ### Common Fixes
 

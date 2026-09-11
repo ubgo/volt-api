@@ -274,7 +274,7 @@ task test             # Run tests
 
 # Code Generation
 task dbent:g        # Generate Ent ORM code
-task config           # Generate PKL config bindings
+task config:check     # validate the configuration (non-zero on any problem)
 task workvendor       # Sync go.work dependencies
 task gitgen           # Stage generated files for commit
 
@@ -289,8 +289,8 @@ cd gql && task gql    # Generate GraphQL code
 
 ## Adding New CLI Commands
 
-1. Edit `webapp/cmd/cli/main.go`
-2. Add command in `AddCommands()` function:
+1. Edit `modules/webapp/cmd/cli/main.go`
+2. Add the command in `AddCommands()`. It receives the root command and a lazy accessor — call the accessor inside `Run` only if the command actually needs the kernel, so commands that don't stay runnable without a database:
 
 ```go
 var myCommand = &cobra.Command{

@@ -20,4 +20,4 @@ This policy covers the source code in this repository. It does not cover third-p
 
 ## Handling Secrets
 
-Never commit secrets. This repo excludes `.env`, `*.creds`, `*.pem`, `*.key`, and API keys from version control. Configuration secrets are read from the environment via PKL's `read("env:VAR")`; sensitive Ent fields use `.Sensitive()`. If a secret is ever leaked, rotate it immediately and scrub it from history.
+Never commit secrets. This repo excludes `.env`, `*.creds`, `*.pem`, `*.key`, and API keys from version control. Configuration secrets are declared as fields in `modules/config/config.go` tagged `secret:"true"`, which masks them structurally — they never reach `config explain`, the JSON view, or an error message — and, outside dev, the shipped placeholder values are refused by `config check`; sensitive Ent fields use `.Sensitive()`. If a secret is ever leaked, rotate it immediately and scrub it from history.

@@ -10,11 +10,10 @@ Production Docker setup for wildai\_githubapp backend Go API.
 |------|---------|
 | `.docker/Dockerfile.prod` | Production multi-stage Dockerfile |
 | `.docker/Taskfile.yml` | Task commands for build/run/stop |
-| `config/pkl/prod/app.pkl` | Production PKL config (reads from env vars) |
-| `config/pkl/schema/AppConfig.pkl` | PKL schema (base config definition) |
 | `env.prod.sample` | Sample environment variables file |
 | `.env.prod` | Actual production env file (not in git) |
-| `config/main.go` | Config loader (supports CONFIG\_ENV) |
+| `modules/config/config.go` | The configuration schema, defaults and validation — all in Go |
+| `modules/config/main.go` | Config loader (`Get` / `Check` / `Explain` / `Document`) |
 
 ***
 
@@ -26,13 +25,12 @@ Production Docker setup for wildai\_githubapp backend Go API.
 FROM golang:${GO_VERSION}-alpine AS builder
 ```
 
-* Uses Go Alpine image
-* `GOTOOLCHAIN=auto` - automatically downloads Go version required by go.work (1.24.11)
-* Installs pkl CLI for any build-time config operations
-* Copies go.work, go.mod/go.sum files
-* Copies source code: config, apidash, lace, saas, wildaiadminapi, wildaipartnerapi, config
+* Uses Go Alpine image (`ARG GO_VERSION=1.26.4` — must be ≥ the highest `go` directive across `modules/*/go.mod`)
+* `GOTOOLCHAIN=auto` — lets Go download the version `go.work` asks for
+* Copies `go.work` + every module's `go.mod`, then the module sources
 * Runs `go work vendor` to download dependencies (not copied from local)
-* Builds binary: `go build -mod=vendor -ldflags="-w -s" -o /build/bin/api ./webapp/cmd/api`
+* Builds three binaries: `api`, `cron`, `cli`
+* **No config tooling.** Configuration is Go, so it compiles with everything else — there is no evaluator to install and no generation step.
 
 ### Stage 2: Runtime
 
@@ -41,18 +39,18 @@ FROM alpine:3.20
 ```
 
 * Minimal Alpine image
-* Installs: ca-certificates, tzdata, curl, gcompat, libstdc++
-* **gcompat** - Required for pkl binary (glibc compatibility layer for Alpine)
-* Installs pkl CLI for runtime config evaluation
+* Installs: ca-certificates, tzdata, curl, libstdc++, supervisor
 * Creates non-root user `appuser:appgroup` (UID/GID 1000)
 * Creates directories: `/app/tmp/logs`, `/app/_keys`
-* Copies only prod config: `config/pkl/schema/` and `config/pkl/prod/`
+* **Copies no config files at all** — defaults are compiled into the binaries and the deployment supplies overrides as environment variables
 * Runs as non-root user
+
+The runtime image installs no config evaluator, needs no glibc shim, and downloads nothing from a third-party release URL at build time. A vendor outage cannot break the build, and a network partition cannot stop a container from starting.
 
 ### Key Environment Variables
 
 ```dockerfile
-ENV CONFIG_ENV=prod    # Which pkl config to load (default, prod)
+ENV CONFIG_ENV=prod    # Deployment environment — selects which validation rules apply
 ENV PORT=2315          # Default port (overridden by .env.prod)
 ```
 
@@ -65,38 +63,35 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 ***
 
-## PKL Configuration System
+## Configuration
 
-### How it works
+Configuration is defined in Go, in `modules/config/config.go` — schema, defaults and validation in one file. Layers, lowest precedence first:
 
-1. `config/main.go` reads `CONFIG_ENV` environment variable
-2. Loads config from `config/pkl/${CONFIG_ENV}/app.pkl`
-3. Production config (`prod/app.pkl`) reads all values from environment variables using `read("env:VAR_NAME")`
+1. **Compiled-in defaults** (`default:` struct tags) — so the image is valid with no environment at all
+2. **`.env`** in the working directory, if present
+3. **The process environment** — what `--env-file .env.prod` supplies
 
-### Production PKL Config Pattern
+The environment is last, which is what makes `docker run -e PORT=9999` behave the way anyone expects.
 
-```pkl
-amends "../schema/AppConfig.pkl"
+Validate a deployment's environment **before** it reaches a container:
 
-appName = "wildai_githubapp_prod"
-appKey = read("env:APP_KEY")
-port = read("env:PORT")
-environment = "prod"
-
-database {
-  host = read("env:DB_HOST")
-  port = read("env:DB_PORT").toInt()
-  // ... etc
-}
+```bash
+CONFIG_ENV=prod task config:check      # non-zero exit on any problem
+task config:explain                    # which layer set each field (secrets masked)
 ```
 
-### Important PKL Notes
+`config:check` is the one to put in a deploy gate. It runs the whole load pipeline without constructing the application — no database, no NATS, no image — and reports **every** problem at once rather than one per restart:
 
-* `read("env:VAR")` - reads environment variable as string
-* `.toInt()` - converts string to integer
-* `.toBoolean()` - converts string to boolean
-* `read?("env:VAR")` - optional read (returns null if not set)
-* **No `.toUInt16()` method** - use `.toInt()` instead
+```
+cfgkit: 3 problem(s):
+ENCRYPTION_KEY: is a default or placeholder value, which is refused outside dev
+JWT_SECRET: is a default or placeholder value, which is refused outside dev
+INTERNAL_KEY: is a default or placeholder value, which is refused outside dev
+```
+
+Outside dev the shipped placeholder secrets are refused, so a deploy carrying the default encryption key fails the gate rather than the audit. The runtime image ships no config verb of its own — the check belongs in CI, where it can fail before an image is even pushed.
+
+Full model: [Configuration](../guides/configuration.md).
 
 ***
 
@@ -230,7 +225,7 @@ task prod:stop && task prod:build && task prod:run
       wildai-githubapp:latest
 ```
 
-> **Note:** `--network host` is required for PKL to access package metadata. See [GitHub Actions Deployment](./github-actions.md) for the full workflow.
+> **Note:** the deploy workflow runs with `--network host`. See [GitHub Actions Deployment](./github-actions.md) for the full workflow, and [Network and Permissions](#network-and-permissions-vps-deployment) below for what it is doing now that the original reason is gone.
 
 ***
 
@@ -240,27 +235,22 @@ task prod:stop && task prod:build && task prod:run
 
 * Check `LOGGER_ENABLE_STDOUT=true` in .env.prod
 
-### pkl binary "not found" error
-
-* This means glibc compatibility issue
-* Ensure `gcompat` and `libstdc++` are installed in runtime image
-
 ### Container exits immediately
 
 * Check `docker logs wildai-githubapp` for panic messages
 * Common issues: missing env vars, database not reachable
 
-### PKL network/DNS error
+### Configuration rejected at startup
 
-* Error: `Error connecting to host 'pkg.pkl-lang.org'`
-* PKL needs network access at startup to fetch package metadata
-* **Solution:** Use `--network host` instead of bridge network mode
-* Bridge networking can cause DNS resolution failures on some VPS configurations
+* The container logs the problems and exits non-zero — every problem at once, each naming its key
+* Outside dev, a shipped placeholder secret (`ENCRYPTION_KEY`, `JWT_SECRET`, `INTERNAL_KEY`) is refused by design
+* Reproduce without deploying: `CONFIG_ENV=prod task config:check` against the same `.env.prod`
+* To see which layer set a value: `task config:explain` (secrets are masked, so the output is safe to paste)
 
 ### Go version mismatch
 
-* `GOTOOLCHAIN=auto` in Dockerfile allows Go to download required version
-* Project requires Go 1.24.11 (specified in go.work)
+* `GOTOOLCHAIN=auto` in the Dockerfile allows Go to download the required version
+* `ARG GO_VERSION` must be ≥ the highest `go` directive across `modules/*/go.mod` (currently 1.26.4)
 
 ***
 
@@ -268,7 +258,7 @@ task prod:stop && task prod:build && task prod:run
 
 ### Why `--network host`?
 
-PKL (Apple's configuration language) needs network access to fetch package metadata from `pkg.pkl-lang.org` at startup. Docker's default bridge network mode can cause DNS resolution failures on some VPS configurations.
+Host networking was originally adopted because the config evaluator needed to reach an external package registry at startup and bridge-mode DNS failed on some VPS configurations. **That reason is gone** — the container now reads no configuration over the network. Host mode is still what the deploy workflow uses, and it still buys direct access to host-local services (Postgres, NATS, Redis on `localhost`) without port mapping. Moving to bridge mode plus explicit `-p` is now possible, but it has not been tried on the VPS — treat it as a change to make deliberately, not a cleanup.
 
 **Bridge mode (default):**
 
@@ -276,7 +266,7 @@ PKL (Apple's configuration language) needs network access to fetch package metad
 docker run -p 2315:2315 ...  # Container has isolated network, needs port mapping
 ```
 
-**Host mode (required for this app):**
+**Host mode (what the deploy uses):**
 
 ```bash
 docker run --network host ...  # Container shares host's network stack
@@ -312,8 +302,7 @@ The `_keys/` directory doesn't need this fix because it's mounted read-only (`:r
 * **Supervisor** runs as non-root user (appuser), managing API and Cron processes
 * **Four binaries**: `/app/api`, `/app/cron`, `/app/cli`, `/app/dbmigrate`
 * **Non-root user** for security (appuser:appgroup, UID/GID 1000)
-* **gcompat layer** needed because pkl binary is glibc-linked but Alpine uses musl
-* **PKL** is Apple's configuration language - configs are evaluated at runtime
+* **No config evaluator in the image** — configuration is compiled into the binaries and overridden by environment variables
 * **Vendor mode** - dependencies downloaded via `go work vendor` during build (ensures fresh deps)
 
 ## Multi-Process Architecture
@@ -572,15 +561,17 @@ cd scripts && go run . gh:secrets:push --env=prod
 # This pushes updated ENV_B64 (which now includes MY_DATA_PATH) to GitHub
 ```
 
-### Step 4: Update PKL config if the app needs to know the path
+### Step 4: Update the config struct if the app needs to know the path
 
-```pkl
-# config/pkl/env/prod/app.pkl
-core {
-  uploadsdir = rootdir + "/uploads"    # Maps to /app/uploads inside container
-  datadir = rootdir + "/data"          # Maps to /app/data inside container
+Container-internal paths hang off `VOLT_ROOT` and are derived in `Derive()` in `modules/config/config.go`:
+
+```go
+if r.Core.Uploadsdir == "" {
+    r.Core.Uploadsdir = filepath.Join(root, "uploads") // /app/uploads inside the container
 }
 ```
+
+Add a field with an `env:` tag and, if it is a computed default, a line in `Derive()`. Then run `task config:document` to regenerate `.env.example`.
 
 The app always references `/app/data` — it doesn't know or care about the host path.
 

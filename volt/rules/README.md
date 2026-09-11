@@ -29,7 +29,7 @@ Volt's baseline engineering rules, read **on-demand** before the matching action
 
 | File | Read before |
 |------|-------------|
-| [configuration.md](configuration.md) | Adding/modifying PKL config |
+| [configuration.md](configuration.md) | Adding/modifying application config |
 | [nats-handler.md](nats-handler.md) | Adding NATS message handlers |
 | [migrations.md](migrations.md) | Complex database schema changes |
 | [docker-dev.md](docker-dev.md) | Local development setup |

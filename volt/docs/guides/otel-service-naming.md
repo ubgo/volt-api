@@ -18,16 +18,16 @@ Every environment emits its own `service.name`:
 
 | Environment | service.name | Where it's set |
 |---|---|---|
-| prod | `myapp-api` | env `OTEL_SERVICE_NAME` (read by `pkl/env/prod/app.pkl`) |
+| prod | `myapp-api` | env `OTEL_SERVICE_NAME` |
 | staging | `myapp-api-stag` | same env var, in the staging environment file |
-| local dev | PKL default (`core.appKey`) | `pkl/env/default/app.pkl` fallback — already distinct, no env var needed |
+| local dev | the app key | derived from `Core.AppKey` in `Derive()` when `OTEL_SERVICE_NAME` is unset — already distinct per service, so no env var needed |
 
-`deployment.environment.name` is still emitted as a secondary attribute (wired from `core.environment` into `otelkit.Config.Environment` in `core/pkg/volt/app.go` — harmless, occasionally useful), but the SERVICE NAME is the primary environment discriminator.
+`deployment.environment.name` is still emitted as a secondary attribute (wired from `Core.Environment` into `otelkit.Config.Environment` in `core/pkg/volt/app.go` — harmless, occasionally useful), but the SERVICE NAME is the primary environment discriminator.
 
 ## Mechanics in Volt
 
-- `otel.serviceName` in `pkl/env/default/app.pkl` and `sample/app.pkl` is `read?("env:OTEL_SERVICE_NAME") ?? <fallback>`; `prod/app.pkl` reads the env var unconditionally. Set the var per deployed environment — no code change needed to rename a service.
-- Note: `core/pkg/volt/app.go` passes `otelkit.WithEnvOverrides(false)` — PKL is the single authority for OTEL config, so `OTEL_SERVICE_NAME` only takes effect through the PKL `read?()` above, not via the SDK's own env handling. Don't set other `OTEL_*` SDK vars and expect them to apply.
+- `Otel.ServiceName` is bound to `OTEL_SERVICE_NAME` with no default. When it is unset, `Derive()` in `modules/config/config.go` fills it from `Core.AppKey`. Set the variable per deployed environment — no code change is needed to rename a service.
+- Note: `core/pkg/volt/app.go` passes `otelkit.WithEnvOverrides(false)` — the loaded configuration is the single authority for OTEL settings, so `OTEL_SERVICE_NAME` takes effect through the config binding above, not through the SDK's own env handling. Don't set other `OTEL_*` SDK variables and expect them to apply; the ones that work are the ones on the `Otel` struct.
 
 ## Consequences
 

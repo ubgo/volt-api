@@ -4,14 +4,12 @@ Everything you need to get Volt API running locally: what to install, how to con
 
 ## Prerequisites
 
-Install these before you start. **Go**, **Task**, the **PKL CLI**, and **pkl-gen-go** are required to build and generate. **PostgreSQL** and **NATS** are required to run, but the built-in Docker stack (`task docker:up`) can supply both if you don't want to install them. **air** and **portless** just make the dev loop nicer.
+Install these before you start. **Go** and **Task** are all you need to build — configuration needs no tooling, because it is Go. **PostgreSQL** and **NATS** are required to run, but the built-in Docker stack (`task docker:up`) can supply both if you don't want to install them. **air** and **portless** just make the dev loop nicer.
 
 | Tool | Required? | Why you need it | Install |
 |---|---|---|---|
-| **Go 1.25+** | Required | The language/toolchain; the repo is a `go.work` workspace. | [go.dev/dl](https://go.dev/dl/) — or `brew install go` |
-| **Task** | Required | Runs every command in these docs (`task dev`, `task dbent:g`, `task config:gen`, …). | [taskfile.dev/installation](https://taskfile.dev/installation/) — or `brew install go-task` |
-| **PKL CLI** | Required | Evaluates the type-safe PKL configuration (used by codegen + at runtime). | `brew install pkl` — or [pkl-lang.org install](https://pkl-lang.org/main/current/pkl-cli/index.html) |
-| **pkl-gen-go** | Required | Generates the Go config bindings from the PKL schema — what `task config:gen` runs. | `go install github.com/apple/pkl-go/cmd/pkl-gen-go@latest` — [github.com/apple/pkl-go](https://github.com/apple/pkl-go) |
+| **Go 1.26+** | Required | The language/toolchain; the repo is a `go.work` workspace. | [go.dev/dl](https://go.dev/dl/) — or `brew install go` |
+| **Task** | Required | Runs every command in these docs (`task dev`, `task dbent:g`, `task config:check`, …). | [taskfile.dev/installation](https://taskfile.dev/installation/) — or `brew install go-task` |
 | **PostgreSQL 15+** | Required (or via Docker) | Primary database (with pgvector for embeddings). | [postgresql.org/download](https://www.postgresql.org/download/), Postgres.app, or `task docker:up` |
 | **NATS (JetStream)** | Required (or via Docker) | Event bus for async / real-time features. | [nats.io/download](https://nats.io/download/), or `task docker:up` |
 | **air** | Recommended | Live reload for the API server; `task dev` uses it. | `go install github.com/air-verse/air@latest` |
@@ -19,7 +17,7 @@ Install these before you start. **Go**, **Task**, the **PKL CLI**, and **pkl-gen
 | **Docker** | Optional | Runs Postgres + NATS locally with one command (`task docker:up`). | [docker.com](https://www.docker.com/) |
 | **Redis** | Optional | Caching / sessions. | [redis.io/download](https://redis.io/download/), or via the Docker stack |
 
-> Quick check: `go version` (≥ 1.25), `task --version`, `pkl --version`, and `pkl-gen-go --help` should all succeed before you continue.
+> Quick check: `go version` (≥ 1.26) and `task --version` should both succeed before you continue.
 
 ## 1. Clone and sync the workspace
 
@@ -32,7 +30,9 @@ task hooks:install       # (recommended) activate the gitleaks pre-commit secret
 
 ## 2. Configure your environment
 
-Copy the sample env. Real secrets live only in `.env` (gitignored); PKL reads them via `read("env:VAR")`.
+Copy the sample env. Real secrets live only in `.env` (gitignored), and the config binds them by name — every key is listed in the generated `.env.example`.
+
+Nothing here is required to start: every field has a compiled-in default, so `task dev` works before you edit anything. See [Configuration](guides/configuration.md).
 
 ```bash
 cp env.sample .env
@@ -43,10 +43,10 @@ At minimum, set:
 | Variable | What to set it to |
 |---|---|
 | `PORT` | API port (default `2310`; also used by Docker Compose). |
-| `CONFIG_ENV` | Which PKL environment to load — `default`, `prod`, or `sample` (default `default`). |
+| `CONFIG_ENV` | Deployment environment — `dev`, `stag` or `prod` (default `dev`). It selects which validation rules apply, not which file is read. |
 | `INTERNAL_KEY` | Any random string — protects the internal endpoints under `/api/i/*` (sent as `X-Internal-Key`). |
 
-DB/NATS defaults line up with `task docker:up`. Deploy-only secrets (`VPS_*`, `GHCR_PAT`, …) are only needed for deployment. Full config model: [Configuration in CONTRIBUTING](../CONTRIBUTING.md#configuration-pkl).
+DB/NATS defaults line up with `task docker:up`. Deploy-only secrets (`VPS_*`, `GHCR_PAT`, …) are only needed for deployment. Full config model: [Configuration](guides/configuration.md).
 
 ## 3. Start infrastructure
 
@@ -62,12 +62,14 @@ Create the database if it doesn't exist yet:
 PGPASSWORD=postgres psql -h localhost -U postgres -p 5432 -c "CREATE DATABASE appdb;"
 ```
 
-## 4. Generate config bindings and run migrations
+## 4. Check the configuration and run migrations
 
 ```bash
-task config:gen          # pkl-gen-go → typed Go config bindings (needs pkl + pkl-gen-go)
+task config:check        # validate the configuration; non-zero exit on any problem
 task dbent:migrate       # apply the Ent schema to the database
 ```
+
+There is no config generation step. The configuration is Go, so it compiles with everything else.
 
 ## 5. Run the dev server
 

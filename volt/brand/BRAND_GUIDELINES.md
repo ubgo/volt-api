@@ -16,7 +16,7 @@ The brand decision record for **Volt API**, so every repo in the family (this Go
 
 - **Volt API:** "The batteries-included Go backend starter."
 - **Volt Web (parallel):** "The batteries-included TanStack Start starter." — keep the "batteries-included … starter" cadence across the family.
-- **OG / social subline pattern:** short feature list separated by `·`, e.g. `GraphQL · Ent ORM · NATS · PKL config · codegen`.
+- **OG / social subline pattern:** short feature list separated by `·`, e.g. `GraphQL · Ent ORM · NATS · typed config · codegen`.
 
 ## 3. Logo & mark
 

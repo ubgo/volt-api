@@ -61,7 +61,7 @@ Any new AI session or human opening this code must understand *what it is, why i
 
 - [ ] **Build passes** — `go build ./...` clean (type safety verified, not assumed).
 - [ ] **Vet + lint** — `task lint` (gofmt + go vet) clean.
-- [ ] **Codegen current** — if a schema changed, the generator ran (`task dbent:g` / `task apidash:gql` / `task config:gen`) and generated code compiles.
+- [ ] **Codegen current** — if a schema changed, the generator ran (`task dbent:g` / `task apidash:gql`) and generated code compiles.
 - [ ] **Comments** — every new exported symbol has a why-and-invariant doc comment; multi-shape fields documented at the declaration; every workaround explains itself.
 - [ ] **Hardcoded-value grep** — diff has no bare closed-set literals and no magic numbers.
 - [ ] **Run twice / inverse / lossy-diff** — idempotent on re-run; the opposite direction tested; every source field reached the destination or is documented as dropped.
@@ -71,8 +71,8 @@ Any new AI session or human opening this code must understand *what it is, why i
 
 The universal floor above, plus the concrete rules for Volt API. When these and a pillar disagree on a specific, follow the pillar's intent.
 
-- **Never edit generated code.** Anything under `gen/`, `generated/`, `ent/`, or a `*_gen.go` file with a `Code generated` header is output. Edit the source and regenerate: Ent (`modules/dbent/schema/*.go` → `task dbent:g`), gqlgen (`*.graphqls` → `task apidash:gql`), PKL bindings (`modules/config/pkl/**` → `task config:gen`). No sqlc/mockgen/wire in this repo.
-- **Config is type-safe PKL, never raw `os.Getenv`** in app code. Access through the generated bindings; secrets come from the environment via PKL's `read("env:VAR")`. Environments selected by `CONFIG_ENV` (`default` / `prod` / `sample`).
+- **Never edit generated code.** Anything under `gen/`, `generated/`, `ent/`, or a `*_gen.go` file with a `Code generated` header is output. Edit the source and regenerate: Ent (`modules/dbent/schema/*.go` → `task dbent:g`), gqlgen (`*.graphqls` → `task apidash:gql`), Configuration is **not** generated — `modules/config/config.go` is the schema itself. No sqlc/mockgen/wire in this repo.
+- **Config is typed Go, never raw `os.Getenv`** in app code. Add a field to `modules/config/config.go` with an `env:` tag and read it from `kernel.RootConfig`; a bound field appears in `config explain`, in the generated `.env.example`, and in validation, which `os.Getenv` does not. `CONFIG_ENV` (`dev` / `stag` / `prod`) selects which validation rules apply.
 - **Signatures:** context first, error last — `func Do(ctx context.Context, …) (*Result, error)`. Wrap errors with `fmt.Errorf("op: %w", err)`. Never `panic` in libraries; only `main`/`init` may.
 - **Logging** goes through `core/pkg/applog` (wraps `github.com/ubgo/logger`, aliased `ulog`). Use `applog.FromCtx(ctx)` for trace-correlated logs; fields are `ulog.String` / `ulog.Err` / `ulog.Any` (there is no `zap`). Log at boundaries, not every function; don't log AND return the same error.
 - **Tracing** via OpenTelemetry (`github.com/ubgo/otelkit` bootstrap); span names `<component>.<operation>`. **Errors** reported through `github.com/ubgo/errx`.

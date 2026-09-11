@@ -110,4 +110,4 @@ Run `seedusers` - see [CLI Reference](../reference/cli.md)
 | `webapp/pkg/middleware/middleware.go` | Auth middleware |
 | `webapp/pkg/auth/common.go` | JWT create/validate |
 | `webapp/cmd/cli/main.go` | CLI commands (seedusers, logintoken) |
-| `config/pkl/default/app.pkl` | Database config |
+| `modules/config/config.go` | Database config (schema, defaults, validation) |

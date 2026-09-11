@@ -117,7 +117,7 @@ PostgreSQL needed host, port, username, password, dbname, sslmode. SQLite just n
 
 ### 5. Update all callers of `InitDB`
 
-The signature changed from `InitDB(databaseconfig.Setting)` to `InitDB(string)`. Use `cfg.Database.DbName + ".db"` to derive the file path from existing PKL config.
+The signature changed from `InitDB(databaseconfig.Setting)` to `InitDB(string)`. Use `cfg.Database.DbName + ".db"` to derive the file path from the existing config.
 
 **File: `core/pkg/volt/app.go`**
 

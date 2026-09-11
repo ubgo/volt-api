@@ -2,7 +2,7 @@
   "name": "volt-api",
   "display": "Volt API",
   "tagline": "The batteries-included Go backend starter.",
-  "description": "Volt API is a production-ready Go backend boilerplate for building modular services — a schema-first GraphQL API via gqlgen, Ent ORM with typed migrations, NATS JetStream events, type-safe PKL config with Go bindings, OpenTelemetry tracing and structured logging, a Cobra CLI, and cron workers, all wired end-to-end under a go.work monorepo.",
+  "description": "Volt API is a production-ready Go backend boilerplate for building modular services — a schema-first GraphQL API via gqlgen, Ent ORM with typed migrations, NATS JetStream events, type-safe Go configuration (defaults compiled in, env-overridable), OpenTelemetry tracing and structured logging, a Cobra CLI, and cron workers, all wired end-to-end under a go.work monorepo.",
   "repo": "khanakia/volt-api",
   "homepage": "https://usevolt.dev",
   "language": "go",
@@ -39,7 +39,6 @@
     "orm",
     "nats",
     "jetstream",
-    "pkl",
     "opentelemetry",
     "postgresql",
     "monorepo"
@@ -52,7 +51,7 @@
     "differentiators": [
       "Schema-first GraphQL via gqlgen with Ent types auto-mapped — edit the .graphqls, regenerate resolvers",
       "Ent ORM with a shared BaseMixin, typed migrations, and pgvector support",
-      "Type-safe PKL configuration with generated Go bindings — no raw os.Getenv in app code",
+      "Type-safe Go configuration — one file is the schema, defaults and validation; no raw os.Getenv in app code",
       "Event-driven NATS JetStream handlers wired into the app bootstrap lifecycle",
       "OpenTelemetry tracing + structured Zap logging with trace correlation, out of the box",
       "go.work monorepo with separate API, cron, and CLI binaries and a shared lace/ utility library"
@@ -64,6 +63,6 @@
   "khanakia": {
     "addToApps": false,
     "badges": ["beta"],
-    "techStack": ["Go 1.25", "GraphQL (gqlgen)", "Ent ORM", "NATS JetStream", "PKL", "PostgreSQL", "OpenTelemetry"]
+    "techStack": ["Go 1.26", "GraphQL (gqlgen)", "Ent ORM", "NATS JetStream", "cfgkit", "PostgreSQL", "OpenTelemetry"]
   }
 }

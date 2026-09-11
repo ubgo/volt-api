@@ -9,39 +9,22 @@ A wrapper around [gocron-ui](https://github.com/go-co-op/gocron-ui) that adds in
 - Next/last run times, schedule details
 - Protected by internal key — no public access
 
-## Pkl Configuration
+## Configuration
 
-The dashboard is controlled by the `app.cronUI` section in your pkl config.
+The dashboard is controlled by the `Gocron` section of the application config (`modules/config/config.go`):
 
-### Schema (`config/pkl/schema/App.pkl`)
-
-```pkl
-class CronUI {
-  enable: Boolean
-  port: String
+```go
+type Gocron struct {
+    UiEnable bool   `env:"CRON_UI_ENABLE" default:"true"`
+    UiPort   string `env:"CRON_UI_PORT" default:"8089"`
 }
 ```
 
-### Default config (`config/pkl/env/default/app.pkl`)
+The defaults are compiled in, so the dashboard works with nothing set. Override per environment:
 
-```pkl
-app {
-  cronUI {
-    enable = true
-    port = "8089"
-  }
-}
-```
-
-### Production config (`config/pkl/env/prod/app.pkl`)
-
-```pkl
-app {
-  cronUI {
-    enable = read("env:CRON_UI_ENABLE").toBoolean()
-    port = read("env:CRON_UI_PORT")
-  }
-}
+```sh
+CRON_UI_ENABLE=false
+CRON_UI_PORT=8089
 ```
 
 Production environment variables:
@@ -114,11 +97,13 @@ Open the dashboard in your browser with the internal key as a query parameter:
 http://localhost:8089/?key=<your-internal-key>
 ```
 
-The internal key comes from `core.internalKey` in your pkl config. For the default local config this is `1234`, so:
+The internal key comes from `Core.InternalKey` (`INTERNAL_KEY`). Its compiled-in default is the placeholder `change-me-internal-key`, so locally:
 
 ```
-http://localhost:8089/?key=1234
+http://localhost:8089/?key=change-me-internal-key
 ```
+
+That placeholder is **refused outside dev** — a staging or production deploy must set a real `INTERNAL_KEY` or `config check` fails.
 
 For programmatic access (e.g. from a script or monitoring tool), use the header instead:
 

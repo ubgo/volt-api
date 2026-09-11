@@ -9,7 +9,7 @@ How to set up, run, and work in the Volt API codebase. This is the durable techn
 - [Prerequisites](#prerequisites)
 - [Getting started](#getting-started)
 - [Local development (portless)](#local-development-portless)
-- [Configuration (PKL)](#configuration-pkl)
+- [Configuration](#configuration)
 - [Code generation](#code-generation)
 - [Database & migrations](#database--migrations)
 - [Scripts & tasks](#scripts--tasks)
@@ -29,8 +29,6 @@ Install these before you start. The first four are required to run the app; **po
 | **PostgreSQL 15+** | Primary database (with pgvector for embeddings). | [postgresql.org/download](https://www.postgresql.org/download/), Postgres.app, or `task docker:up` (runs it in Docker) |
 | **NATS Server (JetStream)** | Event bus for async/real-time features. | [nats.io/download](https://nats.io/download/), or via the Docker stack (`task docker:up`) |
 | **Task** | Runs every shortcut command in `Taskfile.yml` (`task dev`, `task dbent:g`, …). | [taskfile.dev/installation](https://taskfile.dev/installation/) — e.g. `brew install go-task` |
-| **PKL CLI** | Evaluates the type-safe PKL configuration (used by codegen and at runtime). | [pkl-lang.org](https://pkl-lang.org/main/current/pkl-cli/index.html) — e.g. `brew install pkl` |
-| **pkl-gen-go** | Generates the Go config bindings from the PKL schema — what `task config:gen` runs. | `go install github.com/apple/pkl-go/cmd/pkl-gen-go@latest` |
 | **portless** _(recommended)_ | Serves the API at a **stable HTTPS URL** (`https://volt-api.localhost`) instead of a raw port. | `npm install -g portless` — see [Local development](#local-development-portless) |
 | **air** _(recommended)_ | Live reload for the Go API server; `task dev` uses it. | `go install github.com/air-verse/air@latest` |
 | **Redis** _(optional)_ | Caching / sessions. | [redis.io/download](https://redis.io/download/), or via the Docker stack |
@@ -48,9 +46,9 @@ task hooks:install
 # 3. Configure env — copy the example and fill in values
 cp env.sample .env
 #    PORT ....................... API port (default 2310)
-#    CONFIG_ENV ................. which PKL env to load (default | prod | sample)
+#    CONFIG_ENV ................. deployment environment (dev | stag | prod)
 #    Deploy/CI secrets .......... VPS_*, GHCR_PAT, etc. (only needed for deployment)
-#    App secrets (DB, keys) ..... read by PKL via read("env:VAR") — see Configuration
+#    App secrets (DB, keys) ..... bound as config fields — see Configuration
 
 # 4. Start local infrastructure (Postgres + NATS) — or use your own
 task docker:up
@@ -58,16 +56,16 @@ task docker:up
 # 5. Create the database if it doesn't exist
 PGPASSWORD=postgres psql -h localhost -U postgres -p 5432 -c "CREATE DATABASE appdb;"
 
-# 6. Generate config bindings + run migrations
-task config:gen
+# 6. Check the configuration + run migrations
+task config:check
 task dbent:migrate
 
 # 7. Run the dev server — pick one:
-task dev                 # air hot reload, port from PKL/$PORT
+task dev                 # air hot reload, port from config/$PORT
 task dev:portless        # ★ https://volt-api.localhost  (needs portless — see below)
 ```
 
-The API listens on the port from your PKL config (`PORT`, default `2310`), or at `https://volt-api.localhost` when run via portless.
+The API listens on the port from your configuration (`PORT`, default `2310`), or at `https://volt-api.localhost` when run via portless.
 
 ## Local development (portless)
 
@@ -75,7 +73,7 @@ Volt API supports two ways to run the dev server:
 
 | Command | URL | Notes |
 |---|---|---|
-| `task dev` | `http://localhost:2310` | air hot reload. Port comes from your PKL config / `$PORT`. |
+| `task dev` | `http://localhost:2310` | air hot reload. Port comes from your configuration / `$PORT`. |
 | `task dev:portless` | `https://volt-api.localhost` | **Recommended.** Stable HTTPS URL via [portless](https://github.com/vercel-labs/portless), air hot reload underneath. |
 
 **Why portless?** It gives your dev server a fixed, memorable HTTPS URL (`https://volt-api.localhost`) instead of a raw port — no port conflicts, no cookie/CORS clashes with the frontend, and real HTTPS locally (needed for secure cookies, cross-origin calls from Volt Web, webhooks, etc.). It runs a small proxy on port 443 and injects the actual port into the app for you.
@@ -120,22 +118,30 @@ The `name` field is the host: `name: "volt-api"` → `https://volt-api.localhost
 | `portless list` | Show all active portless routes. |
 | `portless run air` | What `task dev:portless` runs under the hood (from `modules/saas`). |
 
-## Configuration (PKL)
+## Configuration
 
-Configuration is **type-safe PKL**, not raw env vars. Schemas and per-environment values live in `modules/config/pkl/`, and `task config:gen` compiles them to Go bindings in `modules/config/gen/` (never edit the generated code).
+Configuration is **typed Go**, defined in one file — `modules/config/config.go` is the schema, the defaults and the validation together. Nothing is generated, so nothing can drift from what the code declares, and there is no tooling to install.
 
+Three layers, lowest precedence first:
+
+| # | Layer | Where it comes from |
+|---|---|---|
+| 1 | Compiled-in defaults | the `default:` struct tags |
+| 2 | `.env` | the process's working directory, if present |
+| 3 | Environment variables | the real process environment |
+
+The last layer to claim a key wins, so an operator can always override a file without editing it.
+
+- **Zero input is valid.** Every field has a default, so `task dev` works before you edit anything.
+- **`CONFIG_ENV`** (`dev`, `stag`, `prod`; defaults to `dev`) selects which validation rules apply — it does not select a file.
+- **Secrets** are declared, not fetched: a field tagged `secret:"true"` is structurally masked and, outside dev, its shipped placeholder is refused. Put real values in `.env`.
+- **`.env.example` is generated** from the struct by `task config:document` — never hand-edit it.
+
+```sh
+task config:check      # validate; non-zero exit on any problem
+task config:explain    # which layer set each field (secrets masked)
+task config:document   # regenerate .env.example
 ```
-modules/config/pkl/
-├── schema/          # PKL type definitions (Root.pkl + sections)
-└── env/
-    ├── default/     # local development values
-    ├── prod/        # production values
-    └── sample/      # example/reference values
-```
-
-- **Select an environment** with `CONFIG_ENV` (`default`, `prod`, or `sample`). Defaults to `default`.
-- **Secrets** are never hardcoded — PKL reads them from the environment via `read("env:VAR")`, so put real values in `.env`.
-- **After editing any `.pkl`**, run `task config:gen` to regenerate the bindings, and `task config:validate` to check them.
 
 See [volt/rules/configuration.md](../volt/rules/configuration.md) for adding new config fields/sections.
 
@@ -148,7 +154,7 @@ This is a codegen-heavy repo. **Never edit generated code** (`gen/`, `generated/
 | Database schema | `modules/dbent/schema/*.go` | `task dbent:g` (or `task dbent:gm` to also migrate) |
 | New Ent entity | — | `task dbent:new -- User` then edit + `task dbent:g` |
 | GraphQL schema | `modules/apidash/internal/graph/*.graphqls` | `task apidash:gql` (or `task gql` for all) |
-| PKL config | `modules/config/pkl/**/*.pkl` | `task config:gen` |
+| Configuration | `modules/config/config.go` | nothing — it is not generated (`task config:document` refreshes `.env.example`) |
 
 ## Database & migrations
 
@@ -176,8 +182,8 @@ task dev              # API with air hot reload (logs → tmp/air.log)
 task dev:portless     # API at https://volt-api.localhost
 task lint             # gofmt + go vet across all modules
 task saas:build       # build the api, cli, and cron binaries → tmp/bin/
-task config:gen       # regenerate PKL config bindings
-task config:validate  # validate the config
+task config:check     # validate the configuration
+task config:explain   # show which layer set each field
 task dbent:g          # regenerate Ent code
 task dbent:migrate    # run migrations
 task gql              # regenerate all gqlgen resolvers
@@ -206,7 +212,7 @@ go run ./cmd/cron            # run the cron worker
 │   ├── saas/       # Core: business logic (pkg/), CLI, API + cron bootstrap (cmd/)
 │   ├── apidash/    # Dashboard GraphQL API (/api/sa) — gqlgen resolvers
 │   ├── dbent/      # Ent ORM schema definitions + generated client
-│   ├── config/     # PKL configuration schemas + environments
+│   ├── config/     # The configuration: schema, defaults and validation, in Go
 │   ├── lace/       # Shared utility library (read-only)
 │   ├── core/       # External core module (read-only)
 │   ├── scripts/    # Deploy/ops scripts (read-only)
@@ -235,7 +241,7 @@ The boilerplate is structured so you can carve out your app quickly:
 
 1. Define your domain in `modules/dbent/schema/` (Ent entities) and run `task dbent:g && task dbent:migrate`.
 2. Add your GraphQL schema in `modules/apidash/internal/graph/*.graphqls`, run `task apidash:gql`, and implement resolvers (business logic lives in `modules/saas/pkg/`, not in resolvers).
-3. Set your configuration in `modules/config/pkl/env/` and regenerate with `task config:gen`.
+3. Set your configuration by editing the structs in `modules/config/config.go`, then run `task config:document` to refresh `.env.example`.
 4. Remove what you don't need — `modules/examples` and the `modules/saas/cmd/test` scratch sandbox are safe to delete; trim NATS/cron if unused.
 5. **Rebrand** — the identity lives in [`brand/`](brand/) and regenerates from `brand/brand.json` (`task -t brand/Taskfile.yml all`). Upload the GitHub social preview from `brand/png/og-social-1280.png`.
 6. **Replace this project's README** with your own app's README (and update `LICENSE` as needed). Keep this `CONTRIBUTING.md` and `VOLT.md` — `VOLT.md` is the preserved copy of Volt API's original README (the "built on Volt API" reference), and `CONTRIBUTING.md` is your team's setup reference.
