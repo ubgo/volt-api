@@ -1,9 +1,0 @@
-@go.Package { name = "config/gen/serverconfig" }
-module Server
-
-import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.12.1#/go.pkl"
-
-class Setting {
-  hostname: String
-  port: String
-}

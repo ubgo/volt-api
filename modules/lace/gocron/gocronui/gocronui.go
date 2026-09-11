@@ -47,16 +47,13 @@
 //	    // call httpSrv.Shutdown(ctx) during graceful shutdown
 //	}
 //
-// # Configuration (pkl)
+// # Configuration
 //
-// The enable/port settings live in the pkl config under app.cronUI:
+// The enable/port settings come from the application's config struct, which
+// binds them from the environment:
 //
-//	app {
-//	  cronUI {
-//	    enable = true
-//	    port = "8089"
-//	  }
-//	}
+//	CRON_UI_ENABLE=true
+//	CRON_UI_PORT=8089
 //
 // Environment variables for production: CRON_UI_ENABLE, CRON_UI_PORT.
 package gocronui

@@ -4,7 +4,6 @@ import (
 	"apidash"
 	"apidash/pkg/apidashtypes"
 	"config"
-	"config/gen/coreconfig/environment"
 	"context"
 	"core/pkg/applog"
 	"core/pkg/coreapi"
@@ -24,9 +23,12 @@ import (
 )
 
 func main() {
-	appcfg := config.Get()
-
+	// The kernel loads the configuration during New, and Circuit embeds it, so
+	// the config is read ONCE per process. Calling config.GetOrDie() here as
+	// well would load a second, independent snapshot — wasted work, and two
+	// values that could in principle disagree about what the environment said.
 	circuit := webapp.New()
+	appcfg := circuit.RootConfig
 
 	handlerFuncs := []gin.HandlerFunc{
 		util.CORSMiddleware(),
@@ -37,7 +39,7 @@ func main() {
 		ginserver.WithBeforeHandler(handlerFuncs...),
 		ginserver.WithAppName(appcfg.Server.Hostname),
 		ginserver.WithPort(appcfg.Server.Port),
-		ginserver.WithIsProd(appcfg.Core.Environment == environment.Prod),
+		ginserver.WithIsProd(appcfg.Core.Environment == config.Prod),
 	)
 
 	apiGroup := serverServer.Router.Group("api")

@@ -1,33 +1,60 @@
 package main
 
 import (
+	"config"
 	"context"
 	"core/pkg/clicmd"
+	"core/pkg/volt"
 	"fmt"
+	"lace/cli"
 	"webapp"
 
 	"github.com/spf13/cobra"
+	cobracfg "github.com/ubgo/cfgkit/contrib/cli-cobra"
 )
 
+// The CLI owns the root command and builds the Circuit LAZILY.
+//
+// Building it here unconditionally — which is what this file used to do — meant
+// every invocation loaded the configuration, pinged Redis and ran the
+// non-dev encryption-key check before cobra had chosen a subcommand. So `ping`
+// and `--help` required infrastructure, and under CONFIG_ENV=prod the process
+// exited on a placeholder secret before any command could run, which made the
+// configuration commands unreachable exactly when they were needed to diagnose
+// it. Commands now receive an accessor and pull the Circuit only if they use it.
 func main() {
-	circuit := webapp.New()
-	clicmd.AddCommands(&circuit.Kernel)
-	AddCommands(circuit)
-	circuit.Cli.Execute()
+	root := cli.New()
+
+	circuit := webapp.Lazy()
+	kernel := func() *volt.Kernel { return &circuit().Kernel }
+
+	clicmd.AddCommands(root.RootCmd, kernel)
+	AddCommands(root.RootCmd, circuit)
+
+	// The config verbs come from cfgkit and need NO kernel — no database, no
+	// Redis, no valid configuration. That is what makes them usable when the
+	// configuration is the thing that is broken. config.Options() is passed so
+	// the command inspects exactly what the application loads.
+	root.RootCmd.AddCommand(cobracfg.Command[config.Root](config.Options()))
+
+	root.Execute()
 }
 
-func AddCommands(circuit *webapp.Circuit) {
-	rootCmd := circuit.Cli.RootCmd
+// AddCommands registers this application's own commands.
+//
+// It takes the same lazy accessor as the platform commands so an app command
+// that needs no dependencies stays runnable without them.
+func AddCommands(rootCmd *cobra.Command, circuit func() *webapp.Circuit) {
 	rootCmd.AddCommand(seedUsersCommand(circuit))
 }
 
-func seedUsersCommand(circuit *webapp.Circuit) *cobra.Command {
+func seedUsersCommand(circuit func() *webapp.Circuit) *cobra.Command {
 	return &cobra.Command{
 		Use:   "seed-users",
 		Short: "Seed dummy users into the database",
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.Background()
-			client := circuit.EntDB.Client()
+			client := circuit().EntDB.Client()
 
 			users := []struct {
 				FirstName string

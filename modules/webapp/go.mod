@@ -30,6 +30,11 @@ require (
 )
 
 require (
+	github.com/ubgo/cfgkit v0.1.0 // indirect
+	github.com/ubgo/dotenv v0.1.2-0.20260910135617-45e991e589f1 // indirect
+)
+
+require (
 	ariga.io/atlas v1.2.3 // indirect
 	entgo.io/contrib v0.7.0 // indirect
 	entgo.io/ent v0.14.6 // indirect
@@ -40,7 +45,6 @@ require (
 	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
-	github.com/apple/pkl-go v0.13.2 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
 	github.com/bytedance/gopkg v0.1.4 // indirect
@@ -109,6 +113,7 @@ require (
 	github.com/ubgo/buildinfo/contrib/buildinfo-otel v0.1.0 // indirect
 	github.com/ubgo/cache v0.1.0 // indirect
 	github.com/ubgo/cache-redis v0.1.0 // indirect
+	github.com/ubgo/cfgkit/contrib/cli-cobra v0.1.0
 	github.com/ubgo/crypt v0.0.0-20260504095124-aefc1abb0446 // indirect
 	github.com/ubgo/health v0.1.0 // indirect
 	github.com/ubgo/health/contrib/health-redis v0.1.0 // indirect
@@ -164,9 +169,9 @@ require (
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/tools v0.47.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
-	google.golang.org/grpc v1.81.1 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260630182238-925bb5da69e7 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260630182238-925bb5da69e7 // indirect
+	google.golang.org/grpc v1.82.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

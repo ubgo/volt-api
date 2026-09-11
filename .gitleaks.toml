@@ -102,9 +102,9 @@ paths = [
 	'''.*_test\.go$''',
 	# Generated code — values are codegen output, not hand-placed secrets.
 	'''.*/gen/.*''',
-	# PKL config templates: committed values are synthetic placeholders
-	# (change-me-*, xxxx); real values come from env at deploy time.
-	'''modules/config/pkl/env/.*\.pkl$''',
+	# The generated .env.example: secrets are emitted EMPTY by design, and the
+	# non-secret defaults it carries are synthetic placeholders (change-me-*).
+	'''^\.env\.example$''',
 ]
 
 [[allowlists]]

@@ -6,7 +6,7 @@ import (
 	"apidash/internal/graph/resolver"
 	"apidash/internal/handlers"
 	"apidash/pkg/apidashtypes"
-	"config/gen/rootconfig"
+	"config"
 	"lace/gqlgenfn"
 	"lace/gqlgin"
 
@@ -52,6 +52,6 @@ func Boot(routerGroup *gin.RouterGroup, gqlResolver *apidashtypes.Resolver) {
 	})
 }
 
-func setDirectives(c *generated.Config, appcofnig *rootconfig.RootConfig) {
+func setDirectives(c *generated.Config, appcofnig *config.Root) {
 	c.Directives.Internal = directives.InternalApiDirective(appcofnig.Core.InternalKey)
 }

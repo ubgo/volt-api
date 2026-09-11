@@ -4,8 +4,8 @@ version: "3"
 
 dotenv: [".env"]
 
-# Exposed to every task command so PKL's `read?("env:VOLT_ROOT")` in
-# modules/config/pkl/env/default/app.pkl resolves to the repo root regardless
+# Exposed to every task command so the config package's VOLT_ROOT default
+# resolves to the repo root regardless
 # of which task chdirs (module Taskfiles run from their own `dir:`). Without
 # this, rootdir = "." picks up cwd and tmpdir + uploadsdir + logFile land
 # under whichever subdir the task happened to be in. ROOT_DIR is task's
@@ -55,27 +55,6 @@ tasks:
     desc: alias → webapp:dev:portless (https://volt-api.localhost)
     cmds:
       - task: webapp:dev:portless
-
-  pkl:link:
-    desc: |
-      Stabilize PKL paths from each mod-* Go module into modules/config/pkl/modules/.
-      Uses `go list -m -f '{{.Dir}}'` so paths resolve regardless of vendor /
-      module-cache / go.work-replace mode (ADR-V2-007).
-    cmds:
-      - rm -rf modules/config/pkl/modules
-      - mkdir -p modules/config/pkl/modules
-      - |
-        set -e
-        for path in $(go list -m -json all 2>/dev/null | jq -r 'select(.Path | startswith("github.com/khanakia/boilerplate-golang/modules/mod-")) | .Path + "\t" + (.Dir // "")' || true); do
-          name=$(echo "$path" | awk -F'/mod-' '{print $2}' | awk '{print $1}')
-          dir=$(echo "$path" | awk -F'\t' '{print $2}')
-          if [ -z "$dir" ] || [ ! -d "$dir/config" ]; then
-            continue
-          fi
-          target="modules/config/pkl/modules/$name"
-          ln -sfn "$dir/config" "$target"
-          echo "linked $target -> $dir/config"
-        done
 
   modules:entg:
     desc: Run ent codegen for every mod-* module under modules/
@@ -156,14 +135,14 @@ tasks:
           (cd "$d" && go get -u ./... && go mod tidy)
         done
       - task workvendor
-      - task config:gen
+      - task config:check
       - task dbent:migrate
 
   lint:
     desc: gofmt + go vet on all modules
     cmds:
       - gofmt -w $(find . -name '*.go' -not -path './vendor/*' -not -path '*/gen/*' -not -path './.git/*')
-      - go vet ./..
+      - go vet ./...
 
   gql:
     desc: generate gqlgen code from schema files

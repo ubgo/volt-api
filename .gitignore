@@ -5,6 +5,11 @@ vendor
 ~*
 _*
 .env*
+# ...but the generated config contract is the thing new developers read: it
+# lists every key with its doc line and default, and secrets are emitted EMPTY
+# by design. env.sample carries only the deploy/CI variables, so without this
+# negation the application's 44 settings would be documented nowhere.
+!.env.example
 
 # ignore OS generated files
 .sass-cache
@@ -51,3 +56,9 @@ shell
 # build output from module tasks (e.g. task saas:build → ../tmp/bin)
 modules/*/tmp/
 modules/tmp/
+
+# Binaries built in place by `go build ./cmd/<name>` — the Taskfile writes to
+# tmp/bin/, but a bare `go build` drops one next to the source.
+modules/webapp/cli
+modules/webapp/api
+modules/webapp/cron

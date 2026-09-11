@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"config/gen/rootconfig"
+	"config"
 	"dbent/gen/ent"
 	"net/http"
 
@@ -11,7 +11,7 @@ import (
 type Config struct {
 	RouterGroup *gin.RouterGroup
 	EntClient   *ent.Client
-	RootConfig  *rootconfig.RootConfig
+	RootConfig  *config.Root
 }
 
 type RouteHandler struct {

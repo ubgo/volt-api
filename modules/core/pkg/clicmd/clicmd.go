@@ -19,7 +19,27 @@ import (
 	"go.opentelemetry.io/otel/codes"
 )
 
-func AddCommands(kernel *volt.Kernel) {
+// KernelFunc builds the kernel on demand.
+//
+// Why a function and not a *Kernel: constructing the kernel loads the
+// configuration, pings Redis and refuses a placeholder encryption key outside
+// dev — all of which are correct for a running service and wrong for `ping`,
+// `--help`, or a command that only inspects configuration. Taking a func lets
+// each command decide, and callers should wrap theirs in sync.OnceValue so a
+// process still builds at most one kernel.
+//
+// Invariant: implementations exit or panic on failure rather than returning
+// nil, matching volt.New — a command body may use the result without a nil check.
+type KernelFunc func() *volt.Kernel
+
+// AddCommands registers the platform commands on rootCmd.
+//
+// rootCmd is passed in rather than read off the kernel because registration
+// must happen before any kernel exists; see the Kernel doc comment.
+func AddCommands(rootCmd *cobra.Command, kernel KernelFunc) {
+	// ping takes no KernelFunc at all: it is the smoke test for "is this binary
+	// runnable", which must stay true on a machine with no database, no Redis
+	// and no configuration.
 	var pingCommand = &cobra.Command{
 		Use:   "ping",
 		Short: "Just a ping command",
@@ -34,7 +54,7 @@ func AddCommands(kernel *volt.Kernel) {
 		Long:  "Creates a file in the tmp directory with current date and time",
 		Run: func(cmd *cobra.Command, args []string) {
 			currentTime := time.Now().Format("2006-01-02 15:04:05") + "\n"
-			tmpFile := filepath.Join(kernel.RootConfig.Core.Tmpdir, "datetime.txt")
+			tmpFile := filepath.Join(kernel().RootConfig.Core.Tmpdir, "datetime.txt")
 
 			// Open file in append mode, create if not exists
 			f, err := os.OpenFile(tmpFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -53,15 +73,14 @@ func AddCommands(kernel *volt.Kernel) {
 		},
 	}
 
-	rootCmd := kernel.Cli.RootCmd
 	rootCmd.AddCommand(pingCommand)
 	rootCmd.AddCommand(dbEntMigrateCommand(kernel))
 	rootCmd.AddCommand(writeDateTime)
-	rootCmd.AddCommand(cryptCommand(kernel.RootConfig.Core.EncryptionKey))
+	rootCmd.AddCommand(cryptCommand(kernel))
 	rootCmd.AddCommand(cryptRekeyCommand())
 }
 
-func dbEntMigrateCommand(kernel *volt.Kernel) *cobra.Command {
+func dbEntMigrateCommand(kernel KernelFunc) *cobra.Command {
 	// This command allows running migrations from within the main CLI binary.
 	// Useful for Docker deployments where we don't want to build a separate
 	// migration binary. In development, if the CLI fails to compile, you can
@@ -76,7 +95,7 @@ func dbEntMigrateCommand(kernel *volt.Kernel) *cobra.Command {
 				buildinfootel.Attributes(attribute.String("job.name", "migrate"))...,
 			)
 
-			err := dbent_migrate.Migrate(ctx, kernel.DB)
+			err := dbent_migrate.Migrate(ctx, kernel().DB)
 			if err != nil {
 				applog.FromCtx(ctx).Error("failed to migrate the database", ulog.Err(err))
 				return
@@ -95,11 +114,9 @@ func dbEntMigrateCommand(kernel *volt.Kernel) *cobra.Command {
 - go run ./cmd/cli crypt -e "hello world"
 - go run ./cmd/cli crypt -d "encrypted text here"
 */
-func cryptCommand(encryptionKey string) *cobra.Command {
+func cryptCommand(kernel KernelFunc) *cobra.Command {
 	var encrypt bool
 	var decrypt bool
-
-	key := []byte(encryptionKey)
 
 	cmd := &cobra.Command{
 		Use:   "crypt",
@@ -108,6 +125,11 @@ func cryptCommand(encryptionKey string) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			text := args[0]
+
+			// Read inside Run, not at construction: the key comes from the
+			// configuration, and reading it while building the command tree
+			// would load config for every invocation of every command.
+			key := []byte(kernel().RootConfig.Core.EncryptionKey)
 
 			// AES-CBC (hex(IV||PKCS7) wire format) preserves compatibility with
 			// values previously written by the old lace/crypt package.

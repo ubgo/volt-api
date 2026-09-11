@@ -23,7 +23,7 @@ tasks:
       - go build -o ../tmp/bin/cli ./cmd/cli
       - go build -o ../tmp/bin/cron ./cmd/cron
   dev:
-    desc: run air (port from PKL/$PORT), tee → ../tmp/air.log
+    desc: run air (port from $PORT or the compiled-in default), tee → ../tmp/air.log
     cmds:
       - air 2>&1 | tee ../tmp/air.log
 

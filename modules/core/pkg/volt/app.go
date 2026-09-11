@@ -2,11 +2,6 @@ package volt
 
 import (
 	"config"
-	coreenv "config/gen/coreconfig/environment"
-	"config/gen/databaseconfig"
-	"config/gen/loggerconfig"
-	"config/gen/redisconfig"
-	"config/gen/rootconfig"
 	"context"
 	"core/pkg/applog"
 	"core/pkg/redisclient"
@@ -15,8 +10,6 @@ import (
 	"log"
 
 	"lace/db"
-
-	"lace/cli"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/ubgo/cache"
@@ -56,12 +49,19 @@ func (errxGozapSink) Emit(ctx context.Context, r *errx.Report) error {
 	return nil
 }
 
+// Kernel is the application's live dependencies, built once per process.
+//
+// It deliberately holds NO cobra root command. A kernel is what a command
+// needs, not what owns the commands: putting the CLI root here forced every
+// binary to construct the whole kernel — config load, Redis ping, encryption
+// key check — before cobra could even choose a subcommand, so `ping` and
+// `--help` paid for a database. The root command now lives in the CLI binary,
+// which passes a KernelFunc so only the commands that need a kernel build one.
 type Kernel struct {
-	Cli         cli.Cli
 	DB          db.DB
 	EntDB       dbent.EntDB
 	Cache       cache.Cache
-	RootConfig  *rootconfig.RootConfig
+	RootConfig  *config.Root
 	RedisClient *redis.Client
 	// Health is the dependency health-check registry. Live checkers for the
 	// database and Redis are registered during New(); the api binary mounts
@@ -80,12 +80,12 @@ func New(options ...Option) *Kernel {
 
 	cfg.options(options...)
 
-	cli := cli.New()
-
-	configroot := config.Get()
+	// GetOrDie rather than Get: New has no error return and already panics
+	// on a failed dependency, so the exit stays explicit at the call site
+	// instead of hiding inside the config package.
+	configroot := config.GetOrDie()
 
 	kernel = &Kernel{
-		Cli:        cli,
 		RootConfig: configroot,
 		Health:     health.NewRegistry(),
 	}
@@ -107,10 +107,10 @@ func New(options ...Option) *Kernel {
 	kernel.Cache = rediscache.New(kernel.RedisClient)
 
 	// Fail closed: a non-dev deployment must never encrypt real data with an
-	// empty or well-known dev-default key (the PKL template placeholders are
+	// empty or well-known dev-default key (the shipped placeholders are
 	// public knowledge). Refuse to boot rather than silently using a guessable
 	// key — discovering this after rows are encrypted means a rekey migration.
-	if configroot.Core.Environment != coreenv.Dev && IsWeakOrDefaultKey(configroot.Core.EncryptionKey) {
+	if configroot.Core.Environment != config.Dev && config.IsWeakOrDefaultKey(configroot.Core.EncryptionKey) {
 		panic("core.encryptionKey is empty or a dev-default placeholder in a non-dev environment (" + string(configroot.Core.Environment) + ") — refusing to boot; set a real 16/24/32-byte key via config or env")
 	}
 
@@ -153,12 +153,12 @@ func ShutdownHandler(ctx context.Context) error {
 	return nil
 }
 
-func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Setting, environment string) error {
+func initGlobalLogger(otelconfig config.Otel, loggerconfig config.Logger, environment string) error {
 	if !otelconfig.Enable {
 		return nil
 	}
 
-	// Map the PKL otel config onto an otelkit Config. PKL is authoritative
+	// Map the otel config onto an otelkit Config. The config package is authoritative
 	// (WithEnvOverrides(false)). gotel could tee stdout+http per signal; otelkit
 	// is single-transport-per-signal, so HTTP wins when both are enabled.
 	auth := otelconfig.ApiKey
@@ -238,7 +238,7 @@ func initGlobalLogger(otelconfig loggerconfig.Otel, loggerconfig loggerconfig.Se
 	return nil
 }
 
-func initRedis(rediscfg *redisconfig.Setting, kernel *Kernel) error {
+func initRedis(rediscfg *config.Redis, kernel *Kernel) error {
 	if !rediscfg.Status {
 		return nil
 	}
@@ -264,7 +264,7 @@ func initRedis(rediscfg *redisconfig.Setting, kernel *Kernel) error {
 	return nil
 }
 
-func initDB(databaseconfig databaseconfig.Setting, kernel *Kernel) error {
+func initDB(databaseconfig config.Database, kernel *Kernel) error {
 	db := dbent.InitDB(databaseconfig)
 
 	entClient := dbent.New(db)

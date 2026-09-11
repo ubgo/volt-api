@@ -28,7 +28,7 @@ const tracerName = "cron"
 type registerFunc func(scheduler gocron.Scheduler, p *webapp.Circuit)
 
 // allJobs defines all available cron jobs.
-// The map key is the job name used in pkl config's enabledJobs list.
+// The map key is the job name used in CRON_ENABLED_JOBS.
 var allJobs = map[string]registerFunc{
 	"exampleJob": registerExampleJob,
 }

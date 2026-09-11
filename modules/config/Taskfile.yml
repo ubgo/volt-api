@@ -15,13 +15,28 @@ tasks:
       - go mod tidy
       - rm go.sum
 
-  gen:
-    desc: generate pkl config
-    cmds:
-      - rm -rf ./gen/*
-      - pkl-gen-go ./pkl/schema/Root.pkl --base-path config
+  # There is no codegen step any more. The configuration IS Go — config.go is
+  # the schema, the defaults and the validation in one file — so nothing is
+  # generated and nothing can drift from what the code declares.
+  #
+  # The verbs below come from github.com/ubgo/cfgkit/contrib/cli-cobra, mounted
+  # on the application CLI. There is deliberately no second binary: a checker
+  # that is not the one operators run in production is a checker of something
+  # else. The command needs no kernel, so it runs with the database and cache
+  # unreachable — which is when it matters.
 
-  validate:
-    desc: validate the config
+  check:
+    desc: validate the configuration; fails non-zero on any problem
     cmds:
-      - go run ./cmd/validate/main.go
+      - go run ../webapp/cmd/cli config check
+
+  explain:
+    desc: print every field with the source that set it (secrets masked)
+    cmds:
+      - go run ../webapp/cmd/cli config explain
+
+  document:
+    desc: regenerate the .env.example contract from the struct
+    cmds:
+      - go run ../webapp/cmd/cli config document > ../../.env.example
+

@@ -1,7 +1,7 @@
 package apphandlers
 
 import (
-	"config/gen/rootconfig"
+	"config"
 	"dbent/gen/ent"
 	"net/http"
 
@@ -12,7 +12,7 @@ type Config struct {
 	HttpEngine     *gin.Engine
 	ApiRouterGroup *gin.RouterGroup
 	EntClient      *ent.Client
-	RootConfig     *rootconfig.RootConfig
+	RootConfig     *config.Root
 }
 
 type AppHandlers struct {

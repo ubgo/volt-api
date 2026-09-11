@@ -1,7 +1,7 @@
 # test.yml — unit tests + an auto-updating coverage badge.
 #
 # Why coverage is scoped to hand-written packages: a large share of this
-# repo's .go files are generated (ent, gqlgen, PKL bindings). Counting them
+# repo's .go files are generated (ent, gqlgen). Counting them
 # reports a number that says nothing about the code we actually write, and it
 # only ever moves when a generator runs. We exclude gen/ and generated/ so
 # the badge tracks OUR tests.

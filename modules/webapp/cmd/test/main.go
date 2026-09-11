@@ -12,8 +12,7 @@ func test() *errx.Error {
 }
 
 func main() {
-	circuit := webapp.New()
-	circuit.Cli.Execute()
+	_ = webapp.New()
 
 	applog.GetLogger().Info("test")
 
@@ -133,7 +132,7 @@ func main() {
 	// }).Save(ctx)
 	// fmt.Println(err)
 
-	// cfg, err := mainconfig.LoadFromPath(context.Background(), "../config/pkl/default/main.pkl")
+	// cfg, err := config.Get()  // configuration comes from Go defaults + env
 	// if err != nil {
 	// 	panic(err)
 	// }

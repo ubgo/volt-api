@@ -9,8 +9,8 @@ use (
 	./modules/dbent
 	./modules/examples
 	./modules/lace
-	./modules/webapp
 	./modules/scripts
+	./modules/webapp
 )
 
 // replace github.com/getsentry/sentry-go => github.com/getsentry/sentry-go v0.14.0

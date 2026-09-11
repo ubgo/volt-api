@@ -1,7 +1,7 @@
 package dbent
 
 import (
-	"config/gen/databaseconfig"
+	"config"
 	"context"
 	"database/sql"
 	"dbent/gen/ent"
@@ -178,11 +178,11 @@ func AggOrZero(inner ent.AggregateFunc) ent.AggregateFunc {
 	}
 }
 
-func InitDB(databaseconfig databaseconfig.Setting) *sql.DB {
+func InitDB(databaseconfig config.Database) *sql.DB {
 	return db.New(db.WithDataSourceName(dsName(databaseconfig)), db.WithDriverName("pgx"))
 }
 
-func dsName(databaseconfig databaseconfig.Setting) string {
+func dsName(databaseconfig config.Database) string {
 	username := databaseconfig.Username
 	password := databaseconfig.Password
 	databaseName := databaseconfig.DbName

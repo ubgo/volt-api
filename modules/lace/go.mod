@@ -1,6 +1,6 @@
 module lace
 
-go 1.25.0
+go 1.26.4
 
 replace google.golang.org/genproto => google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1
 

@@ -1,31 +1,13 @@
-FROM golang:1.25.5-alpine3.22
+# Must be >= the highest `go` directive across modules/*/go.mod (1.26.4).
+FROM golang:1.26.4-alpine3.22
 
 RUN apk update && apk add --no-cache git ca-certificates curl socat supervisor
 RUN mkdir -p /var/log/supervisor
 
-RUN curl -L -o pkl https://github.com/apple/pkl/releases/download/0.25.2/pkl-alpine-linux-amd64 && chmod +x pkl && mv pkl /usr/local/bin/
-RUN curl -L -o pkl-gen-go https://github.com/apple/pkl-go/releases/download/v0.10.0/pkl-gen-go-linux-aarch64.bin && chmod +x pkl-gen-go && mv pkl-gen-go /usr/local/bin/
 
 RUN sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
 RUN go install github.com/air-verse/air@latest
-
-# Determine architecture and install pkl accordingly
-# RUN ARCH=$(uname -m) && \
-#     echo "Detected architecture: $ARCH" && \
-#     if [ "$ARCH" = "aarch64" ]; then \
-#         curl -L -o /bin/pkl 'https://github.com/apple/pkl/releases/download/0.28.2/pkl-linux-aarch64' && \
-#         curl -L -o /bin/pkl-gen-go 'https://github.com/apple/pkl-go/releases/download/v0.10.0/pkl-gen-go-linux-aarch64.bin'; \
-#     elif [ "$ARCH" = "x86_64" ]; then \
-#         curl -L -o /bin/pkl 'https://github.com/apple/pkl/releases/download/0.28.2/pkl-linux-amd64' && \
-#         curl -L -o /bin/pkl-gen-go 'https://github.com/apple/pkl-go/releases/download/v0.10.0/pkl-gen-go-linux-amd64.bin'; \
-#     else \
-#         echo "Unsupported architecture: $ARCH" && exit 1; \
-#     fi && \
-#     chmod +x /bin/pkl && \
-#     chmod +x /bin/pkl-gen-go && \
-#     ls -la /bin/pkl* && \
-#     /bin/pkl --version
 
 
 ENV CGO_ENABLED=0 GO111MODULE=on GOOS=linux 

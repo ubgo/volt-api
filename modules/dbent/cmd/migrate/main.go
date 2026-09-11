@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	cfg := config.Get()
+	cfg := config.GetOrDie()
 	db := dbent.InitDB(cfg.Database)
 
 	dbent_migrate.Migrate(context.Background(), db)

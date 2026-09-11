@@ -1,11 +1,11 @@
 package apidashtypes
 
 import (
-	"config/gen/rootconfig"
+	"config"
 	"webapp"
 )
 
 type Resolver struct {
 	Circuit    *webapp.Circuit
-	RootConfig *rootconfig.RootConfig
+	RootConfig *config.Root
 }

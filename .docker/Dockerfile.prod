@@ -2,7 +2,9 @@
 # Stage 1: Builder
 # ===================================
 # Use Go 1.25.5 Alpine (adjust version as needed for your project)
-ARG GO_VERSION=1.25.5
+# Must be >= the highest `go` directive across modules/*/go.mod (1.26.4).
+# It was 1.25.5 while apidash, dbent and webapp already required 1.26.4.
+ARG GO_VERSION=1.26.4
 FROM golang:${GO_VERSION}-alpine3.22 AS builder
 
 # Build arguments for target architecture
@@ -11,18 +13,6 @@ ARG TARGETARCH
 
 # Install build dependencies
 RUN apk add --no-cache git ca-certificates curl
-
-# Install pkl CLI for config evaluation (needed at build time for any pkl operations)
-RUN ARCH=$(uname -m) && \
-    echo "Detected architecture: $ARCH" && \
-    if [ "$ARCH" = "aarch64" ]; then \
-        curl -L -o /usr/local/bin/pkl 'https://github.com/apple/pkl/releases/download/0.28.2/pkl-linux-aarch64'; \
-    elif [ "$ARCH" = "x86_64" ]; then \
-        curl -L -o /usr/local/bin/pkl 'https://github.com/apple/pkl/releases/download/0.28.2/pkl-linux-amd64'; \
-    else \
-        echo "Unsupported architecture: $ARCH" && exit 1; \
-    fi && \
-    chmod +x /usr/local/bin/pkl
 
 # Set working directory
 WORKDIR /build
@@ -87,23 +77,13 @@ RUN go build -mod=vendor -ldflags="${LDFLAGS}" -o /build/bin/api ./modules/saas/
 FROM alpine:3.22
 
 # Install runtime dependencies
-# gcompat provides glibc compatibility layer for pkl binary
 # supervisor for running multiple processes (api + cron)
-RUN apk add --no-cache ca-certificates tzdata curl gcompat libstdc++ supervisor
-
-# Install pkl CLI for runtime config evaluation
-# Use Alpine-specific build for x86_64, glibc version for ARM64 (with gcompat)
-RUN ARCH=$(uname -m) && \
-    echo "Detected architecture: $ARCH" && \
-    if [ "$ARCH" = "aarch64" ]; then \
-        curl -L -o /usr/local/bin/pkl 'https://github.com/apple/pkl/releases/download/0.28.2/pkl-linux-aarch64'; \
-    elif [ "$ARCH" = "x86_64" ]; then \
-        curl -L -o /usr/local/bin/pkl 'https://github.com/apple/pkl/releases/download/0.28.2/pkl-alpine-linux-amd64'; \
-    else \
-        echo "Unsupported architecture: $ARCH" && exit 1; \
-    fi && \
-    chmod +x /usr/local/bin/pkl && \
-    pkl --version
+#
+# No config evaluator is installed. Configuration is compiled into the binary
+# and overridden by environment variables, so the image no longer downloads a
+# CLI at build time, no longer needs gcompat to run it, and no longer depends
+# on a third-party release URL being reachable when the image is built.
+RUN apk add --no-cache ca-certificates tzdata curl libstdc++ supervisor
 
 # Create non-root user for security
 RUN addgroup -g 1000 appgroup && \
@@ -121,9 +101,8 @@ COPY --from=builder /build/bin/api /app/api
 COPY --from=builder /build/bin/cron /app/cron
 COPY --from=builder /build/bin/cli /app/cli
 
-# Copy only prod config files (pkl files needed at runtime)
-COPY --from=builder /build/modules/config/pkl/schema /app/config/pkl/schema
-COPY --from=builder /build/modules/config/pkl/env/prod /app/config/pkl/env/prod
+# No config files are copied: defaults are compiled into the binaries and the
+# deployment supplies overrides as environment variables.
 
 # Copy supervisord config
 COPY .docker/supervisord.prod.conf /etc/supervisor/conf.d/supervisord.conf
@@ -132,7 +111,8 @@ COPY .docker/supervisord.prod.conf /etc/supervisor/conf.d/supervisord.conf
 RUN chown -R appuser:appgroup /app
 
 # Environment variables with defaults
-# CONFIG_ENV controls which pkl config to load (default, prod)
+# CONFIG_ENV selects the environment, which decides which validation rules
+# apply — it no longer selects a config file to evaluate.
 ENV CONFIG_ENV=prod
 
 # Default port (can be overridden at runtime)

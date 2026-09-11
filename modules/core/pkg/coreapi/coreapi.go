@@ -1,7 +1,7 @@
 package coreapi
 
 import (
-	"config/gen/coreconfig"
+	"config"
 	"dbent/gen/ent"
 	"net/http"
 
@@ -13,7 +13,7 @@ type Config struct {
 	HttpEngine     *gin.Engine
 	ApiRouterGroup *gin.RouterGroup
 	EntClient      *ent.Client
-	CoreConfig     *coreconfig.Setting
+	CoreConfig     *config.Core
 }
 
 type coreApi struct {
