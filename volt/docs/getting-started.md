@@ -22,7 +22,7 @@ Install these before you start. **Go** and **Task** are all you need to build â€
 ## 1. Clone and sync the workspace
 
 ```bash
-git clone git@github.com:khanakia/volt-api.git
+git clone git@github.com:ubgo/volt-api.git
 cd volt-api
 task workvendor          # sync the go.work workspace (vendored/replace modules)
 task hooks:install       # (recommended) activate the gitleaks pre-commit secret scanner (installs gitleaks if missing)

@@ -3,7 +3,7 @@
   "display": "Volt API",
   "tagline": "The batteries-included Go backend starter.",
   "description": "Volt API is a production-ready Go backend boilerplate for building modular services — a schema-first GraphQL API via gqlgen, Ent ORM with typed migrations, NATS JetStream events, type-safe Go configuration (defaults compiled in, env-overridable), OpenTelemetry tracing and structured logging, a Cobra CLI, and cron workers, all wired end-to-end under a go.work monorepo.",
-  "repo": "khanakia/volt-api",
+  "repo": "ubgo/volt-api",
   "homepage": "https://usevolt.dev",
   "language": "go",
   "kind": "service",
@@ -58,7 +58,7 @@
     ]
   },
   "install": {
-    "script": "git clone git@github.com:khanakia/volt-api.git && task workvendor"
+    "script": "git clone git@github.com:ubgo/volt-api.git && task workvendor"
   },
   "khanakia": {
     "addToApps": false,
