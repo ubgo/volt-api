@@ -1,3 +1,13 @@
+# Manual only (owner's call, 2026-10-13: Actions minutes are a budget). To run automatically again, replace the on: block with:
+#   on:
+#     push:
+#       branches: [dev, main]
+#     pull_request:
+#     workflow_dispatch:
+#
+#   # contents: write is required by the badge step, which commits the updated
+#   # README back to main. Everything else here is read-only.
+
 # test.yml — unit tests + an auto-updating coverage badge.
 #
 # Why coverage is scoped to hand-written packages: a large share of this
@@ -21,13 +31,7 @@
 name: test
 
 on:
-  push:
-    branches: [dev, main]
-  pull_request:
   workflow_dispatch:
-
-# contents: write is required by the badge step, which commits the updated
-# README back to main. Everything else here is read-only.
 permissions:
   contents: write
 

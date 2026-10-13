@@ -1,3 +1,10 @@
+# Manual only (owner's call, 2026-10-13: Actions minutes are a budget). To run automatically again, replace the on: block with:
+#   on:
+#     push:
+#       branches: [dev, main]
+#     pull_request:
+#     workflow_dispatch:
+
 # lint.yml — gofmt + go vet over hand-written code.
 #
 # Scope note: generated trees (gen/, generated/) are EXCLUDED at the file-list
@@ -8,9 +15,6 @@
 name: lint
 
 on:
-  push:
-    branches: [dev, main]
-  pull_request:
   workflow_dispatch:
 
 permissions:
