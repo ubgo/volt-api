@@ -1,6 +1,6 @@
 # Security Policy
 
-Volt API is proprietary software. We take security seriously and appreciate responsible disclosure.
+Volt API is open-source software under the Apache License 2.0. We take security seriously and appreciate responsible disclosure.
 
 ## Reporting a Vulnerability
 

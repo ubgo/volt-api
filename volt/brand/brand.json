@@ -7,7 +7,7 @@
   "homepage": "https://usevolt.dev",
   "language": "go",
   "kind": "service",
-  "license": "LicenseRef-Proprietary",
+  "license": "Apache-2.0",
   "distribution": "commercial-private",
   "author": {
     "name": "khanakia",

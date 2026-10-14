@@ -2,7 +2,7 @@
 
 How to set up, run, and work in the Volt API codebase. This is the durable technical reference — the [README](README.md) is the product landing page and will typically be replaced by your own app's README once you start building, so **keep this file** for setup and workflow notes. The original Volt API README is preserved in [VOLT.md](README.md).
 
-> Volt API is a commercial product, not an open-source project — this guide is for licensed users developing on top of Volt API, not a public-contribution workflow. For support or licensing questions see [SUPPORT.md](SUPPORT.md).
+> Volt API is open source under the Apache License 2.0 — this guide is for developers building on top of Volt API. Contributions are welcome through pull requests; by contributing you agree your work is licensed under the same terms. For support questions see [SUPPORT.md](SUPPORT.md).
 
 ## Contents
 

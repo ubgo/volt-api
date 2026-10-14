@@ -22,7 +22,7 @@
   <img src="https://img.shields.io/badge/ORM-Ent-7C3AED" alt="Ent ORM" />
   <img src="https://img.shields.io/badge/Events-NATS%20JetStream-7C3AED" alt="NATS JetStream" />
   <img src="https://img.shields.io/badge/Config-cfgkit-7C3AED" alt="Typed Go config via cfgkit" />
-  <img src="https://img.shields.io/badge/license-Commercial-7C3AED" alt="Commercial license" />
+  <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/license-Apache--2.0-7C3AED" alt="License: Apache-2.0" /></a>
 </p>
 
 **Volt API** is a batteries-included starter for quickly bootstrapping a **modular Go backend service**. It ships with schema-first **GraphQL** (gqlgen with Ent types auto-mapped), an **Ent** ORM and typed migrations, **NATS JetStream** events, type-safe **Go configuration** (defaults compiled in, env-overridable), **OpenTelemetry** tracing and structured logging, a **Cobra** CLI, and **cron** workers — so you skip the plumbing and start on business logic in minutes.
@@ -97,7 +97,7 @@ That's the short path. For the full setup — **prerequisites** (Go, PostgreSQL,
 ## FAQ
 
 **Is Volt API open source?**
-No. Volt API is a commercial product — purchasing a license grants you access to the repository, and you can use it in your own personal and commercial applications. See [License](#license). It is not redistributable as a starter/boilerplate itself.
+Yes. Volt API is open source under the [Apache License 2.0](../LICENSE): you can use, modify and redistribute it, including in commercial applications, as long as you keep the license and copyright notices. See [License](#license).
 
 **Is Volt API related to Volt (Web)?**
 Yes — same brand family. [Volt](https://github.com/khanakia/boilerplate-tanstack) is the batteries-included TanStack Start React frontend; Volt API is the Go backend. Same identity, same "batteries-included starter" philosophy.
@@ -119,6 +119,6 @@ Yes. `modules/saas`, `modules/apidash`, `modules/dbent`, and `modules/config` ar
 
 ## License
 
-Volt API is a **commercial product** distributed under a proprietary license — see [LICENSE](../LICENSE). A purchase grants a license to use Volt API as the foundation of your own applications; it does not permit redistributing or reselling Volt API itself (or a derivative starter) as a product. This is not open-source software. For support or licensing questions see [SUPPORT.md](SUPPORT.md).
+Volt API is licensed under the [Apache License 2.0](../LICENSE). You can use, modify and redistribute it, including as the foundation of your own commercial applications, provided you keep the license and copyright notices. For support or licensing questions see [SUPPORT.md](SUPPORT.md).
 
-<sub>Volt API — a commercial Go backend boilerplate / service starter kit: schema-first GraphQL (gqlgen), Ent ORM, NATS JetStream, type-safe Go config, OpenTelemetry, structured logging, Cobra CLI, cron, PostgreSQL + pgvector, in a <code>go.work</code> monorepo.</sub>
+<sub>Volt API — an open-source (Apache-2.0) Go backend boilerplate / service starter kit: schema-first GraphQL (gqlgen), Ent ORM, NATS JetStream, type-safe Go config, OpenTelemetry, structured logging, Cobra CLI, cron, PostgreSQL + pgvector, in a <code>go.work</code> monorepo.</sub>

@@ -96,4 +96,4 @@ task -t volt/brand/Taskfile.yml all
 - Technical handle = **`usevolt`** (`usevolt.dev`, `@usevolt/*`, GitHub org `usevolt`); family naming = **Volt Web** / **Volt API** (`volt-web` / `volt-api`).
 - Fonts = **Space Grotesk** (display) / **Inter** (sans) / **JetBrains Mono** (mono).
 - Full regenerable brand kit lives in this `brand/`, driven by `brand.json` + `gen-brand.mjs`.
-- Distribution = **commercial / proprietary** — see the repo `LICENSE`.
+- Distribution = **open source, Apache-2.0** — see the repo `LICENSE`.
