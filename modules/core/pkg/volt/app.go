@@ -267,7 +267,7 @@ func initRedis(rediscfg *config.Redis, kernel *Kernel) error {
 func initDB(databaseconfig config.Database, kernel *Kernel) error {
 	db := dbent.InitDB(databaseconfig)
 
-	entClient := dbent.New(db)
+	entClient := dbent.New(db, databaseconfig.LogQueries)
 
 	kernel.DB = db
 	kernel.EntDB = entClient

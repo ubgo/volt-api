@@ -25,12 +25,16 @@ func (e EntDB) Client() *ent.Client {
 	return e.client
 }
 
-func New(db *sql.DB) EntDB {
-	// Create an ent.Driver from `db`.
+// New builds the ent client over db. logQueries (config DB_LOG_QUERIES,
+// default false) turns on ent's debug log of every statement with its
+// arguments plus the caller's file:line; keep it off anywhere real data
+// flows, because arguments carry user content and secrets.
+func New(db *sql.DB, logQueries bool) EntDB {
 	drv := entsql.OpenDB(dialect.Postgres, db)
-
-	// client := ent.NewClient(ent.Driver(drv), ent.Debug())
-	client := ent.NewClient(ent.Driver(&CustomDriver{drv}), ent.Debug())
+	client := ent.NewClient(ent.Driver(drv))
+	if logQueries {
+		client = ent.NewClient(ent.Driver(&CustomDriver{drv}), ent.Debug())
+	}
 
 	client.Intercept(
 		ent.InterceptFunc(func(next ent.Querier) ent.Querier {

@@ -61,10 +61,10 @@ This guide documents every change required to switch this boilerplate from Postg
 +    ...
 +)
 
- func New(db *sql.DB) EntDB {
+ func New(db *sql.DB, logQueries bool) EntDB {
 -    drv := entsql.OpenDB(dialect.Postgres, db)
 +    drv := entsql.OpenDB(dialect.SQLite, db)
-     client := ent.NewClient(ent.Driver(&CustomDriver{drv}), ent.Debug())
+     client := ent.NewClient(ent.Driver(drv))
      // ... rest unchanged
  }
 ```
@@ -110,7 +110,7 @@ PostgreSQL needed host, port, username, password, dbname, sslmode. SQLite just n
  func Migrate(ctx context.Context, db *sql.DB) error {
 -    drv := entsql.OpenDB(dialect.Postgres, db)
 +    drv := entsql.OpenDB(dialect.SQLite, db)
-     client := ent.NewClient(ent.Driver(drv), ent.Debug())
+     client := ent.NewClient(ent.Driver(drv)) // no ent.Debug(): it would log statement arguments
      // ... rest unchanged
  }
 ```

@@ -158,6 +158,7 @@ See `env.prod.sample` for full list. Key categories:
 ### Database
 
 * `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `DB_SSLMODE`
+* `DB_LOG_QUERIES` - keep `false` (the default) in production: it logs every SQL statement with its arguments
 
 ### Redis
 

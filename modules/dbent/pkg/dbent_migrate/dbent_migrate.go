@@ -16,7 +16,7 @@ func Migrate(ctx context.Context, db *sql.DB) error {
 		return fmt.Errorf("db is nil")
 	}
 	drv := entsql.OpenDB(dialect.Postgres, db)
-	client := ent.NewClient(ent.Driver(drv), ent.Debug())
+	client := ent.NewClient(ent.Driver(drv)) // no ent.Debug(): it would log statement arguments
 	defer client.Close()
 
 	// Run the auto migration tool.

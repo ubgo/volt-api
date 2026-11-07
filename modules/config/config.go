@@ -92,6 +92,11 @@ type Database struct {
 	Port     uint16 `env:"DB_PORT" default:"5432"`
 	DbName   string `env:"DB_NAME" default:"boilerplate_db"`
 	Sslmode  string `env:"DB_SSLMODE" default:"disable" doc:"disable, require, verify-ca or verify-full"`
+	// LogQueries turns on ent's query logging (every statement WITH its
+	// arguments). Off by default and only for local debugging: arguments
+	// carry user content (messages, profile data) and secrets (password
+	// hashes, tokens, sealed credentials), which must never land in a log.
+	LogQueries bool `env:"DB_LOG_QUERIES" default:"false" doc:"log every SQL statement with its arguments (local debugging only: arguments carry private data)"`
 }
 
 // Graphql holds the GraphQL surface's settings.
